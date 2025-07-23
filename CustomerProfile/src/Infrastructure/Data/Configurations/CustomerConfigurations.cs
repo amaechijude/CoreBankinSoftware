@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using src.Infrastructure.Data;
 using src.Shared.Domain.Entities;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
@@ -11,7 +12,12 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             // Ensure the correct namespace for 'ToTable' is included
             builder.ToTable("Customers");
 
+
             // Configure primary key
+            builder.Property(c => c.Id)
+                   .ValueGeneratedOnAdd()
+                   .HasValueGenerator<CustomGuidV7Generator>();
+
             builder.HasKey(c => c.Id);
 
             // Configure Value Objects
@@ -26,18 +32,12 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
                     .HasColumnName("NIN");
             });
 
-            // Index customer number
-            builder.HasIndex(c => c.CustomerNumber);
 
-            // Configure properties
-            builder.Property(c => c.PhoneNumber)
-                .IsRequired()
-                .HasMaxLength(18);
-
-            builder.Property(c => c.FirstName)
-                .IsRequired();
-            builder.Property(c => c.LastName)
-                .IsRequired();
+            // Configure relationships explicitly
+            builder.HasMany(c => c.Addresses)
+                   .WithOne(a => a.Customer)
+                   .HasForeignKey("CustomerId")
+                   .OnDelete(DeleteBehavior.Cascade);
 
             // Configure owned collections and Enums in separate partial class
             ConfigureOwnedCollections(builder);

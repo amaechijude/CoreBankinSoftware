@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using src.Infrastructure.Data;
 using src.Shared.Domain.Interfaces;
-using src.Shared.Infrastructure.Data;
 
-namespace src.Shared.Infrastructure.Repository
+namespace src.Infrastructure.Repository
 {
     public class UnitOfWorkRepository(CustomerDbContext context) : IUnitOfWork
     {

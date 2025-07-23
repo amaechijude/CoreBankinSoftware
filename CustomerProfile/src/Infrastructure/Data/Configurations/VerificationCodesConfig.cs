@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using src.Shared.Domain.Entities;
 
-namespace src.Shared.Infrastructure.Data.Configurations
+namespace src.Infrastructure.Data.Configurations
 {
     public class VerificationCodesConfig : IEntityTypeConfiguration<VerificationCode>
     {
@@ -10,7 +10,6 @@ namespace src.Shared.Infrastructure.Data.Configurations
         {
             builder.ToTable("VerificationCodes");
             builder.HasKey(vc => vc.Code);
-            builder.HasIndex(vc => vc.UserPhoneNumber);
         }
     }
 }

@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using src.Infrastructure.Data;
 using src.Shared.Domain.Entities;
-using src.Shared.Infrastructure.Data;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
 {
@@ -10,40 +10,18 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
         private static void ConfigureOwnedCollections(EntityTypeBuilder<Customer> builder)
         {
             // Configure Owned Collections
-            // Addresses
-            builder.OwnsMany(c => c.Addresses, a =>
-            {
-                a.ToTable("Addresses");
-                a.WithOwner().HasForeignKey("CustomerId");
-                a.Property<Guid>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasValueGenerator<CustomGuidV7Generator>();
-                a.HasKey("Id");
-                a.Property(a => a.Street)
-                    .IsRequired()
-                    .HasMaxLength(100);
-                a.Property(a => a.City)
-                    .IsRequired()
-                    .HasMaxLength(50);
-                a.Property(a => a.State)
-                    .IsRequired()
-                    .HasMaxLength(50);
-                a.Property(a => a.AddressType)
-                    .HasConversion<string>()
-                    .HasMaxLength(20);
-                a.Property(a => a.VerificationMethod)
-                    .HasConversion<string>()
-                    .HasMaxLength(20);
-            });
-
+            
             builder.OwnsMany(c => c.NextOfKins, n =>
             {
                 n.ToTable("NextOfKins");
-                n.WithOwner().HasForeignKey("CustomerId");
-                n.Property<Guid>("Id")
+                n.WithOwner(k => k.Customer)
+                .HasForeignKey(k => k.CustomerId);
+
+                n.Property<Guid>(nk => nk.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
                 n.HasKey("Id");
+               
                 n.Property(n => n.Gender)
                     .HasConversion<string>()
                     .HasMaxLength(20);
@@ -59,11 +37,13 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             builder.OwnsMany(c => c.KYCDocuments, k =>
             {
                 k.ToTable("KYCDocuments");
-                k.WithOwner().HasForeignKey("CustomerId");
-                k.Property<Guid>("Id")
+                k.WithOwner(ky => ky.Customer)
+                .HasForeignKey(ky => ky.CustomerId);
+
+                k.Property<Guid>(ky => ky.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
-                k.HasKey("Id");
+                k.HasKey(ky => ky.Id);
                 k.Property(d => d.DocumentType)
                     .HasConversion<string>()
                     .HasMaxLength(50);
@@ -76,11 +56,13 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             builder.OwnsMany(c => c.RiskAssessments, r =>
             {
                 r.ToTable("RiskAssessments");
-                r.WithOwner().HasForeignKey("CustomerId");
-                r.Property<Guid>("Id")
+                r.WithOwner(r => r.Customer)
+                .HasForeignKey(r => r.CustomerId);
+
+                r.Property<Guid>(r => r.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
-                r.HasKey("Id");
+                r.HasKey(r => r.Id);
                 r.Property(r => r.RiskAssessmentType)
                     .HasConversion<string>()
                     .HasMaxLength(50);
@@ -96,11 +78,13 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             builder.OwnsMany(c => c.ComplianceChecks, cc =>
             {
                 cc.ToTable("ComplianceChecks");
-                cc.WithOwner().HasForeignKey("CustomerId");
-                cc.Property<Guid>("Id")
+                cc.WithOwner(c => c.Customer)
+                    .HasForeignKey(c => c.CustomerId);
+                cc.Property<Guid>(c => c.CustomerId)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
-                cc.HasKey("Id");
+
+                cc.HasKey(c => c.Id);
                 cc.Property(c => c.CheckType)
                     .HasConversion<string>()
                     .HasMaxLength(50);

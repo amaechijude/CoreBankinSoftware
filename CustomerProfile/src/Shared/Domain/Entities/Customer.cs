@@ -9,7 +9,6 @@ namespace src.Shared.Domain.Entities
         {
             if (string.IsNullOrWhiteSpace(phoneNumber))
                 throw new ArgumentException("Phone number cannot be null or empty.", nameof(phoneNumber));
-            Id = Guid.CreateVersion7();
             PhoneNumber = phoneNumber;
         }
         // Private fields for collections

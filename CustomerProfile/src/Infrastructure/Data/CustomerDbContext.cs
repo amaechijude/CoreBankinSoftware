@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using src.Shared.Domain.Entities;
 
-namespace src.Shared.Infrastructure.Data
+namespace src.Infrastructure.Data
 {
     public class CustomerDbContext(DbContextOptions<CustomerDbContext> options) : DbContext(options)
     {

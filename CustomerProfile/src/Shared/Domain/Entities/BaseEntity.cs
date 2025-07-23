@@ -5,12 +5,18 @@ namespace src.Shared.Domain.Entities
     public abstract class BaseEntity
     {
         [Key]
-        public Guid Id { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime UpdatedAt { get; set; }
+        public Guid Id { get; private set; }
+        public DateTimeOffset CreatedAt { get; set; }
+        public DateTimeOffset UpdatedAt { get; set; }
         public bool IsDeleted { get; set; } = false;
-        public DateTime? DeletedAt { get; set; }
+        public DateTimeOffset? DeletedAt { get; set; }
         public string? DeletedBy { get; set; }
 
+        public void MarkAsDeleted(string deletedBy)
+        {
+            IsDeleted = true;
+            DeletedAt = DateTimeOffset.UtcNow;
+            DeletedBy = deletedBy;
+        }
     }
 }

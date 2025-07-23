@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace src.Shared.Infrastructure.Data
+namespace src.Infrastructure.Data
 {
     public class CustomGuidV7Generator : ValueGenerator<Guid>
     {
@@ -12,7 +12,16 @@ namespace src.Shared.Infrastructure.Data
             if (entry == null)
                 throw new ArgumentNullException(nameof(entry), "Entity entry cannot be null.");
 
-            return Guid.CreateVersion7();
+            try
+            {
+                return Guid.CreateVersion7();
+            }
+            catch (PlatformNotSupportedException)
+            {
+                // Fallback for platforms that do not support Guid.CreateVersion7()
+                // This will generate a standard Guid, which may not be suitable for all use cases
+                return Guid.NewGuid();
+            }
         }
     }
 }
