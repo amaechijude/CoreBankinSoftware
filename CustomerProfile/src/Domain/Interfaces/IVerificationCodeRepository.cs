@@ -4,8 +4,9 @@ namespace src.Domain.Interfaces
 {
     public interface IVerificationCodeRepository
     {
-        Task<VerificationCode> AddVerificationCodeAsync(VerificationCode verificationCode);
-        Task<VerificationCode?> GetVerificationCodeAsync(string phoneNumber, string code);
-        Task RemoveVerificationCodeAsync(string phoneNumber, string code);
+        Task<VerificationCode> AddAsync(VerificationCode verificationCode);
+        Task<VerificationCode?> GetAsync(string phoneNumber, string code);
+        Task RemoveAsync(string phoneNumber, string code);
+        Task SaveChangesAsync();
     }
 }

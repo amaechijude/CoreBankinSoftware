@@ -7,7 +7,7 @@ namespace src.Infrastructure.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddCustomerDatabaseInfra(this IServiceCollection services)
+        public static IServiceCollection AddCustomerDatabaseInfra(this IServiceCollection services, string connectionString)
         {
             DotNetEnv.Env.Load();
 
@@ -28,18 +28,10 @@ namespace src.Infrastructure.Extensions
             services.AddOptions<DatabaseOptions>()
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
-
-            string? _dbName = Environment.GetEnvironmentVariable("DB_NAME");
-            string? _dbUser = Environment.GetEnvironmentVariable("DB_USER");
-            string? _dbHost = Environment.GetEnvironmentVariable("DB_HOST");
-            string? _dbPassword = Environment.GetEnvironmentVariable("DB_PASSWORD");
-            string? _dbPort = Environment.GetEnvironmentVariable("DB_PORT");
-
-            string connString = $"Server={_dbHost};Database={_dbName};User Id={_dbUser};Password={_dbPassword};Port={_dbPort};";
             
             services.AddDbContext<CustomerDbContext>(options =>
             {
-                options.UseNpgsql(connString, npgSqlOptions =>
+                options.UseNpgsql(connectionString, npgSqlOptions =>
                 {
                     npgSqlOptions.EnableRetryOnFailure(
                         maxRetryCount: 5,

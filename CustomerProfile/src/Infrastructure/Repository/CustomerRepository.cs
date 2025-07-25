@@ -165,5 +165,10 @@ namespace src.Infrastructure.Repository
                 )
                 .ToListAsync();
         }
+
+        public async Task SaveChangesAsync()
+        {
+            await context.SaveChangesAsync();
+        }
     }
 }

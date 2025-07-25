@@ -1,13 +1,15 @@
+using Scalar.AspNetCore;
 using src.Infrastructure.Extensions;
 using src.Infrastructure.External.Messaging;
+using src.Shared.Global;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 // Add Service Extensions
-//string connectionString = StartupValidator.ConnectionString();
-builder.Services.AddCustomerDatabaseInfra();
+string connectionString = StartupValidator.ConnectionString();
+builder.Services.AddCustomerDatabaseInfra(connectionString);
 builder.Services.AddCustomerRepository();
 
 // Add Messaging Service
@@ -23,6 +25,7 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();

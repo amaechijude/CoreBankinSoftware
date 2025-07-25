@@ -3,8 +3,10 @@ using src.Domain.Enums;
 
 namespace src.Domain.Interfaces
 {
-    public interface ICustomerRepository// : IBaseRepository<Customer>
+    public interface ICustomerRepository
     {
+        // Savechanges Async
+        Task SaveChangesAsync();
         // Add new customer
         Task<Customer> AddAsync(Customer customer);
         Task<Customer?> GetByCustomerNumberAsync(string customerNumber);
