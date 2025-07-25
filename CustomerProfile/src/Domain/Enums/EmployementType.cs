@@ -1,4 +1,4 @@
-namespace src.Shared.Domain.Enums
+namespace src.Domain.Enums
 {
     public enum EmployementType
     {

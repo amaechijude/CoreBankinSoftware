@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using src.Shared.Domain.Entities;
+using src.Domain.Entities;
 
 namespace src.Infrastructure.Data
 {

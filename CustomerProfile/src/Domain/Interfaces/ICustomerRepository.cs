@@ -1,7 +1,7 @@
-﻿using src.Shared.Domain.Entities;
-using src.Shared.Domain.Enums;
+﻿using src.Domain.Entities;
+using src.Domain.Enums;
 
-namespace src.Shared.Domain.Interfaces
+namespace src.Domain.Interfaces
 {
     public interface ICustomerRepository// : IBaseRepository<Customer>
     {

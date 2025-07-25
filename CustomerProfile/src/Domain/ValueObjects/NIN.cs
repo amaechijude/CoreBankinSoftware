@@ -1,20 +1,15 @@
-namespace src.Shared.Domain.ValueObjects
+namespace src.Domain.ValueObjects
 {
-    public class NIN : IEquatable<NIN>
+    /// <summary>
+    /// Constructor to create a new instance of the NIN value object.
+    /// </summary>
+    /// <param name="value">The NIN value.</param>
+    public class NIN(string value) : IEquatable<NIN>
     {
         /// <summary>
         /// NIN Value
         /// </summary>
-        public string Value { get; private set; }
-
-        /// <summary>
-        /// Constructor to create a new instance of the NIN value object.
-        /// </summary>
-        /// <param name="value">The NIN value.</param>
-        public NIN(string value)
-        {
-            Value = ValidatedNIN(value);
-        }
+        public string Value { get; private set; } = ValidatedNIN(value);
 
         /// <summary>
         /// Implicit conversion from string to NIN.

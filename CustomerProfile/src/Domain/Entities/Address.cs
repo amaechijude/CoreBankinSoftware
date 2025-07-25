@@ -1,6 +1,6 @@
-﻿using src.Shared.Domain.Enums;
+﻿using src.Domain.Enums;
 
-namespace src.Shared.Domain.Entities
+namespace src.Domain.Entities
 {
     public class Address : BaseEntity
     {

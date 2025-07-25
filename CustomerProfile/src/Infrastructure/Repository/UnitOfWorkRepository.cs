@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using src.Domain.Interfaces;
 using src.Infrastructure.Data;
-using src.Shared.Domain.Interfaces;
 
 namespace src.Infrastructure.Repository
 {

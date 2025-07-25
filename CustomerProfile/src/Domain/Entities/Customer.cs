@@ -1,7 +1,7 @@
-﻿using src.Shared.Domain.Enums;
-using src.Shared.Domain.ValueObjects;
+﻿using src.Domain.Enums;
+using src.Domain.ValueObjects;
 
-namespace src.Shared.Domain.Entities
+namespace src.Domain.Entities
 {
     public class Customer : BaseEntity
     {

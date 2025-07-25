@@ -2,9 +2,9 @@
 
 namespace src.Features.CustomerOnboarding
 {
-    public class CustomPhoneNumberValidator : ValidationAttribute
+    public class NigerianPhoneNumberValidator : ValidationAttribute
     {
-        public CustomPhoneNumberValidator()
+        public NigerianPhoneNumberValidator()
         {
             ErrorMessage = "Invalid phone number format";
         }

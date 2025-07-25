@@ -1,4 +1,4 @@
-﻿namespace src.Shared.Domain.Interfaces
+﻿namespace src.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {

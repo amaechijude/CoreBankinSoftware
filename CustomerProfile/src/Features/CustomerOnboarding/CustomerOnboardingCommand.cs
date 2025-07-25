@@ -6,7 +6,7 @@ namespace src.Features.CustomerOnboarding
     {
         [Phone]
         [Required(ErrorMessage = "Phone number is required.")]
-        [MinLength(4), MaxLength(16)]
+        [NigerianPhoneNumberValidator(ErrorMessage = "Invalid Nigerian phone number format.")]
         public string PhoneNumber { get; set; } = string.Empty;
     }
 }

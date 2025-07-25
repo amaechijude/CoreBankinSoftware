@@ -1,4 +1,4 @@
-﻿namespace src.Shared.Domain.ValueObjects
+﻿namespace src.Domain.ValueObjects
 {
     public class BVN(string value) : IEquatable<BVN>
     {

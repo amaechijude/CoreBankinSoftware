@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using src.Shared.Global;
 
-namespace src.Shared.Domain.Entities
+namespace src.Domain.Entities
 {
     public class VerificationCode
     {

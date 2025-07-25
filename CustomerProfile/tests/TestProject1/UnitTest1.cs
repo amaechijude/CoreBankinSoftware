@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using src.Domain.Interfaces;
 using src.Infrastructure.Extensions;
-using src.Shared.Domain.Interfaces;
 
 namespace TestProject1
 {

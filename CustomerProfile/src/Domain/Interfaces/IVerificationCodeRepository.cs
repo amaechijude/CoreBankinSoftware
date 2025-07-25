@@ -1,6 +1,6 @@
-﻿using src.Shared.Domain.Entities;
+﻿using src.Domain.Entities;
 
-namespace src.Shared.Domain.Interfaces
+namespace src.Domain.Interfaces
 {
     public interface IVerificationCodeRepository
     {
