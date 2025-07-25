@@ -1,17 +1,17 @@
 using src.Infrastructure.Extensions;
 using src.Infrastructure.External.Messaging;
-using src.Shared.Global;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 // Add Service Extensions
-string connectionString = StartupValidator.ConnectionString();
-builder.Services.AddCustomerInfraWithDb(connectionString);
+//string connectionString = StartupValidator.ConnectionString();
+builder.Services.AddCustomerDatabaseInfra();
+builder.Services.AddCustomerRepository();
 
 // Add Messaging Service
-builder.Services.AddMessageServices();
+builder.Services.AddSMSMessageServices();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

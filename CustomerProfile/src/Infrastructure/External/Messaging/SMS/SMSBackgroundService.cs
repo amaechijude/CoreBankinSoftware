@@ -1,31 +1,22 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Net.Sockets;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 
 namespace src.Infrastructure.External.Messaging.SMS
 {
-    public sealed class SMSBackgroundService : BackgroundService
+    public class SMSBackgroundService(
+        TwilioSmsSender twilioSmsSender,
+        Channel<SendSMSCommand> smsChannel,
+        ILogger<SMSBackgroundService> logger
+            ) : BackgroundService
     {
-        private readonly TwilioSmsSender _twilloSmsSender;
-        private readonly Channel<SendSMSCommand> _smsChannel;
-        private readonly ILogger<SMSBackgroundService> _logger;
+        private readonly TwilioSmsSender _twilloSmsSender = twilioSmsSender;
+        private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
+        private readonly ILogger<SMSBackgroundService> _logger = logger;
 
         // Retry configuration
         private readonly int _maxRetryAttempts = 3;
         private readonly TimeSpan _baseDelay = TimeSpan.FromSeconds(2);
 
-        public SMSBackgroundService(
-            TwilioSmsSender twilioSmsSender,
-            Channel<SendSMSCommand> smsChannel,
-            ILogger<SMSBackgroundService> logger
-            )
-        {
-            _twilloSmsSender = twilioSmsSender;
-            _smsChannel = smsChannel;
-            _logger = logger;
-        }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await foreach (var command in _smsChannel.Reader.ReadAllAsync(stoppingToken))
@@ -53,16 +44,17 @@ namespace src.Infrastructure.External.Messaging.SMS
                 }
                 catch (Exception ex) when (IsRetriableException(ex))
                 {
-                    attempt++;
                     if (attempt >= _maxRetryAttempts)
                     {
                         _logger.LogCritical("Failed to send SMS to after {MaxAttempts} attempts.", _maxRetryAttempts);
-                        return;
+                        return; // Exit after max attempts
                     }
+                    attempt++;
                     var delay = CalculateExponentialBackoff(attempt);
                     await Task.Delay(delay, cancellationToken);
                 }
             }
+            return;
         }
 
         private TimeSpan CalculateExponentialBackoff(int attempt)
@@ -81,9 +73,13 @@ namespace src.Infrastructure.External.Messaging.SMS
             {
                 HttpRequestException => true,
                 TimeoutException => true,
+                SocketException => true,
+                TaskCanceledException => true,
+
                 _ => false
             };
         }
 
     }
+
 }

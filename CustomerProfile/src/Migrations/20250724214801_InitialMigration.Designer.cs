@@ -7,14 +7,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using src.Infrastructure.Data;
 
-
 #nullable disable
 
 namespace src.Migrations
 {
     [DbContext(typeof(CustomerDbContext))]
-    [Migration("20250723124913_InitialMigrations")]
-    partial class InitialMigrations
+    [Migration("20250724214801_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

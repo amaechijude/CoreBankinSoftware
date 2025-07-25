@@ -6,8 +6,8 @@ namespace src.Shared.Domain.Entities
     public class VerificationCode
     {
         [Key]
-        public string Code { get; set; }
-        public string UserPhoneNumber { get; set; }
+        public string Code { get; set; } = string.Empty;
+        public string UserPhoneNumber { get; set; } = string.Empty;
         public DateTimeOffset ExpiresAt { get; private set; }
         public bool IsUsed { get; private set; } = false;
         public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;
