@@ -23,6 +23,12 @@ namespace src.Domain.Entities
             IsUsed = true;
             ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1);
         }
+        public void UpdateCode()
+        {
+            Code = GlobalConstansts.GenerateVerificationCode();
+            ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(20);
+            IsUsed = false;
+        }
 
         public bool IsValid()
         {

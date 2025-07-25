@@ -15,6 +15,12 @@ namespace src.Infrastructure.Repository
             return verificationCode;
         }
 
+        public async Task<VerificationCode?> GetAsync(string phoneNumber)
+        {
+            return await _dbSet
+                .FirstOrDefaultAsync(vc => vc.UserPhoneNumber == phoneNumber);
+        }
+
         public async Task<VerificationCode?> GetAsync(string phoneNumber, string code)
         {
             return await _dbSet
