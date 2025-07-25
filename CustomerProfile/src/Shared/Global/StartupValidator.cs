@@ -1,6 +1,6 @@
 ﻿namespace src.Shared.Global
 {
-    public class StartupValidator
+    public static class StartupValidator
     {
         public static string ConnectionString()
         {

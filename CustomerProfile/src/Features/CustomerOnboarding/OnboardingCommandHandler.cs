@@ -26,7 +26,8 @@ namespace src.Features.CustomerOnboarding
             if (!validationResult.IsValid)
             {
                 _logger.LogWarning("Validation failed for onboarding request: {Errors}", validationResult.Errors);
-                return ResultResponse<string>.Error("Invalid request data.");
+                return ResultResponse<string>.Error("Invalid request data."
+                    );
             }
 
             var existingCode = await _verificationCodeRepository.GetAsync(command.PhoneNumber);
@@ -47,8 +48,16 @@ namespace src.Features.CustomerOnboarding
 
         private async Task EnqueSms(string phoneNumber, string code)
         {
-            var smsCommand = new SendSMSCommand(phoneNumber, $"Your verification code is: {code}");
-            await _smsChannel.Writer.WriteAsync(smsCommand);
+            try
+            {
+                var sendSmsCommand = new SendSMSCommand(phoneNumber, code);
+                await _smsChannel.Writer.WriteAsync(sendSmsCommand);
+                _logger.LogInformation("SMS command enqueued for phone number: {PhoneNumber}", phoneNumber);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to enqueue SMS command for phone number: {PhoneNumber}", phoneNumber);
+            }
         }
 
     }

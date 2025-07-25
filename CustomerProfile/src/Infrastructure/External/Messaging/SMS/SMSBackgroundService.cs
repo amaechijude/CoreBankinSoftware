@@ -27,7 +27,7 @@ namespace src.Infrastructure.External.Messaging.SMS
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Failed to send SMS.");
+                    _logger.LogError("Failed to send SMS. {ErrorMessage}", ex.Message);
                 }
             }
         }

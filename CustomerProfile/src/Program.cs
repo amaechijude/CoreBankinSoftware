@@ -1,9 +1,19 @@
 using Scalar.AspNetCore;
+using Serilog;
+using src.Features;
 using src.Infrastructure.Extensions;
 using src.Infrastructure.External.Messaging;
 using src.Shared.Global;
 
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Warning()
+    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSerilog();
 
 // Add services to the container.
 
@@ -11,6 +21,7 @@ var builder = WebApplication.CreateBuilder(args);
 string connectionString = StartupValidator.ConnectionString();
 builder.Services.AddCustomerDatabaseInfra(connectionString);
 builder.Services.AddCustomerRepository();
+builder.Services.AddFeaturesServices();
 
 // Add Messaging Service
 builder.Services.AddSMSMessageServices();

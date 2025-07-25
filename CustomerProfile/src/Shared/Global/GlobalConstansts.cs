@@ -2,17 +2,16 @@
 
 namespace src.Shared.Global
 {
-    public class GlobalConstansts
+    public static class GlobalConstansts
     {
-        // usee cryptography to generate a 7 digit code
+        // use cryptography to generate a 7 digit code
         public static string GenerateVerificationCode()
         {
-            using var rng = RandomNumberGenerator.Create();
-            byte[] randomNumber = new byte[4]; 
-            rng.GetBytes(randomNumber);
+            Span<byte> randomNumber = stackalloc byte[4];
+            RandomNumberGenerator.Fill(randomNumber);
 
-            // Use Math.Abs to handle negative numbers, then modulo to get 7 digits
-            int code = Math.Abs(BitConverter.ToInt32(randomNumber, 0)) % 10_000_000;
+            // Mask to ensure 7 digits (0-9,999,999) without modulo bias
+            uint code = BitConverter.ToUInt32(randomNumber) % 10_000_000u;
             return code.ToString("D7");
         }
     }
