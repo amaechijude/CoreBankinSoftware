@@ -6,7 +6,7 @@ namespace src.Features
     {
         public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
-            services.AddScoped(typeof(IBaseCommandHandlerAsync<,>), typeof(BaseComandHandlerAsync<,>));
+            services.AddScoped(typeof(BaseComandHandlerAsync<,>));
             services.AddScoped<OnboardingCommandHandler>();
             return services;
         }

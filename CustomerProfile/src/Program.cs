@@ -2,7 +2,7 @@ using Scalar.AspNetCore;
 using Serilog;
 using src.Features;
 using src.Infrastructure.Extensions;
-using src.Infrastructure.External.Messaging;
+using src.Infrastructure.External;
 using src.Shared.Global;
 
 
@@ -17,8 +17,8 @@ builder.Services.AddSerilog();
 
 // Add services to the container.
 
-// Add Service Extensions
-string connectionString = StartupValidator.ConnectionString();
+var connectionString = StartupValidator.ConnectionString();
+
 builder.Services.AddCustomerDatabaseInfra(connectionString);
 builder.Services.AddCustomerRepository();
 builder.Services.AddFeaturesServices();

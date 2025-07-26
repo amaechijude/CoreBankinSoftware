@@ -14,5 +14,7 @@ namespace src.Infrastructure.Extensions
         public string DatabasePassword { get; set; } = string.Empty;
         [Required, MinLength(3)]
         public string DatabasePort { get; set; } = string.Empty;
+
+        public string ConnectionString => $"Server={DatabaseHost};Port={DatabasePort};Database={DatabaseName};User Id={DatabaseUser};Password={DatabasePassword};";
     }
 }
