@@ -1,6 +1,6 @@
 using System.Threading.Channels;
 using Microsoft.Extensions.Options;
-using src.Infrastructure.External.BvnNINVerification;
+using src.Features.BvnNINVerification;
 using src.Infrastructure.External.Messaging.SMS;
 
 namespace src.Infrastructure.External
@@ -36,7 +36,6 @@ namespace src.Infrastructure.External
 
                 client.BaseAddress = new Uri(quickVerifySettings.BaseUrl);
                 client.DefaultRequestHeaders.Add(quickVerifySettings.AuthPrefix, quickVerifySettings.ApiKey);
-                client.DefaultRequestHeaders.Add("Content-Type", "application/json");
             })
               .ConfigurePrimaryHttpMessageHandler(() =>
               {

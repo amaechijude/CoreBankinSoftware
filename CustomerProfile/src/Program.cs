@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddSerilog();
 
 // Add services to the container.
+builder.Services.AddHttpClient();
 
 var connectionString = StartupValidator.ConnectionString();
 

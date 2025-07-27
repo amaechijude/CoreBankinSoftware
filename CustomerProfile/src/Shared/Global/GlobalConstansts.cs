@@ -15,4 +15,6 @@ namespace src.Shared.Global
             return code.ToString("D7");
         }
     }
+
+
 }

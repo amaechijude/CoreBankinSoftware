@@ -163,5 +163,16 @@ namespace src.Domain.Entities
             _nextOfKins.Add(nextOfKin);
             LastTransactionDate = DateTimeOffset.UtcNow;
         }
+
+        public void AddNIN(string nin)
+        {
+            NIN = new NIN(nin);
+        }
+
+        public void AddBVN(string bvn)
+        {
+            BVN = new BVN(bvn);
+        }
+
     }
 }
