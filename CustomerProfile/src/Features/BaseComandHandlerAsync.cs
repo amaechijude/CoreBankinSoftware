@@ -1,11 +1,9 @@
-﻿using src.Features.CustomerOnboarding;
-
-namespace src.Features
+﻿namespace src.Features
 {
-    public abstract class BaseComandHandlerAsync<TCommand, TResult>
-    {
-        public abstract Task<ResultResponse<TResult>> HandleAsync(TCommand command);
-    }
+    //public abstract class BaseComandHandlerAsync<TCommand, TResult>
+    //{
+    //    public abstract Task<ResultResponse<TResult>> HandleAsync(TCommand command);
+    //}
 
     public class ResultResponse<T>
     {

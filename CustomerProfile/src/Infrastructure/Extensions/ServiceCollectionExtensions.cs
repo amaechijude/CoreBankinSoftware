@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using src.Domain.Interfaces;
 using src.Infrastructure.Data;
 using src.Infrastructure.Repository;
@@ -7,7 +8,7 @@ namespace src.Infrastructure.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddCustomerDatabaseInfra(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddCustomerDatabaseInfra(this IServiceCollection services, string? connectionString)
         {
             DotNetEnv.Env.Load();
 
@@ -31,14 +32,21 @@ namespace src.Infrastructure.Extensions
             
             services.AddDbContext<CustomerDbContext>(options =>
             {
-                options.UseNpgsql(connectionString, npgSqlOptions =>
+                var databaseOptions = services.BuildServiceProvider().GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                if (string.IsNullOrWhiteSpace(connectionString))
                 {
-                    npgSqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(15),
-                        errorCodesToAdd: null
-                    );
-                });
+                    options.UseNpgsql(databaseOptions.ConnectionString, npgSqlOptions =>
+                    {
+                        npgSqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 5,
+                            maxRetryDelay: TimeSpan.FromSeconds(15),
+                            errorCodesToAdd: null
+                        );
+                    });
+
+                }
+                else
+                    options.UseNpgsql(connectionString);
             });
             return services;
         }

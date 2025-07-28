@@ -1,4 +1,5 @@
 ﻿using src.Features.CustomerOnboarding;
+//using src.Features.FaceRecognotion;
 
 namespace src.Features
 {
@@ -6,8 +7,9 @@ namespace src.Features
     {
         public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
-            services.AddScoped(typeof(BaseComandHandlerAsync<,>));
+            //services.AddScoped(typeof(BaseComandHandlerAsync<,>));
             services.AddScoped<OnboardingCommandHandler>();
+            //services.AddScoped<FaceRecognitionService>();
             return services;
         }
     }

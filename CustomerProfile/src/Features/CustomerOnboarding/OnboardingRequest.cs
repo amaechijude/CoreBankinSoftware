@@ -43,4 +43,13 @@ namespace src.Features.CustomerOnboarding
         public string VerificationCode { get; } = code.Code;
         public string Expiresin { get; } = code.ExpiryDuration;
     }
+
+    public class NinRequest
+    {
+        [Required]
+        public required FormFile Image { get; set; }
+        public string Url { get; set; } = "https://x.com/amaechi_1/photo";
+    }
+
+    public record NINResponse(bool IsValid, float[]? Embediings);
 }

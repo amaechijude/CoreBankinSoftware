@@ -1,5 +1,4 @@
 using System.Threading.Channels;
-using Microsoft.Extensions.Options;
 using src.Features.BvnNINVerification;
 using src.Infrastructure.External.Messaging.SMS;
 
@@ -28,20 +27,20 @@ namespace src.Infrastructure.External
                 .ValidateOnStart();
 
             // Add HTTP Client for QuickVerify
-            services.AddHttpClient<QuickVerifyBvnNinService>(client =>
-            {
-                var quickVerifySettings = services
-                    .BuildServiceProvider()
-                    .GetRequiredService<IOptions<QuickVerifySettings>>().Value;
+            // services.AddHttpClient<QuickVerifyBvnNinService>(client =>
+            // {
+            //     var quickVerifySettings = services
+            //         .BuildServiceProvider()
+            //         .GetRequiredService<IOptions<QuickVerifySettings>>().Value;
 
-                client.BaseAddress = new Uri(quickVerifySettings.BaseUrl);
-                client.DefaultRequestHeaders.Add(quickVerifySettings.AuthPrefix, quickVerifySettings.ApiKey);
-            })
-              .ConfigurePrimaryHttpMessageHandler(() =>
-              {
-                  return new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(15) };
-              })
-              .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
+            //     client.BaseAddress = new Uri(quickVerifySettings.BaseUrl);
+            //     client.DefaultRequestHeaders.Add(quickVerifySettings.AuthPrefix, quickVerifySettings.ApiKey);
+            // })
+            //   .ConfigurePrimaryHttpMessageHandler(() =>
+            //   {
+            //       return new SocketsHttpHandler { PooledConnectionLifetime = TimeSpan.FromMinutes(15) };
+            //   })
+            //   .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
             return services;
         }
 
@@ -77,5 +76,5 @@ namespace src.Infrastructure.External
             return services;
         }
     }
-    internal sealed class CustomTwilloException(string message) : Exception(message);
+    public sealed class CustomTwilloException(string message) : Exception(message);
 }

@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Channels;
-using System.Threading.Tasks;
 using src.Domain.Entities;
 using src.Domain.Interfaces;
+//using src.Features.FaceRecognotion;
 using src.Infrastructure.External.Messaging.SMS;
 
 namespace src.Features.CustomerOnboarding
@@ -12,14 +9,16 @@ namespace src.Features.CustomerOnboarding
     public class OnboardingCommandHandler(
         IVerificationCodeRepository verificationCodeRepository,
         ILogger<OnboardingCommandHandler> logger,
-        Channel<SendSMSCommand> smsChannel) : BaseComandHandlerAsync<OnboardingRequest, OnboardingResponse>
+        //FaceRecognitionService faceRecognitionService,
+        Channel<SendSMSCommand> smsChannel) //: BaseComandHandlerAsync<OnboardingRequest, OnboardingResponse>
     {
         private readonly IVerificationCodeRepository _verificationCodeRepository = verificationCodeRepository;
-      
         private readonly ILogger<OnboardingCommandHandler> _logger = logger;
+        //private readonly FaceRecognitionService _faceRecognitionService = faceRecognitionService;
         private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
 
-        public override async Task<ResultResponse<OnboardingResponse>> HandleAsync(OnboardingRequest command)
+
+        public async Task<ResultResponse<OnboardingResponse>> HandleAsync(OnboardingRequest command)
         {
             var validator = new OnboardingRequestValidator();
             var validationResult = await validator.ValidateAsync(command);
@@ -57,6 +56,16 @@ namespace src.Features.CustomerOnboarding
             {
                 _logger.LogError(ex, "Failed to enqueue SMS command for phone number: {PhoneNumber}", phoneNumber);
             }
+        }
+
+        public async Task<ResultResponse<NINResponse>> HandleNinAsync()
+        {               
+            //var (isValid, embeddings) = await _faceRecognitionService
+            //    .MatchUserFaceWithNinImageAndGenerateEmbedding(
+            //    ninRequest.Image, ninRequest.Url);
+            await Task.Delay(100);
+
+            return ResultResponse<NINResponse>.Success(new NINResponse(true, [2.2f, 4.6f]));
         }
 
     }

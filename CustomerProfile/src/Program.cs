@@ -18,14 +18,13 @@ builder.Services.AddSerilog();
 // Add services to the container.
 builder.Services.AddHttpClient();
 
-var connectionString = StartupValidator.ConnectionString();
-
-builder.Services.AddCustomerDatabaseInfra(connectionString);
+builder.Services.AddCustomerDatabaseInfra("");
 builder.Services.AddCustomerRepository();
 builder.Services.AddFeaturesServices();
 
 // Add Messaging Service
 builder.Services.AddSMSMessageServices();
+builder.Services.AddBvnNINVerificationServices();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
