@@ -9,7 +9,7 @@ namespace src.Features
         {
             //services.AddScoped(typeof(BaseComandHandlerAsync<,>));
             services.AddScoped<OnboardingCommandHandler>();
-            //services.AddScoped<FaceRecognitionService>();
+            //services.AddScoped<FaceRecognitionService>(); 
             return services;
         }
     }
