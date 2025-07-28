@@ -16,10 +16,10 @@ namespace src.Features.FaceRecognotion
            if (file is null || string.IsNullOrWhiteSpace(ninImageUrl))
                return (false, null);
 
-           Task<float[]?> ninImageEmbeddingTask = DetectUserFaceAndGenerateEmbedding(file);//DownloadNinImageAndGenerateEmbedding(ninImageUrl, httpClientFactory, cancellationToken);
-           Task<float[]?> userFaceEmbeddingTask = DetectUserFaceAndGenerateEmbedding(file);
+           Task<float[]?> ninImageEmbeddingTask = DownloadNinImageAndGenerateEmbedding(ninImageUrl, httpClientFactory, cancellationToken);
+           Task<float[]?> userFaceEmbeddingTask = DownloadNinImageAndGenerateEmbedding(ninImageUrl, httpClientFactory, cancellationToken);//DetectUserFaceAndGenerateEmbedding(file);
 
-           await Task.WhenAll(ninImageEmbeddingTask, userFaceEmbeddingTask);
+            await Task.WhenAll(ninImageEmbeddingTask, userFaceEmbeddingTask);
            float[]? ninImageEmbedding = ninImageEmbeddingTask.Result;
            float[]? userFaceEmbedding = userFaceEmbeddingTask.Result;
 

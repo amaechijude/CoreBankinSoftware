@@ -23,16 +23,11 @@ namespace src.Features.CustomerOnboarding
         }
 
         [HttpPost("nin-search")]
-        public async Task<IActionResult> NinSearch([FromForm] NinRequest request)
+        public async Task<IActionResult> NinSearch()
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var result = await _onboardingCommandHandler.TestAiSharp();
 
-            var result = await _onboardingCommandHandler.HandleNinAsync(request);
-
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
+            return Ok(result.Data);
         }
             
     }
