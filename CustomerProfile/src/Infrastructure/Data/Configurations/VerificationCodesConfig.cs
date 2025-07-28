@@ -9,7 +9,12 @@ namespace src.Infrastructure.Data.Configurations
         public void Configure(EntityTypeBuilder<VerificationCode> builder)
         {
             builder.ToTable("VerificationCodes");
-            builder.HasKey(vc => vc.Code);
+            builder.Property(vc => vc.Id)
+                .ValueGeneratedOnAdd()
+                .HasValueGenerator<CustomGuidV7Generator>();
+                
+            builder.HasKey(vc => vc.Id);
+            builder.HasIndex(vc => vc.UserPhoneNumber);
         }
     }
 }

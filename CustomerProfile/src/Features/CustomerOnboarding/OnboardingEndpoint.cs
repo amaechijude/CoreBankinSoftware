@@ -1,16 +1,39 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Twilio.Http;
 
 namespace src.Features.CustomerOnboarding
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OnboardingEndpoint : ControllerBase
+    public class OnboardingEndpoint(OnboardingCommandHandler onboardingCommandHandler) : ControllerBase
     {
-        [HttpGet]
-        public IActionResult Get()
+        private readonly OnboardingCommandHandler _onboardingCommandHandler = onboardingCommandHandler;
+
+        [HttpPost]
+        public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)
         {
-            return Ok("Customer Onboarding API is running.");
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _onboardingCommandHandler.HandleAsync(request);
+
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
         }
+
+        [HttpPost("nin-search")]
+        public async Task<IActionResult> NinSearch([FromForm] NinRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _onboardingCommandHandler.HandleNinAsync(request);
+
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
+        }
+            
     }
 }

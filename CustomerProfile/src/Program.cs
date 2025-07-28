@@ -1,4 +1,5 @@
 using Scalar.AspNetCore;
+using src.Features;
 using src.Infrastructure.Extensions;
 using src.Infrastructure.External.Messaging;
 using src.Shared.Global;
@@ -16,6 +17,8 @@ builder.Services.AddCustomerRepository();
 builder.Services.AddSMSMessageServices();
 
 builder.Services.AddControllers();
+builder.Services.AddFeaturesServices();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 

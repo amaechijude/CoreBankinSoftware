@@ -22,7 +22,7 @@ namespace src.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("src.Shared.Domain.Entities.Address", b =>
+            modelBuilder.Entity("src.Domain.Entities.Address", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -109,7 +109,7 @@ namespace src.Migrations
                     b.ToTable("Addresses", (string)null);
                 });
 
-            modelBuilder.Entity("src.Shared.Domain.Entities.Customer", b =>
+            modelBuilder.Entity("src.Domain.Entities.Customer", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -264,9 +264,14 @@ namespace src.Migrations
                     b.ToTable("Customers", (string)null);
                 });
 
-            modelBuilder.Entity("src.Shared.Domain.Entities.VerificationCode", b =>
+            modelBuilder.Entity("src.Domain.Entities.VerificationCode", b =>
                 {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
                     b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("ExpiresAt")
@@ -279,14 +284,16 @@ namespace src.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("Code");
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserPhoneNumber");
 
                     b.ToTable("VerificationCodes", (string)null);
                 });
 
-            modelBuilder.Entity("src.Shared.Domain.Entities.Address", b =>
+            modelBuilder.Entity("src.Domain.Entities.Address", b =>
                 {
-                    b.HasOne("src.Shared.Domain.Entities.Customer", "Customer")
+                    b.HasOne("src.Domain.Entities.Customer", "Customer")
                         .WithMany("Addresses")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -295,9 +302,9 @@ namespace src.Migrations
                     b.Navigation("Customer");
                 });
 
-            modelBuilder.Entity("src.Shared.Domain.Entities.Customer", b =>
+            modelBuilder.Entity("src.Domain.Entities.Customer", b =>
                 {
-                    b.OwnsMany("src.Shared.Domain.Entities.ComplianceCheck", "ComplianceChecks", b1 =>
+                    b.OwnsMany("src.Domain.Entities.ComplianceCheck", "ComplianceChecks", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -359,7 +366,7 @@ namespace src.Migrations
                             b1.Navigation("Customer");
                         });
 
-                    b.OwnsMany("src.Shared.Domain.Entities.KYCDocument", "KYCDocuments", b1 =>
+                    b.OwnsMany("src.Domain.Entities.KYCDocument", "KYCDocuments", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -431,7 +438,7 @@ namespace src.Migrations
                             b1.Navigation("Customer");
                         });
 
-                    b.OwnsMany("src.Shared.Domain.Entities.NextOfKin", "NextOfKins", b1 =>
+                    b.OwnsMany("src.Domain.Entities.NextOfKin", "NextOfKins", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -524,7 +531,7 @@ namespace src.Migrations
                             b1.Navigation("Customer");
                         });
 
-                    b.OwnsMany("src.Shared.Domain.Entities.RiskAssessment", "RiskAssessments", b1 =>
+                    b.OwnsMany("src.Domain.Entities.RiskAssessment", "RiskAssessments", b1 =>
                         {
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
@@ -584,7 +591,7 @@ namespace src.Migrations
                             b1.Navigation("Customer");
                         });
 
-                    b.OwnsOne("src.Shared.Domain.ValueObjects.BVN", "BVN", b1 =>
+                    b.OwnsOne("src.Domain.ValueObjects.BVN", "BVN", b1 =>
                         {
                             b1.Property<Guid>("CustomerId")
                                 .HasColumnType("uuid");
@@ -602,7 +609,7 @@ namespace src.Migrations
                                 .HasForeignKey("CustomerId");
                         });
 
-                    b.OwnsOne("src.Shared.Domain.ValueObjects.NIN", "NIN", b1 =>
+                    b.OwnsOne("src.Domain.ValueObjects.NIN", "NIN", b1 =>
                         {
                             b1.Property<Guid>("CustomerId")
                                 .HasColumnType("uuid");
@@ -635,7 +642,7 @@ namespace src.Migrations
                     b.Navigation("RiskAssessments");
                 });
 
-            modelBuilder.Entity("src.Shared.Domain.Entities.Customer", b =>
+            modelBuilder.Entity("src.Domain.Entities.Customer", b =>
                 {
                     b.Navigation("Addresses");
                 });
