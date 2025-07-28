@@ -12,14 +12,14 @@ namespace src.Features.CustomerOnboarding
     public class OnboardingCommandHandler(
         IVerificationCodeRepository verificationCodeRepository,
         ILogger<OnboardingCommandHandler> logger,
-        Channel<SendSMSCommand> smsChannel) : BaseComandHandlerAsync<OnboardingRequest, string>
+        Channel<SendSMSCommand> smsChannel)
     {
         private readonly IVerificationCodeRepository _verificationCodeRepository = verificationCodeRepository;
       
         private readonly ILogger<OnboardingCommandHandler> _logger = logger;
         private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
 
-        public override async Task<ResultResponse<string>> HandleAsync(OnboardingRequest command)
+        public async Task<ResultResponse<string>> HandleAsync(OnboardingRequest command)
         {
             var validator = new OnboardingRequestValidator();
             var validationResult = await validator.ValidateAsync(command);

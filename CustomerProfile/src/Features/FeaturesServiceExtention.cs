@@ -4,7 +4,6 @@
     {
         public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
-            services.AddScoped(typeof(IBaseCommandHandlerAsync<,>), typeof(BaseComandHandlerAsync<,>));
             return services;
         }
     }
