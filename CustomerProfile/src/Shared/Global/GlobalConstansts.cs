@@ -2,19 +2,18 @@
 
 namespace src.Shared.Global
 {
-    public static class GlobalConstansts
+    public class GlobalConstansts
     {
-        // use cryptography to generate a 7 digit code
+        // usee cryptography to generate a 7 digit code
         public static string GenerateVerificationCode()
         {
-            Span<byte> randomNumber = stackalloc byte[4];
-            RandomNumberGenerator.Fill(randomNumber);
+            using var rng = RandomNumberGenerator.Create();
+            byte[] randomNumber = new byte[4]; // 4 bytes will give us a number up to 2^32 - 1
+            rng.GetBytes(randomNumber);
 
-            // Mask to ensure 7 digits (0-9,999,999) without modulo bias
-            uint code = BitConverter.ToUInt32(randomNumber) % 10_000_000u;
-            return code.ToString("D7");
+            // Use Math.Abs to handle negative numbers, then modulo to get 7 digits
+            int code = Math.Abs(BitConverter.ToInt32(randomNumber, 0)) % 10_000_000;
+            return code.ToString("D7"); // Format as a 7-digit string with leading zeros
         }
     }
-
-
 }
