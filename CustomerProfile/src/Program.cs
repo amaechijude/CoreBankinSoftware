@@ -1,8 +1,15 @@
 using Scalar.AspNetCore;
+using Serilog;
 using src.Features;
 using src.Infrastructure.Extensions;
 using src.Infrastructure.External.Messaging;
 using src.Shared.Global;
+
+Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Console()
+            .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,27 +1,27 @@
 using System.Threading.Channels;
 using FaceAiSharp;
+using FaceAiSharp.Extensions;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using src.Domain.Entities;
 using src.Domain.Interfaces;
-using src.Features.FaceRecognotion;
+using src.Features.BvnNINVerification;
 using src.Infrastructure.External.Messaging.SMS;
-using FaceAiSharp.Extensions;
-using SixLabors.ImageSharp;
 
 namespace src.Features.CustomerOnboarding
 {
     public class OnboardingCommandHandler(
         IVerificationCodeRepository verificationCodeRepository,
         ILogger<OnboardingCommandHandler> logger,
-        FaceRecognitionService faceRecognitionService,
         IHttpClientFactory httpClientFactory,
-        Channel<SendSMSCommand> smsChannel)
+        Channel<SendSMSCommand> smsChannel,
+        FaceRecognitionService faceRecognitionService)
     {
         private readonly IVerificationCodeRepository _verificationCodeRepository = verificationCodeRepository;
         private readonly ILogger<OnboardingCommandHandler> _logger = logger;
-        private readonly FaceRecognitionService _faceRecognitionService = faceRecognitionService;
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
+        private readonly FaceRecognitionService _faceRecognitionService = faceRecognitionService;
 
 
         public async Task<ResultResponse<OnboardingResponse>> HandleAsync(OnboardingRequest command)
@@ -57,18 +57,14 @@ namespace src.Features.CustomerOnboarding
             _logger.LogInformation("SMS command enqueued for phone number: {PhoneNumber}", phoneNumber);
         }
 
-        public async Task<ResultResponse<NINResponse>> HandleNinAsync(NinRequest ninRequest)
+        public async Task<ResultResponse<FaceComparisonResponse>> Compare(SendIformFile send)
         {
+            if (send.Image is null || send.Image2 is null)
+                return ResultResponse<FaceComparisonResponse>.Error("Null images");
 
-            var (isValid, embeddings) = await _faceRecognitionService
-               .MatchUserFaceWithNinImageAndGenerateEmbedding(
-               ninRequest.Image, ninRequest.Url, _httpClientFactory);
-
-            return ResultResponse<NINResponse>.Success(new NINResponse(isValid, embeddings));
-
+            return await _faceRecognitionService.CompareFaces(send.Image, send.Image2);
         }
-
-        public async Task<ResultResponse<NINResponse>> TestAiSharp(NinRequest? ninRequest = default)
+        public async Task<ResultResponse<NINResponse>> TestAiSharp()
         {
 
             using var hc = new HttpClient();

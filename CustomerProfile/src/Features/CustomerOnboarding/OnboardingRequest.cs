@@ -46,7 +46,7 @@ namespace src.Features.CustomerOnboarding
 
     public class NinRequest
     {
-        public IFormFile Image { get; set; }
+        public IFormFile? Image { get; set; }
         public string Url { get; set; } = "https://x.com/amaechi_1/photo";
     }
 

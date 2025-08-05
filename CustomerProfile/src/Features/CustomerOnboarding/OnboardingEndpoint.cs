@@ -1,13 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Twilio.Http;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace src.Features.CustomerOnboarding
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OnboardingEndpoint(OnboardingCommandHandler onboardingCommandHandler) : ControllerBase
+    public class OnboardingEndpoint(
+        OnboardingCommandHandler onboardingCommandHandler
+        ) : ControllerBase
     {
         private readonly OnboardingCommandHandler _onboardingCommandHandler = onboardingCommandHandler;
+
 
         [HttpPost]
         public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)
@@ -22,13 +25,25 @@ namespace src.Features.CustomerOnboarding
                 : BadRequest(result.ErrorMessage);
         }
 
-        [HttpPost("nin-search")]
-        public async Task<IActionResult> NinSearch()
+        [HttpPost("compare-photos")]
+        public async Task<IActionResult> NinSearch([FromForm] SendIformFile request)
         {
-            var result = await _onboardingCommandHandler.TestAiSharp();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            return Ok(result.Data);
+            var result = await _onboardingCommandHandler.Compare(request);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
         }
-            
+
+    }
+
+    public class SendIformFile
+    {
+        [Required]
+        public IFormFile? Image { get; set; }
+        [Required]
+        public string? Image2 { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using src.Features.CustomerOnboarding;
-
-namespace src.Features
+﻿namespace src.Features
 {
     public class ResultResponse<T>
     {

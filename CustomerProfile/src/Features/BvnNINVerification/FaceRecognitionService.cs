@@ -3,80 +3,195 @@ using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace src.Features.FaceRecognotion
+namespace src.Features.BvnNINVerification
 {
-   public sealed class FaceRecognitionService
+
+   public class ProcessImageResult
    {
-       public async Task<(bool IsValid, float[]? Embedding)> MatchUserFaceWithNinImageAndGenerateEmbedding(
-           IFormFile file,
-           string ninImageUrl,
-           IHttpClientFactory httpClientFactory,
-           CancellationToken cancellationToken = default)
-       {
-           if (file is null || string.IsNullOrWhiteSpace(ninImageUrl))
-               return (false, null);
+      public bool IsSuccess { get; private set; }
+      public string ErrorMessage { get; private set; } = string.Empty;
+      public float[]? Embedding { get; private set; }
+      public int FaceCount { get; private set; }
+      public float? Confidence { get; private set; }
 
-           Task<float[]?> ninImageEmbeddingTask = DownloadNinImageAndGenerateEmbedding(ninImageUrl, httpClientFactory, cancellationToken);
-           Task<float[]?> userFaceEmbeddingTask = DownloadNinImageAndGenerateEmbedding(ninImageUrl, httpClientFactory, cancellationToken);//DetectUserFaceAndGenerateEmbedding(file);
-
-            await Task.WhenAll(ninImageEmbeddingTask, userFaceEmbeddingTask);
-           float[]? ninImageEmbedding = ninImageEmbeddingTask.Result;
-           float[]? userFaceEmbedding = userFaceEmbeddingTask.Result;
-
-           if (ninImageEmbedding is null || userFaceEmbedding is null)
-               return (false, null);
-
-           var dot = ninImageEmbedding.Dot(userFaceEmbedding);
-
-           if (dot < 0.4)
-               return (false, null);
-
-           return (true, userFaceEmbedding);
-
-       }
-       private static async Task<float[]?> DownloadNinImageAndGenerateEmbedding(
-           string ninImageUrl,
-           IHttpClientFactory httpClientFactory,
-           CancellationToken cancellationToken)
-       {
-           using var hc = httpClientFactory.CreateClient();
-           var imageBytes = await hc.GetByteArrayAsync(ninImageUrl, cancellationToken);
-
-           if (imageBytes.Length == 0)
-               return null;
-
-           var image = Image.Load<Rgb24>(imageBytes);
-           return GenerateFaceEmbedings(image);
-       }
+      public static ProcessImageResult Error(string message)
+      {
+         return new ProcessImageResult
+         {
+            IsSuccess = false,
+            ErrorMessage = message
+         };
+      }
+      public static ProcessImageResult Success(float[]? embedding, int faceCount, float? confidence)
+      {
+         return new ProcessImageResult
+         {
+            IsSuccess = true,
+            Embedding = embedding,
+            FaceCount = faceCount,
+            Confidence = confidence
+         };
+      }
+   }
+   public sealed class FaceRecognitionService(
+       IHttpClientFactory httpClientFactory,
+       ILogger<FaceRecognitionService> logger,
+       IFaceDetector faceDetector,
+       IFaceEmbeddingsGenerator faceEmbeddingsGenerator)
+   {
         
-       private static async Task<float[]?> DetectUserFaceAndGenerateEmbedding(IFormFile? file)
-       {
-           if (file is null || file.Length == 0)
-               return null;
+      private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+      private readonly ILogger<FaceRecognitionService> _logger = logger;
+      private readonly IFaceDetector _faceDetector = faceDetector;
+      private readonly IFaceEmbeddingsGenerator _faceEmbeddingsGenerator = faceEmbeddingsGenerator;
 
-           // ensure the file is a valid image
-           var validImageTypes = new[] { "image/jpeg", "image/png", "image/jpg", "image/webp" };
-           if (!validImageTypes.Contains(file.ContentType))
-               return null;
+      public async Task<ResultResponse<FaceComparisonResponse>> CompareFaces(IFormFile image1, string base64Image)
+      {
+         var result1 = await ProcessLocalImage(image1);
+         var result2 = await ProcessNINBase64Image(base64Image);
 
-           using var memoryStream = new MemoryStream();
-           await file.CopyToAsync(memoryStream);
-           var image = Image.Load<Rgb24>(memoryStream.ToArray());
+         if (!result1.IsSuccess)
+            return ResultResponse<FaceComparisonResponse>.Error(result1.ErrorMessage);
 
-           var det = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
-           var faces = det.DetectFaces(image);
+         if (!result2.IsSuccess)
+            return ResultResponse<FaceComparisonResponse>.Error(result2.ErrorMessage);
 
-           if (faces.Count == 0 || faces.Count > 1)
-               return null;
+         var Similarity = result1.Embedding!.Dot(result2.Embedding!);
 
-           return GenerateFaceEmbedings(image);
-       }
+         var comparison = Similarity switch
+         {
+            >= 0.42f => "Same Person",
+            > 0.28f => "Uncertain - might be same person",
+            _ => "Different Person"
+         };
 
-       private static float[] GenerateFaceEmbedings(Image<Rgb24> image)
-       {
-           var rec = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
-            
-           return rec.GenerateEmbedding(image);
-       }
+         return ResultResponse<FaceComparisonResponse>.Success(
+            new FaceComparisonResponse
+            {
+               Similarity = Similarity >= 0.42,
+               Comparison = comparison,
+               Image1Embeddings = result1.Embedding,
+               Image2Embeddings = result2.Embedding,
+               Image1FaceCount = result1.FaceCount,
+               Image2FaceCount = result2.FaceCount,
+               Image1Confidence = result1.Confidence,
+               Image2Confidence = result2.Confidence
+            }
+         );
+      }
+      private async Task<ProcessImageResult> ProcessLocalImage(IFormFile image)
+      {
+         try
+         {
+            using var stream = image.OpenReadStream();
+            using var img = await Image.LoadAsync<Rgb24>(stream);
+
+            var faces = _faceDetector.DetectFaces(img);
+
+            if (faces.Count == 0)
+               return ProcessImageResult.Error("No faces detected in the image.");
+            if (faces.Count > 1)
+               return ProcessImageResult.Error("More than one face detected in the image.");
+
+            var face = faces.First();
+
+            using var alignedImage = img.Clone(); // Clone Image For Alignement
+            _faceEmbeddingsGenerator.AlignFaceUsingLandmarks(alignedImage, face.Landmarks!);
+
+            var embedding = _faceEmbeddingsGenerator.GenerateEmbedding(img);
+
+            return ProcessImageResult.Success(embedding, faces.Count, face.Confidence);
+         }
+         catch (Exception ex)
+         {
+            _logger.LogError(ex, "Image processing failed.");
+            return ProcessImageResult.Error("Image processing failed.");
+         }
+      }
+
+        private async Task<ProcessImageResult> ProcessNINBase64Image(string base64String)
+        {
+            try
+            {
+                byte[] imageBytes;
+
+                // Check if it's a data URL format (data:image/jpeg;base64,...)
+                if (base64String.StartsWith("data:image"))
+                {
+                    // Extract the base64 part after the comma
+                    var base64Data = base64String[(base64String.IndexOf(',') + 1)..];
+                    imageBytes = Convert.FromBase64String(base64Data);
+                }
+                else
+                {
+                    // Assume it's just the base64 string without data URL prefix
+                    imageBytes = Convert.FromBase64String(base64String);
+                }
+
+                // Create a memory stream from the decoded bytes
+                using var imageStream = new MemoryStream(imageBytes);
+
+                // Load the image
+                using var img = await Image.LoadAsync<Rgb24>(imageStream);
+
+                var faces = _faceDetector.DetectFaces(img);
+
+                if (faces.Count > 1)
+                    return ProcessImageResult.Error("More than one face detected in the image.");
+                if (faces.Count == 0)
+                    return ProcessImageResult.Error("No faces detected in the image.");
+
+                var face = faces.First();
+                using var alignedImage = img.Clone(); // Clone Image For Alignment
+                _faceEmbeddingsGenerator.AlignFaceUsingLandmarks(alignedImage, face.Landmarks!);
+
+                var embedding = _faceEmbeddingsGenerator.GenerateEmbedding(img);
+
+                return ProcessImageResult.Success(embedding, faces.Count, face.Confidence);
+            }
+            catch (FormatException ex)
+            {
+                _logger.LogError(ex, "Invalid base64 format");
+                return ProcessImageResult.Error("Invalid base64 image format.");
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Invalid base64 string");
+                return ProcessImageResult.Error("Invalid base64 string provided.");
+            }
+            catch (UnknownImageFormatException ex)
+            {
+                _logger.LogError(ex, "Unsupported image format in base64 data");
+                return ProcessImageResult.Error("Unsupported image format. Please ensure the base64 data represents a valid image file (JPEG, PNG, GIF, BMP, TIFF, WebP, etc.)");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Image processing failed for base64 data");
+                return ProcessImageResult.Error("Image processing failed.");
+            }
+        }
+
+        public async Task<string> ConvertToBase64Async(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+                throw new ArgumentException("File is null or empty");
+
+            using var memoryStream = new MemoryStream();
+            await file.CopyToAsync(memoryStream);
+            byte[] fileBytes = memoryStream.ToArray();
+            return Convert.ToBase64String(fileBytes);
+        }
+    }
+
+   public record FaceComparisonResponse
+   {
+      public bool Similarity { get; set; }
+      public string Comparison { get; set; } = string.Empty;
+      public float[]? Image1Embeddings { get; set; }
+      public float[]? Image2Embeddings { get; set; }
+      public int Image1FaceCount { get; set; }
+      public int Image2FaceCount { get; set; }
+      public float? Image1Confidence { get; set; }
+      public float? Image2Confidence { get; set; }
    }
 }
