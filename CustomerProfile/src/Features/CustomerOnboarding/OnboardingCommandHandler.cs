@@ -1,25 +1,21 @@
 using System.Threading.Channels;
-using FaceAiSharp;
-using FaceAiSharp.Extensions;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.PixelFormats;
+using Microsoft.EntityFrameworkCore;
 using src.Domain.Entities;
-using src.Domain.Interfaces;
 using src.Features.BvnNINVerification;
 using src.Infrastructure.External.Messaging.SMS;
+using src.Shared.Data;
+using src.Shared.Global;
 
 namespace src.Features.CustomerOnboarding
 {
     public class OnboardingCommandHandler(
-        IVerificationCodeRepository verificationCodeRepository,
+        CustomerDbContext context,
         ILogger<OnboardingCommandHandler> logger,
-        IHttpClientFactory httpClientFactory,
         Channel<SendSMSCommand> smsChannel,
         FaceRecognitionService faceRecognitionService)
     {
-        private readonly IVerificationCodeRepository _verificationCodeRepository = verificationCodeRepository;
+        private readonly CustomerDbContext _context = context;
         private readonly ILogger<OnboardingCommandHandler> _logger = logger;
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
         private readonly FaceRecognitionService _faceRecognitionService = faceRecognitionService;
 
@@ -29,23 +25,33 @@ namespace src.Features.CustomerOnboarding
             var validator = new OnboardingRequestValidator();
             var validationResult = await validator.ValidateAsync(command);
             if (!validationResult.IsValid)
-            {
-                _logger.LogWarning("Validation failed for onboarding request: {Errors}", validationResult.Errors);
-                return ResultResponse<OnboardingResponse>.Error("Invalid request data.");
-            }
+                return ResultResponse<OnboardingResponse>
+                    .Error(validationResult.Errors.Select(s => new
+                    {
+                        s.ErrorMessage,
+                        s.AttemptedValue
+                    }
+                    ));
 
-            var existingCode = await _verificationCodeRepository.GetAsync(command.PhoneNumber);
+            var normalisedPhoneNumber = NormalizePhoneNumber(command.PhoneNumber);
+
+            var existingCode = await _context
+                .VerificationCodes
+                .FirstOrDefaultAsync(vc => 
+                vc.UserPhoneNumber == normalisedPhoneNumber
+                );
+
             if (existingCode is not null)
             {
                 existingCode.UpdateCode();
-                await _verificationCodeRepository.SaveChangesAsync();
-                await EnqueSms(command.PhoneNumber, existingCode.Code);
+                await _context.SaveChangesAsync();
+                await EnqueSms(existingCode.UserPhoneNumber, existingCode.Code);
                 return ResultResponse<OnboardingResponse>.Success(new OnboardingResponse(existingCode));
             }
-            var newCode = new VerificationCode(command.PhoneNumber);
-            await _verificationCodeRepository.AddAsync(newCode);
-            await _verificationCodeRepository.SaveChangesAsync();
-            await EnqueSms(command.PhoneNumber, newCode.Code);
+            var newCode = new VerificationCode(normalisedPhoneNumber);
+            await _context.VerificationCodes.AddAsync(newCode);
+            await _context.SaveChangesAsync();
+            await EnqueSms(normalisedPhoneNumber, newCode.Code);
             return ResultResponse<OnboardingResponse>.Success(new OnboardingResponse(newCode));
 
         }
@@ -54,52 +60,30 @@ namespace src.Features.CustomerOnboarding
         {
             var sendSmsCommand = new SendSMSCommand(phoneNumber, code);
             await _smsChannel.Writer.WriteAsync(sendSmsCommand);
-            _logger.LogInformation("SMS command enqueued for phone number: {PhoneNumber}", phoneNumber);
         }
 
         public async Task<ResultResponse<FaceComparisonResponse>> Compare(SendIformFile send)
         {
-            if (send.Image is null || send.Image2 is null)
+            if (send.Image is null)
                 return ResultResponse<FaceComparisonResponse>.Error("Null images");
 
-            return await _faceRecognitionService.CompareFaces(send.Image, send.Image2);
+            return await _faceRecognitionService.CompareFaces(send.Image, GlobalConstansts.base64Image);
         }
-        public async Task<ResultResponse<NINResponse>> TestAiSharp()
+
+        private static string NormalizePhoneNumber(string phoneNumber)
         {
+            phoneNumber = phoneNumber.Trim().Replace("-", "").Replace(" ", "");
 
-            using var hc = new HttpClient();
-            var groupPhoto = await hc.GetByteArrayAsync(
-                "https://raw.githubusercontent.com/georg-jung/FaceAiSharp/master/examples/obama_family.jpg");
-            var img = Image.Load<Rgb24>(groupPhoto);
+            if (phoneNumber.StartsWith("+234")) return phoneNumber;
 
-            var det = FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks();
-            var rec = FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator();
-
-            var faces = det.DetectFaces(img);
-
-            var first = faces.First();
-            var second = faces.Skip(1).First();
-
-            // AlignFaceUsingLandmarks is an in-place operation so we need to create a clone of img first
-            var secondImg = img.Clone();
-            rec.AlignFaceUsingLandmarks(img, first.Landmarks!);
-            rec.AlignFaceUsingLandmarks(secondImg, second.Landmarks!);
-
-            img.Save("aligned.jpg");
-
-            var embedding1 = rec.GenerateEmbedding(img);
-            var embedding2 = rec.GenerateEmbedding(secondImg);
-
-            var dot = embedding1.Dot(embedding2);
-
-            Console.WriteLine($"Dot product: {dot}");
-            if (dot >= 0.42)
-                return ResultResponse<NINResponse>.Success(new NINResponse(true, embedding1));
-
-            
-            return ResultResponse<NINResponse>.Success(new NINResponse(false, embedding2));
-
+            return "+234" + phoneNumber[1..];
         }
-
+        //private static async Task<string> ConvertToBase64Async(IFormFile file)
+        //{
+        //    using var memoryStream = new MemoryStream();
+        //    await file.CopyToAsync(memoryStream);
+        //    byte[] fileBytes = memoryStream.ToArray();
+        //    return Convert.ToBase64String(fileBytes);
+        //}
     }
 }

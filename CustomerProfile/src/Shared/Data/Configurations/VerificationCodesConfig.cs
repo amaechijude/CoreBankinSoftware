@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using src.Domain.Entities;
 
-namespace src.Infrastructure.Data.Configurations
+namespace src.Shared.Data.Configurations
 {
     public class VerificationCodesConfig : IEntityTypeConfiguration<VerificationCode>
     {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using src.Infrastructure.Data;
+using src.Shared.Data;
 
 #nullable disable
 
@@ -393,7 +393,7 @@ namespace src.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<string>("DocumentType")
+                            b1.Property<string>("KycDocumentType")
                                 .IsRequired()
                                 .HasMaxLength(50)
                                 .HasColumnType("character varying(50)");

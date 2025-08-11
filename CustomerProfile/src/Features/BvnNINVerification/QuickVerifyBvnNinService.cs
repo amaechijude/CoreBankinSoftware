@@ -27,7 +27,7 @@ namespace src.Features.BvnNINVerification
 
     }
 
-    // Quick veridy secretes
+    // Quick verify secretes
     public sealed class QuickVerifySettings
     {
         [Required, Url, MinLength(10)]

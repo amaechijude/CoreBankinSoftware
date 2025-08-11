@@ -8,7 +8,7 @@ namespace src.Domain.Entities
         public Customer? Customer { get; set; }
 
         //  Document Details
-        public DocumentType DocumentType { get; set; }
+        public KycDocumentType DocumentType { get; set; }
         public DocumentMimeType DocumentMimeType { get; set; }
         public string DocumentNumber { get; set; } = string.Empty;
         public DateTimeOffset? IssuedAt { get; set; }

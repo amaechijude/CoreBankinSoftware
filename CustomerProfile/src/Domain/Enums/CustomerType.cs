@@ -52,7 +52,7 @@ namespace src.Domain.Enums
         UnderReview,
     }
 
-    public enum DocumentType
+    public enum KycDocumentType
     {
         Passport,
         NationalID,

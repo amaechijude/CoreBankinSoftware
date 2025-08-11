@@ -6,3 +6,10 @@ bin/
 obj/
 Migrations/
 Migrations
+tessdata/**
+tessdata
+x64
+x86
+x64/**
+x86/**
+onnx/**

@@ -14,7 +14,7 @@
 //             var services = new ServiceCollection();
 //             string testConnectionString = "Host=localhost;Database=testdb;Username=testuser;Password=testpassword";
 //             // Act
-//             services.AddCustomerDatabaseInfra(testConnectionString);
+//             services.AddCustomerDbContext(testConnectionString);
 //             services.AddCustomerRepository();
 //             var serviceProvider = services.BuildServiceProvider();
 //             // Assert

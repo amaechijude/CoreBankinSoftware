@@ -20,9 +20,9 @@ namespace src.Features.CustomerOnboarding
 
             var result = await _onboardingCommandHandler.HandleAsync(request);
 
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
+             return result.IsSuccess
+                 ? Ok(result.Data)
+                 : BadRequest(result.ErrorMessage);
         }
 
         [HttpPost("compare-photos")]
@@ -43,7 +43,5 @@ namespace src.Features.CustomerOnboarding
     {
         [Required]
         public IFormFile? Image { get; set; }
-        [Required]
-        public string? Image2 { get; set; }
     }
 }

@@ -5,50 +5,22 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace src.Features.BvnNINVerification
 {
-
-   public class ProcessImageResult
-   {
-      public bool IsSuccess { get; private set; }
-      public string ErrorMessage { get; private set; } = string.Empty;
-      public float[]? Embedding { get; private set; }
-      public int FaceCount { get; private set; }
-      public float? Confidence { get; private set; }
-
-      public static ProcessImageResult Error(string message)
-      {
-         return new ProcessImageResult
-         {
-            IsSuccess = false,
-            ErrorMessage = message
-         };
-      }
-      public static ProcessImageResult Success(float[]? embedding, int faceCount, float? confidence)
-      {
-         return new ProcessImageResult
-         {
-            IsSuccess = true,
-            Embedding = embedding,
-            FaceCount = faceCount,
-            Confidence = confidence
-         };
-      }
-   }
    public sealed class FaceRecognitionService(
-       IHttpClientFactory httpClientFactory,
        ILogger<FaceRecognitionService> logger,
        IFaceDetector faceDetector,
        IFaceEmbeddingsGenerator faceEmbeddingsGenerator)
    {
-        
-      private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
       private readonly ILogger<FaceRecognitionService> _logger = logger;
       private readonly IFaceDetector _faceDetector = faceDetector;
       private readonly IFaceEmbeddingsGenerator _faceEmbeddingsGenerator = faceEmbeddingsGenerator;
 
       public async Task<ResultResponse<FaceComparisonResponse>> CompareFaces(IFormFile image1, string base64Image)
       {
-         var result1 = await ProcessLocalImage(image1);
-         var result2 = await ProcessNINBase64Image(base64Image);
+         Task<ProcessImageResult> task1 = ProcessLocalImage(image1);
+         Task<ProcessImageResult> task2 = ProcessBase64Image(base64Image);
+
+         var result1 = await task1;
+         var result2 = await task2;
 
          if (!result1.IsSuccess)
             return ResultResponse<FaceComparisonResponse>.Error(result1.ErrorMessage);
@@ -109,81 +81,63 @@ namespace src.Features.BvnNINVerification
          }
       }
 
-        private async Task<ProcessImageResult> ProcessNINBase64Image(string base64String)
-        {
-            try
+      private async Task<ProcessImageResult> ProcessBase64Image(string base64String)
+      {
+         try
+         {
+            byte[] imageBytes;
+
+            // Check if it's a data URL format (data:image/jpeg;base64,...)
+            if (base64String.StartsWith("data:image"))
             {
-                byte[] imageBytes;
-
-                // Check if it's a data URL format (data:image/jpeg;base64,...)
-                if (base64String.StartsWith("data:image"))
-                {
-                    // Extract the base64 part after the comma
-                    var base64Data = base64String[(base64String.IndexOf(',') + 1)..];
-                    imageBytes = Convert.FromBase64String(base64Data);
-                }
-                else
-                {
-                    // Assume it's just the base64 string without data URL prefix
-                    imageBytes = Convert.FromBase64String(base64String);
-                }
-
-                // Create a memory stream from the decoded bytes
-                using var imageStream = new MemoryStream(imageBytes);
-
-                // Load the image
-                using var img = await Image.LoadAsync<Rgb24>(imageStream);
-
-                var faces = _faceDetector.DetectFaces(img);
-
-                if (faces.Count > 1)
-                    return ProcessImageResult.Error("More than one face detected in the image.");
-                if (faces.Count == 0)
-                    return ProcessImageResult.Error("No faces detected in the image.");
-
-                var face = faces.First();
-                using var alignedImage = img.Clone(); // Clone Image For Alignment
-                _faceEmbeddingsGenerator.AlignFaceUsingLandmarks(alignedImage, face.Landmarks!);
-
-                var embedding = _faceEmbeddingsGenerator.GenerateEmbedding(img);
-
-                return ProcessImageResult.Success(embedding, faces.Count, face.Confidence);
+               // Extract the base64 part after the comma
+               var base64Data = base64String[(base64String.IndexOf(',') + 1)..];
+               imageBytes = Convert.FromBase64String(base64Data);
             }
-            catch (FormatException ex)
-            {
-                _logger.LogError(ex, "Invalid base64 format");
-                return ProcessImageResult.Error("Invalid base64 image format.");
-            }
-            catch (ArgumentException ex)
-            {
-                _logger.LogError(ex, "Invalid base64 string");
-                return ProcessImageResult.Error("Invalid base64 string provided.");
-            }
-            catch (UnknownImageFormatException ex)
-            {
-                _logger.LogError(ex, "Unsupported image format in base64 data");
-                return ProcessImageResult.Error("Unsupported image format. Please ensure the base64 data represents a valid image file (JPEG, PNG, GIF, BMP, TIFF, WebP, etc.)");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Image processing failed for base64 data");
-                return ProcessImageResult.Error("Image processing failed.");
-            }
-        }
+            else {imageBytes = Convert.FromBase64String(base64String); }
 
-        public async Task<string> ConvertToBase64Async(IFormFile file)
-        {
-            if (file == null || file.Length == 0)
-                throw new ArgumentException("File is null or empty");
+            using var imageStream = new MemoryStream(imageBytes);
+            // Load the image
+            using var img = await Image.LoadAsync<Rgb24>(imageStream);
+            var faces = _faceDetector.DetectFaces(img);
 
-            using var memoryStream = new MemoryStream();
-            await file.CopyToAsync(memoryStream);
-            byte[] fileBytes = memoryStream.ToArray();
-            return Convert.ToBase64String(fileBytes);
-        }
-    }
+            if (faces.Count > 1)
+               return ProcessImageResult.Error("More than one face detected in the image.");
+            if (faces.Count == 0)
+               return ProcessImageResult.Error("No faces detected in the image.");
 
-   public record FaceComparisonResponse
+            var face = faces.First();
+            using var alignedImage = img.Clone(); // Clone Image For Alignment
+            _faceEmbeddingsGenerator.AlignFaceUsingLandmarks(alignedImage, face.Landmarks!);
+
+            var embedding = _faceEmbeddingsGenerator.GenerateEmbedding(img);
+
+            return ProcessImageResult.Success(embedding, faces.Count, face.Confidence);
+         }
+         catch (FormatException ex)
+         {
+            _logger.LogError(ex, "Invalid base64 format");
+            return ProcessImageResult.Error("Invalid base64 image format.");
+         }
+         catch (ArgumentException ex)
+         {
+            _logger.LogError(ex, "Invalid base64 string");
+            return ProcessImageResult.Error("Invalid base64 string provided.");
+         }
+         catch (UnknownImageFormatException ex)
+         {
+            _logger.LogError(ex, "Unsupported image format in base64 data");
+            return ProcessImageResult.Error("Unsupported image format. Please ensure the base64 data represents a valid image file (JPEG, PNG, GIF, BMP, TIFF, WebP, etc.)");
+         }
+         catch (Exception ex)
+         {
+            _logger.LogError(ex, "Image processing failed for base64 data");
+            return ProcessImageResult.Error("Image processing failed.");
+         }
+      }
+   }
+
+   public class FaceComparisonResponse
    {
       public bool Similarity { get; set; }
       public string Comparison { get; set; } = string.Empty;
@@ -194,4 +148,29 @@ namespace src.Features.BvnNINVerification
       public float? Image1Confidence { get; set; }
       public float? Image2Confidence { get; set; }
    }
+
+   public sealed class ProcessImageResult
+   {
+      public bool IsSuccess { get; private set; }
+      public string ErrorMessage { get; private set; } = string.Empty;
+      public float[]? Embedding { get; private set; }
+      public int FaceCount { get; private set; }
+      public float? Confidence { get; private set; }
+
+      public static ProcessImageResult Error(string message)
+      {
+         return new ProcessImageResult { IsSuccess = false, ErrorMessage = message };
+      }
+      public static ProcessImageResult Success(float[]? embedding, int faceCount, float? confidence)
+      {
+         return new ProcessImageResult
+         {
+            IsSuccess = true,
+            Embedding = embedding,
+            FaceCount = faceCount,
+            Confidence = confidence
+         };
+      }
+   }
+   
 }

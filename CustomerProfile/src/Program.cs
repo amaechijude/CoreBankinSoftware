@@ -1,14 +1,13 @@
 using Scalar.AspNetCore;
 using Serilog;
-using src.Features;
-using src.Infrastructure.Extensions;
+using src;
 using src.Infrastructure.External.Messaging;
 using src.Shared.Global;
 
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()
             .WriteTo.Console()
-            .WriteTo.File("logs/myapp.txt", rollingInterval: RollingInterval.Day)
+            .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
             .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,14 +16,13 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add Service Extensions
 string connectionString = StartupValidator.ConnectionString();
-builder.Services.AddCustomerDatabaseInfra(connectionString);
-builder.Services.AddCustomerRepository();
+builder.Services.AddCustomerDbContext(connectionString);
+builder.Services.AddFeaturesServices();
 
 // Add Messaging Service
 builder.Services.AddSMSMessageServices();
 
 builder.Services.AddControllers();
-builder.Services.AddFeaturesServices();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

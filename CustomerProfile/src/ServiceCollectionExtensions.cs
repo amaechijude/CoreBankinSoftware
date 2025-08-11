@@ -1,13 +1,14 @@
+using FaceAiSharp;
 using Microsoft.EntityFrameworkCore;
-using src.Domain.Interfaces;
-using src.Infrastructure.Data;
-using src.Infrastructure.Repository;
+using src.Features.BvnNINVerification;
+using src.Features.CustomerOnboarding;
+using src.Shared.Data;
 
-namespace src.Infrastructure.Extensions
+namespace src
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddCustomerDatabaseInfra(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddCustomerDbContext(this IServiceCollection services, string connectionString)
         {
             DotNetEnv.Env.Load();
 
@@ -28,14 +29,14 @@ namespace src.Infrastructure.Extensions
             services.AddOptions<DatabaseOptions>()
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
-            
+
             services.AddDbContext<CustomerDbContext>(options =>
             {
                 options.UseNpgsql(connectionString, npgSqlOptions =>
                 {
                     npgSqlOptions.EnableRetryOnFailure(
                         maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(15),
+                        maxRetryDelay: TimeSpan.FromSeconds(2),
                         errorCodesToAdd: null
                     );
                 });
@@ -43,16 +44,23 @@ namespace src.Infrastructure.Extensions
             return services;
         }
 
-        public static IServiceCollection AddCustomerRepository(this IServiceCollection services)
+        public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
-            // Register repositories
-            services.AddScoped<ICustomerRepository, CustomerRepository>();
-            services.AddScoped<IVerificationCodeRepository, VerificationCodeRepository>();
+            services.AddScoped<OnboardingCommandHandler>();
 
-            // Register UnitOfWork
-            services.AddScoped<IUnitOfWork, UnitOfWorkRepository>();
+            services.AddHttpClient<QuickVerifyHttpClient>();
+            services.AddScoped<QuickVerifyBvnNinService>();
+
+            services.AddSingleton<IFaceDetector>(_ =>
+            FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks()
+            );
+            services.AddSingleton(_ =>
+            FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator()
+            );
+            services.AddSingleton<FaceRecognitionService>();
+
             return services;
         }
+        internal sealed class ServiceException(string message) : Exception(message);
     }
-    internal sealed class ServiceException(string message) : Exception(message);
 }
