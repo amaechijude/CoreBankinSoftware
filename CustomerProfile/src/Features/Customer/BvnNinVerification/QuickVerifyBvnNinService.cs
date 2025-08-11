@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 
-namespace src.Features.BvnNINVerification
+namespace src.Features.Customer.BvnNINVerification
 {
     public sealed class QuickVerifyBvnNinService(QuickVerifyHttpClient client)
     {

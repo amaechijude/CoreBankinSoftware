@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace src.Features.BvnNINVerification
+namespace src.Features.Customer.BvnNINVerification
 {
 
     public sealed class BvnApiResponse

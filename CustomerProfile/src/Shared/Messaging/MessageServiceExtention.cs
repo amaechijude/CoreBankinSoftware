@@ -1,7 +1,7 @@
 using System.Threading.Channels;
-using src.Infrastructure.External.Messaging.SMS;
+using src.Shared.Messaging.SMS;
 
-namespace src.Infrastructure.External.Messaging
+namespace src.Shared.Messaging
 {
     public static class MessageServiceExtention
     {

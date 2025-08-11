@@ -1,8 +1,8 @@
 using Scalar.AspNetCore;
 using Serilog;
 using src;
-using src.Infrastructure.External.Messaging;
 using src.Shared.Global;
+using src.Shared.Messaging;
 
 Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Debug()

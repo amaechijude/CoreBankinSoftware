@@ -1,12 +1,12 @@
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using src.Domain.Entities;
-using src.Features.BvnNINVerification;
-using src.Infrastructure.External.Messaging.SMS;
+using src.Features.Customer.BvnNINVerification;
 using src.Shared.Data;
 using src.Shared.Global;
+using src.Shared.Messaging.SMS;
 
-namespace src.Features.CustomerOnboarding
+namespace src.Features.Customer.Onboarding
 {
     public class OnboardingCommandHandler(
         CustomerDbContext context,
@@ -25,15 +25,25 @@ namespace src.Features.CustomerOnboarding
             var validator = new OnboardingRequestValidator();
             var validationResult = await validator.ValidateAsync(command);
             if (!validationResult.IsValid)
+            {
                 return ResultResponse<OnboardingResponse>
-                    .Error(validationResult.Errors.Select(s => new
-                    {
-                        s.ErrorMessage,
-                        s.AttemptedValue
-                    }
-                    ));
+                    .Error(validationResult.Errors.Select(s => 
+                    new { s.ErrorMessage, s.AttemptedValue }));
+            }
 
             var normalisedPhoneNumber = NormalizePhoneNumber(command.PhoneNumber);
+
+            var user = await _context.Customers
+                .Where(u => u.PhoneNumber == normalisedPhoneNumber
+                        || u.PhoneNumber == command.PhoneNumber)
+                .FirstOrDefaultAsync();
+            if (user is not null)
+            {
+                var message = "Someone tried to sign up with your phone number";
+                await _smsChannel.Writer.WriteAsync(new SendSMSCommand(user.PhoneNumber,message));
+                return ResultResponse<OnboardingResponse>.Error("Phone Number already register");
+            }
+
 
             var existingCode = await _context
                 .VerificationCodes
@@ -46,19 +56,32 @@ namespace src.Features.CustomerOnboarding
                 existingCode.UpdateCode();
                 await _context.SaveChangesAsync();
                 await EnqueSms(existingCode.UserPhoneNumber, existingCode.Code);
-                return ResultResponse<OnboardingResponse>.Success(new OnboardingResponse(existingCode));
+                return ResultResponse<OnboardingResponse>
+                    .Success(
+                    new OnboardingResponse(
+                        existingCode.UserPhoneNumber,
+                        existingCode.Code,
+                        existingCode.ExpiryDuration)
+                    );
             }
             var newCode = new VerificationCode(normalisedPhoneNumber);
             await _context.VerificationCodes.AddAsync(newCode);
             await _context.SaveChangesAsync();
             await EnqueSms(normalisedPhoneNumber, newCode.Code);
-            return ResultResponse<OnboardingResponse>.Success(new OnboardingResponse(newCode));
+            return ResultResponse<OnboardingResponse>
+                .Success(new 
+                OnboardingResponse(
+                    newCode.UserPhoneNumber,
+                    newCode.Code,
+                    newCode.ExpiryDuration)
+                );
 
         }
 
         private async Task EnqueSms(string phoneNumber, string code)
         {
-            var sendSmsCommand = new SendSMSCommand(phoneNumber, code);
+            var message = $"Your Otp is {code} ";
+            var sendSmsCommand = new SendSMSCommand(phoneNumber, message);
             await _smsChannel.Writer.WriteAsync(sendSmsCommand);
         }
 

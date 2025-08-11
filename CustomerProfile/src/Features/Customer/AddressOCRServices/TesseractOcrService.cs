@@ -1,4 +1,4 @@
-namespace src.Features.AddressOCRServices
+namespace src.Features.Customer.AddressOCRServices
 {
     public class TesseractOcrService(IHostEnvironment hostEnvironment, ILogger<TesseractOcrService> logger)
     {
@@ -8,7 +8,8 @@ namespace src.Features.AddressOCRServices
 
         public bool AddressOcrValidation(IFormFile image, string address)
         {
-            
+            if (image is null || string.IsNullOrEmpty(address)) 
+                return false;
             return true;
         }
     }

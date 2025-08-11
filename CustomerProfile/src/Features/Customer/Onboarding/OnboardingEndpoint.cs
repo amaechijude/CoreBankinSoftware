@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 
-namespace src.Features.CustomerOnboarding
+namespace src.Features.Customer.Onboarding
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -24,6 +24,9 @@ namespace src.Features.CustomerOnboarding
                  ? Ok(result.Data)
                  : BadRequest(result.ErrorMessage);
         }
+
+        [HttpPost("validate")]
+
 
         [HttpPost("compare-photos")]
         public async Task<IActionResult> NinSearch([FromForm] SendIformFile request)
