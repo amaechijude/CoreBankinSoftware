@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
 
-namespace src.Features.Customer.Onboarding
+namespace src.Features.CustomerManagement.Onboarding
 {
     public record OnboardingRequest(string PhoneNumber);
-    public record OnboardingResponse(string Phone, string Code, string ExpiresIn);
+    public record OnboardingResponse(string Token, string ExpiresIn);
 
     public class OnboardingRequestValidator : AbstractValidator<OnboardingRequest>
     {
@@ -16,4 +16,5 @@ namespace src.Features.Customer.Onboarding
         }
     }
 
+    public record VerifyOtpResponse(string Message);
 }

@@ -1,4 +1,4 @@
-namespace src.Features.Customer.AddressOCRServices
+namespace src.Features.CustomerManagement.AddressOCRServices
 {
     public class TesseractOcrService(IHostEnvironment hostEnvironment, ILogger<TesseractOcrService> logger)
     {

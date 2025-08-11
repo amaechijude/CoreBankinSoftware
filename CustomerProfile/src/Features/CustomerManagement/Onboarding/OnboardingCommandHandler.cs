@@ -1,12 +1,12 @@
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using src.Domain.Entities;
-using src.Features.Customer.BvnNINVerification;
+using src.Features.CustomerManagement.BvnNinVerification;
 using src.Shared.Data;
 using src.Shared.Global;
 using src.Shared.Messaging.SMS;
 
-namespace src.Features.Customer.Onboarding
+namespace src.Features.CustomerManagement.Onboarding
 {
     public class OnboardingCommandHandler(
         CustomerDbContext context,
@@ -59,8 +59,7 @@ namespace src.Features.Customer.Onboarding
                 return ResultResponse<OnboardingResponse>
                     .Success(
                     new OnboardingResponse(
-                        existingCode.UserPhoneNumber,
-                        existingCode.Code,
+                        existingCode.Id.ToString(),
                         existingCode.ExpiryDuration)
                     );
             }
@@ -71,11 +70,29 @@ namespace src.Features.Customer.Onboarding
             return ResultResponse<OnboardingResponse>
                 .Success(new 
                 OnboardingResponse(
-                    newCode.UserPhoneNumber,
-                    newCode.Code,
+                    newCode.Id.ToString(),
                     newCode.ExpiryDuration)
                 );
 
+        }
+
+        public async Task<ResultResponse<string>> VerifyOtpAsync(string code, string token)
+        {
+            bool isValidGuid = Guid.TryParse(token, out Guid Id);
+            if (!isValidGuid)
+                return ResultResponse<string>.Error("Verification failed");
+
+            var vCode = await _context.VerificationCodes
+                .Where(vc => vc.Id == Id && vc.Code == code)
+                .FirstOrDefaultAsync();
+
+            if (vCode is null)
+                return ResultResponse<string>.Error("Verification failed");
+            if (vCode.IsUsed || vCode.IsExpired)
+                return ResultResponse<string>.Error("Otp is Used or Expired");
+
+            // create customer
+            var newCustomer = new Customer(NormalizePhoneNumber(vCode.UserPhoneNumber));
         }
 
         private async Task EnqueSms(string phoneNumber, string code)

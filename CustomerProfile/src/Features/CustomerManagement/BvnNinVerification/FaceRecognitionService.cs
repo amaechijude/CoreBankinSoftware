@@ -3,7 +3,7 @@ using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace src.Features.Customer.BvnNINVerification
+namespace src.Features.CustomerManagement.BvnNinVerification
 {
    public sealed class FaceRecognitionService(
        ILogger<FaceRecognitionService> logger,

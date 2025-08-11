@@ -35,10 +35,5 @@ namespace src.Domain.Entities
             IsUsed = false;
         }
 
-        public bool IsValid()
-        {
-            return !IsUsed && !IsExpired;
-        }
-
     }
 }

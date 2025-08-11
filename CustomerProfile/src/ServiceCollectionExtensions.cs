@@ -1,7 +1,7 @@
 using FaceAiSharp;
 using Microsoft.EntityFrameworkCore;
-using src.Features.Customer.BvnNINVerification;
-using src.Features.Customer.Onboarding;
+using src.Features.CustomerManagement.BvnNinVerification;
+using src.Features.CustomerManagement.Onboarding;
 using src.Shared.Data;
 
 namespace src
