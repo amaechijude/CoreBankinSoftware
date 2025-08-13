@@ -17,4 +17,6 @@ namespace src.Features.CustomerManagement.Onboarding
     }
 
     public record VerifyOtpResponse(string Message);
+
+    public record OtpVerifyRequest(string Code);
 }

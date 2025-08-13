@@ -38,32 +38,19 @@ namespace src.Features.CustomerManagement.Onboarding
         }
 
         [HttpPost("verify-otp")]
-        public async Task<IActionResult> VerifyOtpAsync([FromBody] OtpVerifyRequest request)
+        public async Task<IActionResult> VerifyRegistrationOtpAsync([FromBody] OtpVerifyRequest request)
         {
             var tokenString = Request.Cookies[_otpKey];
-            if (string.IsNullOrEmpty( tokenString))
+            if (string.IsNullOrEmpty(tokenString))
                 return BadRequest("Invalid Request");
 
-            return Ok();
-        }
+            var result = await _onboardingCommandHandler.VerifyRegistrationOtpAsync(request.Code, tokenString);
 
-
-        [HttpPost("compare-photos")]
-        public async Task<IActionResult> NinSearch([FromForm] SendIformFile request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var result = await _onboardingCommandHandler.Compare(request);
             return result.IsSuccess
                 ? Ok(result.Data)
                 : BadRequest(result.ErrorMessage);
         }
 
     }
-
-    public record OtpVerifyRequest(string Code);
-
-    public record SendIformFile (IFormFile Image);
     
 }

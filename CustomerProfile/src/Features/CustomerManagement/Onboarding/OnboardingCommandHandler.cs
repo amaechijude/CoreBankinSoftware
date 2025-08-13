@@ -27,28 +27,28 @@ namespace src.Features.CustomerManagement.Onboarding
             if (!validationResult.IsValid)
             {
                 return ResultResponse<OnboardingResponse>
-                    .Error(validationResult.Errors.Select(s => 
+                    .Error(validationResult.Errors.Select(s =>
                     new { s.ErrorMessage, s.AttemptedValue }));
             }
 
-            var normalisedPhoneNumber = NormalizePhoneNumber(command.PhoneNumber);
+            var normalizePhoneNumber = NormalizePhoneNumber(command.PhoneNumber);
 
             var user = await _context.Customers
-                .Where(u => u.PhoneNumber == normalisedPhoneNumber
+                .Where(u => u.PhoneNumber == normalizePhoneNumber
                         || u.PhoneNumber == command.PhoneNumber)
                 .FirstOrDefaultAsync();
             if (user is not null)
             {
                 var message = "Someone tried to sign up with your phone number";
-                await _smsChannel.Writer.WriteAsync(new SendSMSCommand(user.PhoneNumber,message));
+                await _smsChannel.Writer.WriteAsync(new SendSMSCommand(user.PhoneNumber, message));
                 return ResultResponse<OnboardingResponse>.Error("Phone Number already register");
             }
 
 
             var existingCode = await _context
                 .VerificationCodes
-                .FirstOrDefaultAsync(vc => 
-                vc.UserPhoneNumber == normalisedPhoneNumber
+                .FirstOrDefaultAsync(vc =>
+                vc.UserPhoneNumber == normalizePhoneNumber
                 );
 
             if (existingCode is not null)
@@ -56,19 +56,19 @@ namespace src.Features.CustomerManagement.Onboarding
                 existingCode.UpdateCode();
                 await _context.SaveChangesAsync();
                 await EnqueSms(existingCode.UserPhoneNumber, existingCode.Code);
-                return ResultResponse<OnboardingResponse>
-                    .Success(
+                return ResultResponse<OnboardingResponse>.Success(
                     new OnboardingResponse(
                         existingCode.Id.ToString(),
-                        existingCode.ExpiryDuration)
+                        existingCode.ExpiryDuration
+                        )
                     );
             }
-            var newCode = new VerificationCode(normalisedPhoneNumber);
+            var newCode = new VerificationCode(normalizePhoneNumber);
             await _context.VerificationCodes.AddAsync(newCode);
             await _context.SaveChangesAsync();
-            await EnqueSms(normalisedPhoneNumber, newCode.Code);
+            await EnqueSms(normalizePhoneNumber, newCode.Code);
             return ResultResponse<OnboardingResponse>
-                .Success(new 
+                .Success(new
                 OnboardingResponse(
                     newCode.Id.ToString(),
                     newCode.ExpiryDuration)
@@ -76,7 +76,7 @@ namespace src.Features.CustomerManagement.Onboarding
 
         }
 
-        public async Task<ResultResponse<string>> VerifyOtpAsync(string code, string token)
+        public async Task<ResultResponse<string>> VerifyRegistrationOtpAsync(string code, string token)
         {
             bool isValidGuid = Guid.TryParse(token, out Guid Id);
             if (!isValidGuid)
@@ -91,8 +91,26 @@ namespace src.Features.CustomerManagement.Onboarding
             if (vCode.IsUsed || vCode.IsExpired)
                 return ResultResponse<string>.Error("Otp is Used or Expired");
 
+            var normalizePhoneNumber = NormalizePhoneNumber(vCode.UserPhoneNumber);
+
             // create customer
-            var newCustomer = new Customer(NormalizePhoneNumber(vCode.UserPhoneNumber));
+            var user = await _context.Customers
+                .Where(u => u.PhoneNumber == normalizePhoneNumber
+                        || u.PhoneNumber == vCode.UserPhoneNumber)
+                .FirstOrDefaultAsync();
+
+            if (user is null)
+            {
+                var newCustomer = new Customer(NormalizePhoneNumber(vCode.UserPhoneNumber));
+                _context.Customers.Add(newCustomer);
+                await _context.SaveChangesAsync();
+            }
+            // delete otp with ExecuteDeleteAsync
+            await _context.VerificationCodes
+                .Where(vc => vc.Id == Id)
+                .ExecuteDeleteAsync();
+
+            return ResultResponse<string>.Success("Success");
         }
 
         private async Task EnqueSms(string phoneNumber, string code)
@@ -100,14 +118,6 @@ namespace src.Features.CustomerManagement.Onboarding
             var message = $"Your Otp is {code} ";
             var sendSmsCommand = new SendSMSCommand(phoneNumber, message);
             await _smsChannel.Writer.WriteAsync(sendSmsCommand);
-        }
-
-        public async Task<ResultResponse<FaceComparisonResponse>> Compare(SendIformFile send)
-        {
-            if (send.Image is null)
-                return ResultResponse<FaceComparisonResponse>.Error("Null images");
-
-            return await _faceRecognitionService.CompareFaces(send.Image, GlobalConstansts.base64Image);
         }
 
         private static string NormalizePhoneNumber(string phoneNumber)
