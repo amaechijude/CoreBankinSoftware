@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace src.Shared.Messaging.SMS
+namespace UserProfile.API.Shared.Messaging.SMS
 {
     public sealed class TwilioSettings
     {

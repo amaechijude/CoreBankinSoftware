@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace src.Shared.Data
+namespace UserProfile.API.Shared.Data
 {
     public sealed class DatabaseOptions
     {
@@ -14,5 +14,7 @@ namespace src.Shared.Data
         public string DatabasePassword { get; set; } = string.Empty;
         [Required, MinLength(3)]
         public string DatabasePort { get; set; } = string.Empty;
+
+        public string ConnectionString => $"Host={DatabaseHost};Database={DatabaseName};User={DatabaseUser};Password={DatabasePassword};Port={DatabasePort}";
     }
 }

@@ -1,7 +1,8 @@
-﻿using src.Domain.Enums;
-using src.Domain.ValueObjects;
+﻿using UserProfile.API.ApplicationCore.Domain.Entities.Enums;
+using UserProfile.API.ApplicationCore.Domain.ValueObjects;
+using UserProfile.API.Features.CustomerManagement.BvnNinVerification;
 
-namespace src.Domain.Entities
+namespace UserProfile.API.ApplicationCore.Domain.Entities
 {
     public class Customer : BaseEntity
     {
@@ -16,7 +17,7 @@ namespace src.Domain.Entities
         private readonly List<NextOfKin> _nextOfKins = [];
         private readonly List<KYCDocument> _kycDocuments = [];
         private readonly List<ComplianceCheck> _complianceChecks = [];
-        private readonly List<RiskAssessment> _riskAssesments  = [];
+        private readonly List<RiskAssessment> _riskAssessments = [];
 
 
 
@@ -29,40 +30,38 @@ namespace src.Domain.Entities
         public CustomerSource Source { get; set; } = CustomerSource.WalkIn;
 
 
-        // Personal Infomartion
-        public string CustomerNumber { get; private set; } = string.Empty;
-        public string FirstName { get; set; } = string.Empty;
-        public string LastName { get; set; } = string.Empty;
-        public string MiddleName { get; set; } = string.Empty;
+        // Personal Information
+        public string? CustomerNumber { get; private set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+        public string? MiddleName { get; set; }
         public string? MaidenName { get; set; }
         public DateOnly DateOfBirth { get; set; }
         public Gender Gender { get; set; }
-        public string PlaceOfBirth { get; set; } = string.Empty;
-        public string StateOfOrigin { get; set; } = string.Empty;
-        public string Nationality { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
+        public string? PlaceOfBirth { get; set; }
+        public string? StateOfOrigin { get; set; }
+        public string? Nationality { get; set; }
+        public string? Title { get; set; }
         public string? MaritalStatus { get; set; }
 
         // Contact Information
-        public string Email { get; private set; } = string.Empty;
+        public string? Email { get; private set; }
         public string? AlternateEmail { get; private set; }
         public string PhoneNumber { get; private set; } = string.Empty;
         public string? AlternatePhoneNumber { get; private set; }
 
         // Nigerian Banking Specific Identifiers
-        public BVN BVN { get; private set; } = string.Empty; // Bank Verification Number
-        public NIN NIN { get; private set; } = string.Empty; // National Identification Number
-        public DateTimeOffset? BVNaddedAt { get; private set; }
+        public BVN? BVN { get; private set; } // Bank Verification Number
+        public NIN? NIN { get; private set; } // National Identification Number
+        public DateTimeOffset? BVNAddedAt { get; private set; }
         public DateTimeOffset? NINAddedAt { get; private set; }
 
         // Biometrics
         public string? ImageUrl { get; private set; } // URL to the customer's image
-        public float[]? FaceEnconding { get; private set; } // Array of floats representing face encoding
+        public float[]? FaceEncodings { get; private set; } // Array of floats representing face encoding
         public float[]? FingerprintTemplate { get; private set; } // Array of floats representing fingerprint data template
         public string? SignatureImageUrl { get; private set; } // URL to the customer's signature image
         public DateTimeOffset? LastTransactionDate { get; private set; }
-
-        // Address Information
 
         // Compliance and Risk
         public bool IsPoliticallyExposedPerson { get; private set; } = false;
@@ -73,11 +72,11 @@ namespace src.Domain.Entities
         public DateTimeOffset? LastAMLScreening { get; set; }
 
         // Helper Properties
-       public string FullName => $"{FirstName} {MiddleName} {LastName}";
-       public int Age => DateTime.Now.Year - DateOfBirth.Year - (DateTime.Now.DayOfYear < DateOfBirth.DayOfYear ? 1 : 0);
-       public bool IsMinor => Age < 18;
-       public bool IsDormant => LastTransactionDate.HasValue && LastTransactionDate.Value < DateTimeOffset.Now.AddDays(-365);
-       public bool KycNeedsRenewal
+        public string FullName => $"{FirstName} {MiddleName} {LastName}";
+        public int Age => DateTime.Now.Year - DateOfBirth.Year - (DateTime.Now.DayOfYear < DateOfBirth.DayOfYear ? 1 : 0);
+        public bool IsMinor => Age < 18;
+        public bool IsDormant => LastTransactionDate.HasValue && LastTransactionDate.Value < DateTimeOffset.Now.AddDays(-365);
+        public bool KycNeedsRenewal
         {
             get
             {
@@ -91,19 +90,19 @@ namespace src.Domain.Entities
         {
             get
             {
-                if (_riskAssesments.Count != 0)
-                    return _riskAssesments.Last().RiskLevel;
+                if (_riskAssessments.Count != 0)
+                    return _riskAssessments.Last().RiskLevel;
                 return RiskLevel.Low;
             }
         }
- 
+
 
         // Public Properties for Collections
         public IReadOnlyCollection<Address> Addresses => _addresses.AsReadOnly();
         public IReadOnlyCollection<NextOfKin> NextOfKins => _nextOfKins.AsReadOnly();
         public IReadOnlyCollection<KYCDocument> KYCDocuments => _kycDocuments.AsReadOnly();
         public IReadOnlyCollection<ComplianceCheck> ComplianceChecks => _complianceChecks.AsReadOnly();
-        public IReadOnlyCollection<RiskAssessment> RiskAssessments => _riskAssesments.AsReadOnly();
+        public IReadOnlyCollection<RiskAssessment> RiskAssessments => _riskAssessments.AsReadOnly();
 
 
         // Methods to add items to collections
@@ -146,7 +145,7 @@ namespace src.Domain.Entities
         {
             var existingDocument = _kycDocuments.FirstOrDefault(d => d.DocumentType == kycDocument.DocumentType)
                 ?? throw new InvalidOperationException("KYC document not found.");
-            
+
             existingDocument = kycDocument;
             LastTransactionDate = DateTimeOffset.UtcNow;
         }
@@ -162,6 +161,32 @@ namespace src.Domain.Entities
 
             _nextOfKins.Add(nextOfKin);
             LastTransactionDate = DateTimeOffset.UtcNow;
+        }
+
+        public (bool, string?) UpdateProfileWithNIN(NINAPIResponse? api)
+        {
+            if (!string.IsNullOrWhiteSpace(NIN))
+                return (false, "nin exists");
+
+            if (api is null) return (false, "");
+            if (api.Status == false) return (false, "Invalidated");
+
+            var data = api.Data;
+
+            // Set details
+            NIN = data.Nin;
+            DateOfBirth = DateOnly.Parse(data.Birthdate ?? "");
+            FirstName = data.FirstName;
+            MiddleName = data.MiddleName;
+            AlternatePhoneNumber = data.TelephoneNo;
+            Email = data.Email;
+            Gender = data.Gender == "f" ? Gender.Female : Gender.Male;
+            ImageUrl = data.Photo;
+            Title = data.Title;
+            SignatureImageUrl = data.Signature;
+            NINAddedAt = DateTimeOffset.UtcNow;
+
+            return (true, "success");
         }
     }
 }

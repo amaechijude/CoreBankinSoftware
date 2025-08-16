@@ -1,19 +1,9 @@
-namespace src.Domain.ValueObjects
+namespace UserProfile.API.ApplicationCore.Domain.ValueObjects
 {
-    /// <summary>
-    /// Constructor to create a new instance of the NIN value object.
-    /// </summary>
-    /// <param name="value">The NIN value.</param>
-    public class NIN(string value) : IEquatable<NIN>
+    public class NIN(string value)
     {
-        /// <summary>
-        /// NIN Value
-        /// </summary>
         public string Value { get; private set; } = ValidatedNIN(value);
 
-        /// <summary>
-        /// Implicit conversion from string to NIN.
-        /// </summary>
         public static implicit operator NIN(string value) => new(value);
 
         /// <summary>
@@ -27,12 +17,6 @@ namespace src.Domain.ValueObjects
         public override string ToString() => Value;
 
 
-        /// <summary>
-        /// NIN Value       
-        /// </summary>
-        /// <param name="value"></param>
-        /// <returns>The validated NIN value.</returns>
-        /// <exception cref="ArgumentException"></exception>
         private static string ValidatedNIN(string value)
         {
             if (string.IsNullOrWhiteSpace(value))

@@ -1,22 +1,25 @@
 using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
-using src.Domain.Entities;
-using src.Features.CustomerManagement.BvnNinVerification;
-using src.Shared.Data;
-using src.Shared.Global;
-using src.Shared.Messaging.SMS;
+using UserProfile.API.ApplicationCore.Domain.Entities;
+using UserProfile.API.Domain.Entities;
+using UserProfile.API.Features;
+using UserProfile.API.Features.CustomerManagement.BvnNinVerification;
+using UserProfile.API.Shared.Data;
+using UserProfile.API.Shared.Messaging.SMS;
 
-namespace src.Features.CustomerManagement.Onboarding
+namespace UserProfile.API.Features.CustomerManagement.Onboarding
 {
     public class OnboardingCommandHandler(
         CustomerDbContext context,
         ILogger<OnboardingCommandHandler> logger,
         Channel<SendSMSCommand> smsChannel,
+        QuickVerifyBvnNinService bvnNinService,
         FaceRecognitionService faceRecognitionService)
     {
         private readonly CustomerDbContext _context = context;
         private readonly ILogger<OnboardingCommandHandler> _logger = logger;
         private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
+        private readonly QuickVerifyBvnNinService _bvnNinService = bvnNinService;
         private readonly FaceRecognitionService _faceRecognitionService = faceRecognitionService;
 
 
@@ -55,7 +58,7 @@ namespace src.Features.CustomerManagement.Onboarding
             {
                 existingCode.UpdateCode();
                 await _context.SaveChangesAsync();
-                await EnqueSms(existingCode.UserPhoneNumber, existingCode.Code);
+                await EnqueueSms(existingCode.UserPhoneNumber, existingCode.Code);
                 return ResultResponse<OnboardingResponse>.Success(
                     new OnboardingResponse(
                         existingCode.Id.ToString(),
@@ -66,7 +69,7 @@ namespace src.Features.CustomerManagement.Onboarding
             var newCode = new VerificationCode(normalizePhoneNumber);
             await _context.VerificationCodes.AddAsync(newCode);
             await _context.SaveChangesAsync();
-            await EnqueSms(normalizePhoneNumber, newCode.Code);
+            await EnqueueSms(normalizePhoneNumber, newCode.Code);
             return ResultResponse<OnboardingResponse>
                 .Success(new
                 OnboardingResponse(
@@ -102,18 +105,29 @@ namespace src.Features.CustomerManagement.Onboarding
             if (user is null)
             {
                 var newCustomer = new Customer(NormalizePhoneNumber(vCode.UserPhoneNumber));
+                vCode.MarkAsUsed();
                 _context.Customers.Add(newCustomer);
                 await _context.SaveChangesAsync();
             }
-            // delete otp with ExecuteDeleteAsync
-            await _context.VerificationCodes
-                .Where(vc => vc.Id == Id)
-                .ExecuteDeleteAsync();
 
             return ResultResponse<string>.Success("Success");
         }
 
-        private async Task EnqueSms(string phoneNumber, string code)
+        public async Task<ResultResponse<bool>> NinSearch(NinSearchRequest request)
+        {
+            var validator = new NinRequestValidator();
+            var validate = await validator.ValidateAsync(request);
+            if (!validate.IsValid)
+            {
+                return ResultResponse<bool>
+                    .Error(validate.Errors.Select(e => new { e.ErrorMessage, e.AttemptedValue}));
+            }
+
+            //NINAPIResponse? response = await _bvnNinService.NINSearchRequest(request); 
+            return ResultResponse<bool>.Success(true);
+        }
+
+        private async Task EnqueueSms(string phoneNumber, string code)
         {
             var message = $"Your Otp is {code} ";
             var sendSmsCommand = new SendSMSCommand(phoneNumber, message);
@@ -128,12 +142,16 @@ namespace src.Features.CustomerManagement.Onboarding
 
             return "+234" + phoneNumber[1..];
         }
-        //private static async Task<string> ConvertToBase64Async(IFormFile file)
-        //{
-        //    using var memoryStream = new MemoryStream();
-        //    await file.CopyToAsync(memoryStream);
-        //    byte[] fileBytes = memoryStream.ToArray();
-        //    return Convert.ToBase64String(fileBytes);
-        //}
+
+        private async Task<Customer?> UpdateCustomerWithNin(string phone, NINAPIResponse? ninApi)
+        {
+            if (ninApi is null || string.IsNullOrWhiteSpace(phone))
+                return null;
+
+            var customer = await _context.Customers.FirstOrDefaultAsync(x => x.PhoneNumber == phone);
+            if (customer is null) return null;
+
+            return customer;
+        }
     }
 }

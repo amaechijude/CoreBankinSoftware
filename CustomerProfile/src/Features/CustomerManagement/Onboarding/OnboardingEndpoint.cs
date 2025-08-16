@@ -1,11 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using UserProfile.API.Features.CustomerManagement.BvnNinVerification;
 
-namespace src.Features.CustomerManagement.Onboarding
+namespace UserProfile.API.Features.CustomerManagement.Onboarding
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OnboardingEndpoint(
+    public class OnboardingController(
         OnboardingCommandHandler onboardingCommandHandler
         ) : ControllerBase
     {
@@ -14,7 +16,7 @@ namespace src.Features.CustomerManagement.Onboarding
         private readonly string _otpKey = "otp-token";
 
 
-        [HttpPost]
+        [HttpPost("send-otp")]
         public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)
         {
             if (!ModelState.IsValid)
@@ -51,6 +53,28 @@ namespace src.Features.CustomerManagement.Onboarding
                 : BadRequest(result.ErrorMessage);
         }
 
+        [HttpPost("nin-search")]
+        public async Task<IActionResult> NinSearchAsync([FromBody] NinSearchRequest request)
+        {
+            var result = await _onboardingCommandHandler.NinSearch(request);
+
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);   
+        }
+
+        [HttpGet("match-image")]
+        public IActionResult MatchImage()
+        {
+            ////if (!ModelState.IsValid) return BadRequest();
+            //await Task.Delay(100);
+            return Ok(new { hello = "hello"} );
+        }
     }
     
+    public class SendImageRequest
+    {
+        [Required]
+        public IFormFile? Image { get; set; }
+    }
 }

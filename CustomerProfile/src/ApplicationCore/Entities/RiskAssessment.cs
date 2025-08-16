@@ -1,6 +1,6 @@
-﻿using src.Domain.Enums;
+﻿using UserProfile.API.ApplicationCore.Domain.Entities.Enums;
 
-namespace src.Domain.Entities
+namespace UserProfile.API.ApplicationCore.Domain.Entities
 {
     public class RiskAssessment : BaseEntity
     {

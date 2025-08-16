@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace src.Shared.Data
+namespace UserProfile.API.Shared.Data
 {
     public class CustomGuidV7Generator : ValueGenerator<Guid>
     {

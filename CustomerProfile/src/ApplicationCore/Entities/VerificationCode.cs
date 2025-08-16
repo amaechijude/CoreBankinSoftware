@@ -1,14 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using src.Shared.Global;
+using UserProfile.API.Shared.Global;
 
-namespace src.Domain.Entities
+namespace UserProfile.API.ApplicationCore.Domain.Entities
 {
     public class VerificationCode
     {
         [Key]
         public Guid Id { get; private set; }
-        public string Code { get; set; } = string.Empty;
-        public string UserPhoneNumber { get; set; } = string.Empty;
+        public string Code { get; private set; } = string.Empty;
+        public string UserPhoneNumber { get; private set; } = string.Empty;
         public DateTimeOffset ExpiresAt { get; private set; }
         public bool IsUsed { get; private set; } = false;
         public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;

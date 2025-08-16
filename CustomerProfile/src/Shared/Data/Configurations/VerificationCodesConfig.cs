@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using src.Domain.Entities;
+using UserProfile.API.ApplicationCore.Domain.Entities;
 
-namespace src.Shared.Data.Configurations
+namespace UserProfile.API.Shared.Data.Configurations
 {
     public class VerificationCodesConfig : IEntityTypeConfiguration<VerificationCode>
     {

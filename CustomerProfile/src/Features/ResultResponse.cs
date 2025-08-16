@@ -1,4 +1,4 @@
-﻿namespace src.Features
+﻿namespace UserProfile.API.Features
 {
     public class ResultResponse<T>
     {

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using src.Shared.Data;
+using UserProfile.API.Shared.Data;
 
 #nullable disable
 
@@ -126,14 +126,13 @@ namespace src.Migrations
                     b.Property<string>("AlternatePhoneNumber")
                         .HasColumnType("text");
 
-                    b.Property<DateTimeOffset?>("BVNaddedAt")
+                    b.Property<DateTimeOffset?>("BVNAddedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CustomerNumber")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("CustomerType")
@@ -151,7 +150,6 @@ namespace src.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("EmploymentType")
@@ -159,14 +157,13 @@ namespace src.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
-                    b.PrimitiveCollection<float[]>("FaceEnconding")
+                    b.PrimitiveCollection<float[]>("FaceEncodings")
                         .HasColumnType("real[]");
 
                     b.PrimitiveCollection<float[]>("FingerprintTemplate")
                         .HasColumnType("real[]");
 
                     b.Property<string>("FirstName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Gender")
@@ -195,7 +192,6 @@ namespace src.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("LastTransactionDate")
@@ -208,14 +204,12 @@ namespace src.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("MiddleName")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("NINAddedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Nationality")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("PhoneNumber")
@@ -223,7 +217,6 @@ namespace src.Migrations
                         .HasColumnType("text");
 
                     b.Property<string>("PlaceOfBirth")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset?>("PoliticallyExposedPersonSince")
@@ -238,7 +231,6 @@ namespace src.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.Property<string>("StateOfOrigin")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Status")
@@ -247,7 +239,6 @@ namespace src.Migrations
                         .HasColumnType("character varying(20)");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -393,7 +384,7 @@ namespace src.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<string>("KycDocumentType")
+                            b1.Property<string>("DocumentType")
                                 .IsRequired()
                                 .HasMaxLength(50)
                                 .HasColumnType("character varying(50)");
@@ -627,15 +618,13 @@ namespace src.Migrations
                                 .HasForeignKey("CustomerId");
                         });
 
-                    b.Navigation("BVN")
-                        .IsRequired();
+                    b.Navigation("BVN");
 
                     b.Navigation("ComplianceChecks");
 
                     b.Navigation("KYCDocuments");
 
-                    b.Navigation("NIN")
-                        .IsRequired();
+                    b.Navigation("NIN");
 
                     b.Navigation("NextOfKins");
 

@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace src.Shared.Global
+namespace UserProfile.API.Shared.Global
 {
     public class GlobalConstansts
     {

@@ -1,7 +1,7 @@
 using System.Net.Sockets;
 using System.Threading.Channels;
 
-namespace src.Shared.Messaging.SMS
+namespace UserProfile.API.Shared.Messaging.SMS
 {
     public class SMSBackgroundService(
         TwilioSmsSender twilioSmsSender,

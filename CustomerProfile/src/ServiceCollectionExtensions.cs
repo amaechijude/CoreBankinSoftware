@@ -1,14 +1,16 @@
 using FaceAiSharp;
 using Microsoft.EntityFrameworkCore;
-using src.Features.CustomerManagement.BvnNinVerification;
-using src.Features.CustomerManagement.Onboarding;
-using src.Shared.Data;
+using Microsoft.Extensions.Options;
+using UserProfile.API.Features.CustomerManagement.BvnNinVerification;
+using UserProfile.API.Features.CustomerManagement.Onboarding;
+using UserProfile.API.Shared.Data;
+using UserProfile.API.Shared.Global;
 
-namespace src
+namespace UserProfile.API
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddCustomerDbContext(this IServiceCollection services, string connectionString)
+        public static IServiceCollection AddCustomerDbContext(this IServiceCollection services, string? connString="")
         {
             DotNetEnv.Env.Load();
 
@@ -30,26 +32,27 @@ namespace src
                 .ValidateDataAnnotations()
                 .ValidateOnStart();
 
-            services.AddDbContext<CustomerDbContext>(options =>
+            // configure db context
+            services.AddDbContext<CustomerDbContext>((serviceProvider, options) =>
             {
-                options.UseNpgsql(connectionString, npgSqlOptions =>
+                var dbOptions = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+
+                if (string.IsNullOrWhiteSpace(connString))
                 {
-                    npgSqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5,
-                        maxRetryDelay: TimeSpan.FromSeconds(2),
-                        errorCodesToAdd: null
-                    );
-                });
+                    options.UseNpgsql(dbOptions.ConnectionString);
+                }
+                else
+                {
+                    options.UseNpgsql(connString);
+                }
             });
+
             return services;
         }
 
         public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
             services.AddScoped<OnboardingCommandHandler>();
-
-            services.AddHttpClient<QuickVerifyHttpClient>();
-            services.AddScoped<QuickVerifyBvnNinService>();
 
             services.AddSingleton<IFaceDetector>(_ =>
             FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks()
@@ -59,6 +62,42 @@ namespace src
             );
             services.AddSingleton<FaceRecognitionService>();
 
+            return services;
+        }
+
+        public static IServiceCollection AddQuickVerifyServices(this IServiceCollection services)
+        {
+
+            services.Configure<QuickVerifySettings>(options =>
+            {
+                DotNetEnv.Env.TraversePath();
+                options.BaseUrl = Environment.GetEnvironmentVariable("QUICKVERIFY_BASE_URL")
+                    ?? throw new ServiceException("QUICK_VERIFY_BASE_URL environment variable is not set.");
+                options.ApiKey = Environment.GetEnvironmentVariable("QUICKVERIFY_API_KEY")
+                    ?? throw new ServiceException("QUICK_VERIFY_API_KEY environment variable is not set.");
+                options.AuthPrefix = Environment.GetEnvironmentVariable("QUICKVERIFY_AUTH_PREFIX")
+                    ?? throw new ServiceException("QUICK_VERIFY_AUTH_PREFIX environment variable is not set.");
+            });
+
+            services.AddOptions<QuickVerifySettings>()
+                .ValidateDataAnnotations()
+                .ValidateOnStart();
+
+
+            services.AddHttpClient<QuickVerifyBvnNinService>((provider, client) =>
+            {
+                var quick = provider.GetRequiredService<IOptions<QuickVerifySettings>>().Value;
+                client.BaseAddress = new Uri(quick.BaseUrl);
+                client.DefaultRequestHeaders.Add(quick.AuthPrefix, quick.ApiKey);
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+            });
+            return services;
+        }
+
+        public static IServiceCollection AddCustomException(this ServiceCollection services)
+        {
+            services.AddProblemDetails();
+            services.AddExceptionHandler<CustomExceptionHandler>();
             return services;
         }
         internal sealed class ServiceException(string message) : Exception(message);

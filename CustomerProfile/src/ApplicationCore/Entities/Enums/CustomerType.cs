@@ -1,4 +1,4 @@
-namespace src.Domain.Enums
+namespace UserProfile.API.ApplicationCore.Domain.Entities.Enums
 {
     public enum CustomerType
     {

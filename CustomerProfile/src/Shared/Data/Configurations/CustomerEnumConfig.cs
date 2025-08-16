@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using src.Domain.Entities;
+using UserProfile.API.ApplicationCore.Domain.Entities;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
 {

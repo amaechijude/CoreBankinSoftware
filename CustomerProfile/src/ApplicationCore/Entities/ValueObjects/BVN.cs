@@ -1,4 +1,4 @@
-﻿namespace src.Domain.ValueObjects
+﻿namespace UserProfile.API.ApplicationCore.Domain.ValueObjects
 {
     public class BVN(string value) : IEquatable<BVN>
     {

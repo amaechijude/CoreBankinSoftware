@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace src.Features.CustomerManagement.Onboarding
+namespace UserProfile.API.Features.CustomerManagement.Onboarding
 {
     public record OnboardingRequest(string PhoneNumber);
     public record OnboardingResponse(string Token, string ExpiresIn);

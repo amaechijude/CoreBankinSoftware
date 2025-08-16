@@ -2,7 +2,7 @@
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 
-namespace src.Shared.Messaging.SMS
+namespace UserProfile.API.Shared.Messaging.SMS
 {
     public class TwilioSmsSender(IOptions<TwilioSettings> twilioSettings, ILogger<TwilioSmsSender> logger) : ISmsSender
     {
