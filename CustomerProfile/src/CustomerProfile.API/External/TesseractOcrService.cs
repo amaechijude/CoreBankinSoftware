@@ -1,4 +1,4 @@
-namespace CustomerAPI.Services
+namespace CustomerAPI.External
 {
     public class TesseractOcrService(IHostEnvironment hostEnvironment, ILogger<TesseractOcrService> logger)
     {

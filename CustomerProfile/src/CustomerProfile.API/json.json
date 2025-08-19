@@ -1,0 +1,29 @@
+{
+    "data": {
+        "title": "Mr",
+        "gender": "Male",
+        "maritalStatus": "Single",
+        "watchListed": "YES",
+        "levelOfAccount": "Level 1 Account",
+        "bvn": "54651333604",
+        "firstName": "TEST",
+        "middleName": "test",
+        "lastName": "test",
+        "dateOfBirth": "1999-12-21",
+        "phoneNumber1": "09082838483",
+        "phoneNumber2": "08028323323",
+        "registrationDate": "2005-12-21",
+        "enrollmentBank": "034",
+        "enrollmentBranch": "YABA, Lagos",
+        "email": "testt@test.com",
+        "lgaOfOrigin": "yaba",
+        "lgaOfResidence": "yaba",
+        "nin": "12345567895",
+        "nameOnCard": "test test",
+        "nationality": "Nigeria",
+        "residentialAddress": "yaba",
+        "stateOfOrigin": "Lagos",
+        "stateOfResidence": "Lagos",
+        "base64Image": "/9j/4AAQSkZJRgABAQAAAQABAAD/4gxYSUNDX1BST0ZJTEUL2FBMegIiiVoE+ZQo"
+    }
+}

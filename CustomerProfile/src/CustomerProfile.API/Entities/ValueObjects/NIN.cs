@@ -1,6 +1,6 @@
 namespace CustomerAPI.Entities.ValueObjects
 {
-    public class NIN(string value)
+    public class NIN(string? value)
     {
         public string Value { get; private set; } = ValidatedNIN(value);
 
@@ -17,7 +17,7 @@ namespace CustomerAPI.Entities.ValueObjects
         public override string ToString() => Value;
 
 
-        private static string ValidatedNIN(string value)
+        private static string ValidatedNIN(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
                 throw new ArgumentException("NIN cannot be null or empty.", nameof(value));
@@ -32,5 +32,32 @@ namespace CustomerAPI.Entities.ValueObjects
 
             return value;
         }
+    }
+
+    public class NinData : BaseEntity
+    {
+        public Guid CustomerId { get; set; }
+        public Customer? Customer { get; set; }
+        public string? Birthdate { get; set; }
+        public string? Email { get; set; }
+        public string? EmploymentStatus { get; set; }
+        public string? FirstName { get; set; }
+        public string? Gender { get; set; }
+        public string? MaritalStatus { get; set; }
+        public string? MiddleName { get; set; }
+        public string? Nin { get; set; }
+        public string? Photo { get; set; }
+        public string? Profession { get; set; }
+        public string? Religion { get; set; }
+        public string? ResidenceAddressLine1 { get; set; }
+        public string? ResidenceTown { get; set; }
+        public string? ResidenceLga { get; set; }
+        public string? ResidenceState { get; set; }
+        public string? ResidenceStatus { get; set; }
+        public string? Signature { get; set; }
+        public string? Surname { get; set; }
+        public string? TelephoneNo { get; set; }
+        public string? Title { get; set; }
+        public string? TrackingId { get; set; }
     }
 }

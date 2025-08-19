@@ -44,4 +44,5 @@ namespace CustomerAPI.Global
             return details;
         }
     }
+    internal sealed class ServiceException(string message) : Exception(message);
 }

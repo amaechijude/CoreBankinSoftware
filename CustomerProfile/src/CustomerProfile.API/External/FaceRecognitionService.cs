@@ -1,10 +1,10 @@
+using CustomerAPI.DTO;
 using FaceAiSharp;
 using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
-using UserProfile.API.Features;
 
-namespace CustomerAPI.Services
+namespace CustomerAPI.External
 {
    public sealed class FaceRecognitionService(
        ILogger<FaceRecognitionService> logger,
@@ -15,7 +15,7 @@ namespace CustomerAPI.Services
       private readonly IFaceDetector _faceDetector = faceDetector;
       private readonly IFaceEmbeddingsGenerator _faceEmbeddingsGenerator = faceEmbeddingsGenerator;
 
-      public async Task<ResultResponse<FaceComparisonResponse>> CompareFaces(IFormFile image1, string base64Image)
+      public async Task<ApiResponse<FaceComparisonResponse>> CompareFaces(IFormFile image1, string base64Image)
       {
          Task<ProcessImageResult> task1 = ProcessLocalImage(image1);
          Task<ProcessImageResult> task2 = ProcessBase64Image(base64Image);
@@ -24,10 +24,10 @@ namespace CustomerAPI.Services
          var result2 = await task2;
 
          if (!result1.IsSuccess)
-            return ResultResponse<FaceComparisonResponse>.Error(result1.ErrorMessage);
+            return ApiResponse<FaceComparisonResponse>.Error(result1.ErrorMessage);
 
          if (!result2.IsSuccess)
-            return ResultResponse<FaceComparisonResponse>.Error(result2.ErrorMessage);
+            return ApiResponse<FaceComparisonResponse>.Error(result2.ErrorMessage);
 
          var Similarity = result1.Embedding!.Dot(result2.Embedding!);
 
@@ -38,7 +38,7 @@ namespace CustomerAPI.Services
             _ => "Different Person"
          };
 
-         return ResultResponse<FaceComparisonResponse>.Success(
+         return ApiResponse<FaceComparisonResponse>.Success(
             new FaceComparisonResponse
             {
                Similarity = Similarity >= 0.42,

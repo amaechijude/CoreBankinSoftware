@@ -20,7 +20,7 @@ namespace CustomerAPI.Entities
         public VerificationCode(string phoneNumber)
         {
             UserPhoneNumber = phoneNumber;
-            Code = GlobalConstansts.GenerateVerificationCode();
+            Code = GlobalUtils.GenerateVerificationCode();
             ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_expiryDurationInMinutes);
         }
         public void MarkAsUsed()
@@ -30,7 +30,7 @@ namespace CustomerAPI.Entities
         }
         public void UpdateCode()
         {
-            Code = GlobalConstansts.GenerateVerificationCode();
+            Code = GlobalUtils.GenerateVerificationCode();
             ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_expiryDurationInMinutes);
             IsUsed = false;
         }

@@ -1,36 +1,37 @@
+using CustomerAPI;
+using CustomerAPI.JwtTokenService;
 using CustomerAPI.Messaging;
 using Scalar.AspNetCore;
 using Serilog;
-using UserProfile.API;
 
-string folder = Path.Combine(Directory.GetCurrentDirectory(), "log");
-if (!Directory.Exists(folder))
-    Directory.CreateDirectory(folder);
+// serilog configuration
 
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
-    .WriteTo.File($"{folder}/log-.txt", rollingInterval: RollingInterval.Hour)
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Hour)
     .CreateLogger();
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSerilog(); // <-- serilog
 
-// Add services to the container.
 
 // Add Service Extensions
-builder.Services.AddCustomerDbContext();
-builder.Services.AddFeaturesServices();
-builder.Services.AddQuickVerifyServices();
+builder.Services.AddCustomServiceExtentions();
+builder.Services.AddSMSMessageServices(); // Messaging Service
 
-// Add Messaging Service
-builder.Services.AddSMSMessageServices();
+// Add Jwt Authentication
+builder.Services.AddJwtAuthDependencyInjection();
+builder.Services.AddAuthorization(); // Authorization Service
 
 builder.Services.AddControllers();
-builder.Services.AddCustomerDbContext();
+
+
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -41,5 +42,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

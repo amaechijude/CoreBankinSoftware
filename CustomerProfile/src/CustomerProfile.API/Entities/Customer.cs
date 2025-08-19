@@ -1,17 +1,11 @@
-﻿using CustomerAPI.DTO.BvnNinVerification;
-using CustomerAPI.Entities.Enums;
+﻿using CustomerAPI.Entities.Enums;
 using CustomerAPI.Entities.ValueObjects;
 
 namespace CustomerAPI.Entities
 {
     public class Customer : BaseEntity
     {
-        public Customer(string phoneNumber)
-        {
-            if (string.IsNullOrWhiteSpace(phoneNumber))
-                throw new ArgumentException("Phone number cannot be null or empty.", nameof(phoneNumber));
-            PhoneNumber = phoneNumber;
-        }
+
         // Private fields for collections
         private readonly List<Address> _addresses = [];
         private readonly List<NextOfKin> _nextOfKins = [];
@@ -47,20 +41,24 @@ namespace CustomerAPI.Entities
         // Contact Information
         public string? Email { get; private set; }
         public string? AlternateEmail { get; private set; }
-        public string PhoneNumber { get; private set; } = string.Empty;
+        public required string PhoneNumber { get; set; }
         public string? AlternatePhoneNumber { get; private set; }
 
         // Nigerian Banking Specific Identifiers
         public BVN? BVN { get; private set; } // Bank Verification Number
         public NIN? NIN { get; private set; } // National Identification Number
+        public BvnData? BvnData { get; private set; }
+        public NinData? NinData { get; private set; }
         public DateTimeOffset? BVNAddedAt { get; private set; }
         public DateTimeOffset? NINAddedAt { get; private set; }
 
         // Biometrics
         public string? ImageUrl { get; private set; } // URL to the customer's image
+        public string? NinBase64Image { get; private set; }
+        public string? NinBase64Signature { get; private set; }
+        public string? BvnBase64Image { get; private set; }
+        public string? BvnBase64Signature { get; private set; }
         public float[]? FaceEncodings { get; private set; } // Array of floats representing face encoding
-        public float[]? FingerprintTemplate { get; private set; } // Array of floats representing fingerprint data template
-        public string? SignatureImageUrl { get; private set; } // URL to the customer's signature image
         public DateTimeOffset? LastTransactionDate { get; private set; }
 
         // Compliance and Risk
@@ -161,32 +159,6 @@ namespace CustomerAPI.Entities
 
             _nextOfKins.Add(nextOfKin);
             LastTransactionDate = DateTimeOffset.UtcNow;
-        }
-
-        public (bool, string?) UpdateProfileWithNIN(NINAPIResponse? api)
-        {
-            if (!string.IsNullOrWhiteSpace(NIN))
-                return (false, "nin exists");
-
-            if (api is null) return (false, "");
-            if (api.Status == false) return (false, "Invalidated");
-
-            var data = api.Data;
-
-            // Set details
-            NIN = data.Nin;
-            DateOfBirth = DateOnly.Parse(data.Birthdate ?? "");
-            FirstName = data.FirstName;
-            MiddleName = data.MiddleName;
-            AlternatePhoneNumber = data.TelephoneNo;
-            Email = data.Email;
-            Gender = data.Gender == "f" ? Gender.Female : Gender.Male;
-            ImageUrl = data.Photo;
-            Title = data.Title;
-            SignatureImageUrl = data.Signature;
-            NINAddedAt = DateTimeOffset.UtcNow;
-
-            return (true, "success");
         }
     }
 }

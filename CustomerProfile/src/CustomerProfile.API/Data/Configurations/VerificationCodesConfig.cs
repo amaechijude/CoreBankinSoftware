@@ -1,5 +1,4 @@
-﻿using CustomerAPI.Data;
-using CustomerAPI.Entities;
+﻿using CustomerAPI.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

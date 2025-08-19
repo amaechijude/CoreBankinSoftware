@@ -1,15 +1,16 @@
 using CustomerAPI.Data;
+using CustomerAPI.External;
 using CustomerAPI.Global;
 using CustomerAPI.Services;
 using FaceAiSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
-namespace UserProfile.API
+namespace CustomerAPI
 {
     public static class ServiceCollectionExtensions
     {
-        public static IServiceCollection AddCustomerDbContext(this IServiceCollection services, string? connString="")
+        private static IServiceCollection AddCustomerDbContext(this IServiceCollection services)
         {
             DotNetEnv.Env.Load();
 
@@ -34,24 +35,19 @@ namespace UserProfile.API
             // configure db context
             services.AddDbContext<CustomerDbContext>((serviceProvider, options) =>
             {
-                var dbOptions = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                var ds = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+                string connString = $"Host={ds.DatabaseHost};Database={ds.DatabaseName};User={ds.DatabaseUser};Password={ds.DatabasePassword};Port={ds.DatabasePort}";
 
-                if (string.IsNullOrWhiteSpace(connString))
-                {
-                    options.UseNpgsql(dbOptions.ConnectionString);
-                }
-                else
-                {
-                    options.UseNpgsql(connString);
-                }
+                options.UseNpgsql(connString);
             });
 
             return services;
         }
 
-        public static IServiceCollection AddFeaturesServices(this IServiceCollection services)
+        private static IServiceCollection AddFeaturesServices(this IServiceCollection services)
         {
-            services.AddScoped<OnboardingService>();
+            services.AddScoped<AuthService>();
+            services.AddScoped<NinBvnService>();
 
             services.AddSingleton<IFaceDetector>(_ =>
             FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks()
@@ -64,7 +60,7 @@ namespace UserProfile.API
             return services;
         }
 
-        public static IServiceCollection AddQuickVerifyServices(this IServiceCollection services)
+        private static IServiceCollection AddQuickVerifyServices(this IServiceCollection services)
         {
 
             services.Configure<QuickVerifySettings>(options =>
@@ -93,12 +89,13 @@ namespace UserProfile.API
             return services;
         }
 
-        public static IServiceCollection AddCustomException(this ServiceCollection services)
+        public static IServiceCollection AddCustomServiceExtentions(this IServiceCollection services)
         {
-            services.AddProblemDetails();
-            services.AddExceptionHandler<CustomExceptionHandler>();
+            services = AddCustomerDbContext(services);
+            services = AddFeaturesServices(services);
+            services = AddQuickVerifyServices(services);
+
             return services;
         }
-        internal sealed class ServiceException(string message) : Exception(message);
     }
 }

@@ -2,7 +2,7 @@
 using CustomerAPI.DTO.BvnNinVerification;
 using FluentValidation;
 
-namespace CustomerAPI.Services
+namespace CustomerAPI.External
 {
     public sealed class QuickVerifyBvnNinService(HttpClient client)
     {
@@ -10,23 +10,29 @@ namespace CustomerAPI.Services
         public async Task<NINAPIResponse?> NINSearchRequest(NinSearchRequest request)
         {
             var body = new { nin = request.NIN.Trim() };
+            try
+            {
+                using HttpResponseMessage response = await _client.PostAsJsonAsync("nin-search", body);
+                if (!response.IsSuccessStatusCode) return null;
 
-            HttpResponseMessage response = await _client.PostAsJsonAsync("nin-search", body);
-            if (!response.IsSuccessStatusCode) return null;
-
-            return await response.Content.ReadFromJsonAsync<NINAPIResponse>();
+                return await response.Content.ReadFromJsonAsync<NINAPIResponse>();
+            }
+            catch {return null;}
         }
 
         public async Task<BvnApiResponse?> BvnSearchRequest(BvnSearchRequest request)
         {
             var body = new { bvn = request.BVN.Trim() };
+            try
+            {
+                using HttpResponseMessage httpResponse = await _client
+                    .PostAsJsonAsync("bvn-search", body);
 
-            using HttpResponseMessage httpResponse = await _client
-                .PostAsJsonAsync("bvn-search", body);
+                if (!httpResponse.IsSuccessStatusCode) return null;
 
-            if (!httpResponse.IsSuccessStatusCode) return null;
-
-            return await httpResponse.Content.ReadFromJsonAsync<BvnApiResponse>();
+                return await httpResponse.Content.ReadFromJsonAsync<BvnApiResponse>();
+            }
+            catch { return null; }
         }
 
     }

@@ -10,7 +10,41 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
         private static void ConfigureOwnedCollections(EntityTypeBuilder<Customer> builder)
         {
             // Configure Owned Collections
-            
+
+            // Nin Data
+            builder.OwnsOne(c => c.NinData, nin =>
+            {
+                nin.ToTable("NinData");
+                nin.WithOwner(n => n.Customer)
+                .HasForeignKey(c => c.CustomerId);
+
+                nin.Property<Guid>(nk => nk.Id)
+                    .ValueGeneratedOnAdd()
+                    .HasValueGenerator<CustomGuidV7Generator>();
+                nin.HasKey(k => k.Id);
+                nin.HasIndex(k => k.Id)
+                .IsUnique();
+
+            });
+
+            // Bvn Data
+            builder.OwnsOne(c => c.BvnData, bvn =>
+            {
+                bvn.ToTable("BvnData");
+                bvn.WithOwner(n => n.Customer)
+                .HasForeignKey(c => c.CustomerId);
+
+                bvn.Property<Guid>(nk => nk.Id)
+                    .ValueGeneratedOnAdd()
+                    .HasValueGenerator<CustomGuidV7Generator>();
+                bvn.HasKey(k => k.Id);
+                bvn.HasIndex(k => k.Id)
+                .IsUnique();
+
+            });
+
+
+            // Next of Kin
             builder.OwnsMany(c => c.NextOfKins, n =>
             {
                 n.ToTable("NextOfKins");
@@ -20,7 +54,7 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
                 n.Property<Guid>(nk => nk.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
-                n.HasKey("Id");
+                n.HasKey(k => k.Id);
                
                 n.Property(n => n.Gender)
                     .HasConversion<string>()
