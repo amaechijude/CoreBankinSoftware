@@ -7,7 +7,7 @@ namespace CustomerAPI.Data
         [Required, MinLength(3)]
         public string DatabaseName { get; set; } = string.Empty;
         [Required, MinLength(3)]
-        public string DatabaseUser { get; set; } = string.Empty;
+        public string DatabaseUsername { get; set; } = string.Empty;
         [Required, MinLength(3)]
         public string DatabaseHost { get; set; } = string.Empty;
         [Required, MinLength(3)]

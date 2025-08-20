@@ -18,7 +18,7 @@ namespace CustomerAPI
             {
                 options.DatabaseName = Environment.GetEnvironmentVariable("DB_NAME")
                     ?? throw new ServiceException("DB_NAME environment variable is not set.");
-                options.DatabaseUser = Environment.GetEnvironmentVariable("DB_USER")
+                options.DatabaseUsername = Environment.GetEnvironmentVariable("DB_USERNAME")
                     ?? throw new ServiceException("DB_USER environment variable is not set.");
                 options.DatabaseHost = Environment.GetEnvironmentVariable("DB_HOST")
                     ?? throw new ServiceException("DB_HOST environment variable is not set.");
@@ -36,7 +36,7 @@ namespace CustomerAPI
             services.AddDbContext<CustomerDbContext>((serviceProvider, options) =>
             {
                 var ds = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
-                string connString = $"Host={ds.DatabaseHost};Database={ds.DatabaseName};User={ds.DatabaseUser};Password={ds.DatabasePassword};Port={ds.DatabasePort}";
+                string connString = $"Host={ds.DatabaseHost};Database={ds.DatabaseName};Username={ds.DatabaseUsername};Password={ds.DatabasePassword};Port={ds.DatabasePort}";
 
                 options.UseNpgsql(connString);
             });
