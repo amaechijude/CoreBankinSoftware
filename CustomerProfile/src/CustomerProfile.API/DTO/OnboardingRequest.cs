@@ -1,9 +1,10 @@
-﻿using FluentValidation;
+﻿using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 namespace CustomerAPI.DTO
 {
-    public record OnboardingRequest(string PhoneNumber);
-    public record OnboardingResponse(string Token, string ExpiresIn);
+    public record OnboardingRequest(string PhoneNumber, string Email);
+    public record OnboardingResponse(string Token, DateTime? ExpiresIn);
 
     public class OnboardingRequestValidator : AbstractValidator<OnboardingRequest>
     {
@@ -13,10 +14,17 @@ namespace CustomerAPI.DTO
                 .NotEmpty().WithMessage("Phone number is required.")
                 .Length(11).WithMessage("Phone number lenght Must be 11")
                 .Matches(@"^(\+234|0)?[789]\d{9}$").WithMessage("Invalid phone number format");
+
+            RuleFor(x => x.Email.Trim())
+                .EmailAddress().WithMessage("Invalid Email Address");
         }
     }
 
     public record VerifyOtpResponse(string Message);
 
-    public record OtpVerifyRequest(string Code);
+    public class OtpVerifyRequestBody
+    {
+        [Required, MinLength(6)]
+        public string OtpCode { get; set; } = string.Empty;
+    }
 }

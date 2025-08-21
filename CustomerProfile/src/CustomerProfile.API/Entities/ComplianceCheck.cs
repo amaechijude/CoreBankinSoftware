@@ -5,7 +5,7 @@ namespace CustomerAPI.Entities
     public class ComplianceCheck : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public Customer Customer { get; set; } = null!;
+        public User Customer { get; set; } = null!;
 
         public ComplianceCheckType CheckType { get; set; } // AML, PEP, Sanctions, etc.
         public ComplianceCheckStatus Status { get; set; } = ComplianceCheckStatus.Pending; // Pass, Fail, Pending

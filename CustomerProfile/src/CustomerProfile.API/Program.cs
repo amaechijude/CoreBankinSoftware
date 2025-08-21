@@ -12,7 +12,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithProperty("Application", "CustomerProfile.API")
     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
-    .MinimumLevel.Debug()
+    .MinimumLevel.Information()
     .WriteTo.Console()
     .WriteTo.File("Logs/log-.txt",
     rollingInterval: RollingInterval.Hour,

@@ -5,7 +5,7 @@ namespace CustomerAPI.Entities
     public class KYCDocument : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public Customer? Customer { get; set; }
+        public User? Customer { get; set; }
 
         //  Document Details
         public KycDocumentType DocumentType { get; set; }

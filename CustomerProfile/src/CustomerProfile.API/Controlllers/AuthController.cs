@@ -1,22 +1,16 @@
-﻿using CustomerAPI.DTO;
+﻿using System.Security.Claims;
+using CustomerAPI.DTO;
+using CustomerAPI.JwtTokenService;
 using CustomerAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomerAPI.Controlllers
 {
     [Route("api/[controller]/register")]
     [ApiController]
-    public class AuthController(
-        AuthService onboardingCommandHandler,
-        IHostEnvironment hostEnvironment
-        ) : ControllerBase
+    public class AuthController(AuthService _onboardingCommandHandler) : ControllerBase
     {
-        private readonly AuthService _onboardingCommandHandler = onboardingCommandHandler;
-        private readonly IHostEnvironment _hostEnvironment = hostEnvironment;
-        private readonly string _otpKey = "otp-token";
-        private readonly int _expireInminutes = 11;
-        private readonly string _cookiePath = "/api/Auth";
-
 
         [HttpPost("send-otp")]
         public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)
@@ -24,7 +18,7 @@ namespace CustomerAPI.Controlllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var result = await _onboardingCommandHandler.HandleAsync(request);
+            var result = await _onboardingCommandHandler.InitiateOnboard(request);
 
             if (result.IsSuccess && result.Data is not null)
                 return Ok(result.Data);
@@ -32,26 +26,42 @@ namespace CustomerAPI.Controlllers
             return BadRequest(result.ErrorMessage);
         }
 
+        [Authorize]
         [HttpPost("verify-otp")]
-        public async Task<IActionResult> VerifyRegistrationOtpAsync([FromBody] OtpVerifyRequest request)
+        public async Task<IActionResult> VerifyRegistrationOtpAsync([FromBody] OtpVerifyRequestBody request)
         {
-            var tokenString = Request.Cookies[_otpKey];
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            // Get claims from the current user
+            var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
-            if (string.IsNullOrEmpty(tokenString))
-                return BadRequest("Invalid Request");
+            bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
+            if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
+                return BadRequest(ModelState);
 
-            var result = await _onboardingCommandHandler.VerifyRegistrationOtpAsync(request.Code, tokenString);
-
+            var result = await _onboardingCommandHandler.VerifyOtpAsync(validId, request);
             return result.IsSuccess
                 ? Ok(result.Data)
                 : BadRequest(result.ErrorMessage);
         }
 
-        [HttpPost("set-password")]
-        public async Task<IActionResult> SetPasswordAsync([FromBody] SetPasswordRequest request)
+        [Authorize]
+        public async Task<IActionResult> SendDetailAsync(SetDetailsRequest request)
         {
-            await Task.Delay(100);
-            return Ok();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
+            if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
+
+                return BadRequest("Request Timeout");
+
+            var result = await _onboardingCommandHandler.SetDetailsAsync(validId, request);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
         }
 
     }

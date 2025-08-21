@@ -3,16 +3,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CustomerAPI.Data
 {
-    public class CustomerDbContext(DbContextOptions<CustomerDbContext> options) : DbContext(options)
+    public class UserDbContext(DbContextOptions<UserDbContext> options) : DbContext(options)
     {
-        public DbSet<Customer> Customers { get; set; }
+        public DbSet<User> Users { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<VerificationCode> VerificationCodes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(CustomerDbContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserDbContext).Assembly);
         }
     }
 }

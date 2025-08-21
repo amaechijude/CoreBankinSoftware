@@ -37,7 +37,7 @@ namespace CustomerAPI.Entities.ValueObjects
     public class NinData : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public Customer? Customer { get; set; }
+        public User? Customer { get; set; }
         public string? Birthdate { get; set; }
         public string? Email { get; set; }
         public string? EmploymentStatus { get; set; }

@@ -3,7 +3,7 @@ using CustomerAPI.Entities.ValueObjects;
 
 namespace CustomerAPI.Entities
 {
-    public class Customer : BaseEntity
+    public class User : BaseEntity
     {
 
         // Private fields for collections
@@ -52,6 +52,8 @@ namespace CustomerAPI.Entities
         public DateTimeOffset? BVNAddedAt { get; private set; }
         public DateTimeOffset? NINAddedAt { get; private set; }
 
+        public string LoginPinHash { get; set; } = string.Empty;
+
         // Biometrics
         public string? ImageUrl { get; private set; } // URL to the customer's image
         public string? NinBase64Image { get; private set; }
@@ -92,6 +94,12 @@ namespace CustomerAPI.Entities
                     return _riskAssessments.Last().RiskLevel;
                 return RiskLevel.Low;
             }
+        }
+
+        // Factory methods to create user
+        public static User CreateNewUser(string phoneNumber)
+        {
+            return new User { PhoneNumber = phoneNumber };
         }
 
 

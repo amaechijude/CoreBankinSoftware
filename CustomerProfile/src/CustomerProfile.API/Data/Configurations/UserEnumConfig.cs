@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
 {
-    public partial class CustomerConfigurations : IEntityTypeConfiguration<Customer>
+    public partial class UserConfig : IEntityTypeConfiguration<User>
     {
-        public static void COnfigureEnums(EntityTypeBuilder<Customer> builder)
+        public static void ConfigureEnums(EntityTypeBuilder<User> builder)
         {
             // Configure enums to string
             builder.Property(c => c.AccountTier)

@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using System.Text;
+using CustomerAPI.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -10,12 +11,8 @@ namespace CustomerAPI.JwtTokenService
     {
         private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-        public string GenerateVerificationResponseJwtToken(Guid Id)
+        public (string token, DateTime? expiresIn) GenerateVerificationResponseJwtToken(VerificationCode code)
         {
-            string currentId = Id == Guid.Empty
-                ? throw new JwtGenException($"Id cannot be empty: {nameof(Id)}")
-                : Id.ToString();
-
             SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
 
             SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
@@ -23,8 +20,9 @@ namespace CustomerAPI.JwtTokenService
             SecurityTokenDescriptor tokenDescriptor = new()
             {
                 Subject = new System.Security.Claims.ClaimsIdentity([
-                    new Claim(ClaimTypes.Sid, currentId),
-                    new Claim(ClaimTypes.Role, RolesUtils.VerificationRole)
+                    new Claim(ClaimTypes.Sid, code.Id.ToString()),
+                    new Claim(ClaimTypes.Role, RolesUtils.VerificationRole),
+                    new Claim(ClaimTypes.Email, code.UserEmail)
                     ]),
 
                 Issuer = _jwtOptions.Issuer,
@@ -36,8 +34,9 @@ namespace CustomerAPI.JwtTokenService
 
             JsonWebTokenHandler jsonWebTokenHandler = new();
 
-            return jsonWebTokenHandler
-                .CreateToken(tokenDescriptor);
+            string token = jsonWebTokenHandler.CreateToken(tokenDescriptor);
+
+            return (token, tokenDescriptor.Expires);
         }
     }
 

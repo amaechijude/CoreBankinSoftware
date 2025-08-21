@@ -36,7 +36,7 @@
     public class BvnData : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public Customer? Customer { get; set; }
+        public User? Customer { get; set; }
         public string? Title { get; set; }
         public string? Gender { get; set; } // F or M
         public string? MaritalStatus { get; set; }

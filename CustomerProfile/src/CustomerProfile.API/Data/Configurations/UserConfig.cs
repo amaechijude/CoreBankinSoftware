@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
 {
-    public partial class CustomerConfigurations : IEntityTypeConfiguration<Customer>
+    public partial class UserConfig : IEntityTypeConfiguration<User>
     {
-        public void Configure(EntityTypeBuilder<Customer> builder)
+        public void Configure(EntityTypeBuilder<User> builder)
         {
             // Ensure the correct namespace for 'ToTable' is included
-            builder.ToTable("Customers");
+            builder.ToTable("Users");
 
 
             // Configure primary key
@@ -41,7 +41,7 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
 
             // Configure owned collections and Enums in separate partial class
             ConfigureOwnedCollections(builder);
-            COnfigureEnums(builder);
+            ConfigureEnums(builder);
         }
     }
 }

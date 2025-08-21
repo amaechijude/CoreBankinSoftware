@@ -5,7 +5,7 @@ namespace CustomerAPI.Entities
     public class Address : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public Customer? Customer { get; set; }
+        public User? Customer { get; set; }
         public AddressType AddressType { get; set; }
 
         // Address Details
