@@ -13,6 +13,7 @@ namespace CustomerAPI.Entities
         public string UserEmail { get; private set; } = string.Empty;
         public DateTimeOffset ExpiresAt { get; private set; }
         public bool IsUsed { get; private set; } = false;
+        public bool CanSetProfile { get; private set; } = false;
         public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;
 
         private static readonly int _expiryDurationInMinutes = 10;
@@ -30,10 +31,11 @@ namespace CustomerAPI.Entities
             };
 
         }
-        public void MarkAsUsed()
+        public void MarkIsUsedAndCanSetProfile()
         {
             IsUsed = true;
             ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1);
+            CanSetProfile = true;
         }
         public void UpdateCode()
         {

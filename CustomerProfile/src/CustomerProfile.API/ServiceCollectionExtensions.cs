@@ -33,7 +33,7 @@ namespace CustomerAPI
                 .ValidateOnStart();
 
             // configure db context
-            services.AddDbContext<UserDbContext>((serviceProvider, options) =>
+            services.AddDbContext<UserProfileDbContext>((serviceProvider, options) =>
             {
                 var ds = serviceProvider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
                 string connString = $"Host={ds.DatabaseHost};Database={ds.DatabaseName};Username={ds.DatabaseUsername};Password={ds.DatabasePassword};Port={ds.DatabasePort}";

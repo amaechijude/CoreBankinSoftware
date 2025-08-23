@@ -1,15 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using CustomerAPI.DTO.BvnNinVerification;
-using FluentValidation;
 
 namespace CustomerAPI.External
 {
     public sealed class QuickVerifyBvnNinService(HttpClient client)
     {
         private readonly HttpClient _client = client;
-        public async Task<NINAPIResponse?> NINSearchRequest(NinSearchRequest request)
+        public async Task<NINAPIResponse?> NINSearchRequest(string nin)
         {
-            var body = new { nin = request.NIN.Trim() };
+            var body = new { nin = nin.Trim() };
             try
             {
                 using HttpResponseMessage response = await _client.PostAsJsonAsync("nin-search", body);
@@ -20,9 +19,9 @@ namespace CustomerAPI.External
             catch {return null;}
         }
 
-        public async Task<BvnApiResponse?> BvnSearchRequest(BvnSearchRequest request)
+        public async Task<BvnApiResponse?> BvnSearchRequest(string bvn)
         {
-            var body = new { bvn = request.BVN.Trim() };
+            var body = new { bvn = bvn.Trim() };
             try
             {
                 using HttpResponseMessage httpResponse = await _client
@@ -47,27 +46,4 @@ namespace CustomerAPI.External
         [Required, MinLength(5)]
         public string AuthPrefix { get; set; } = string.Empty;
     }
-
-    public record NinSearchRequest(string NIN);
-    public class NinRequestValidator : AbstractValidator<NinSearchRequest>
-    {
-        public NinRequestValidator()
-        {
-            RuleFor(x => x.NIN.Trim())
-                .NotEmpty().WithMessage("NIN is required.")
-                .Matches(@"^\d{11}$").WithMessage("Invalid NIN format: Nin is not 11 digits");
-        }
-    }
-
-    public record BvnSearchRequest(string BVN);
-    public class BvnRequestValidator : AbstractValidator<BvnSearchRequest>
-    {
-        public BvnRequestValidator()
-        {
-            RuleFor(x => x.BVN.Trim())
-                .NotEmpty().WithMessage("NIN is required.")
-                .Matches(@"^\d{11}$").WithMessage("Invalid NIN format: Nin is not 11 digits");
-        }
-    }
-
 }

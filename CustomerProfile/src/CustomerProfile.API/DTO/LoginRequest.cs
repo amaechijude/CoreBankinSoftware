@@ -1,4 +1,4 @@
 ﻿namespace CustomerAPI.DTO
 {
-    public record LoginRequest(string PhoneNumber, string Passcode);
+    public record LoginRequest(string UsernameOrPhone, string Password);
 }

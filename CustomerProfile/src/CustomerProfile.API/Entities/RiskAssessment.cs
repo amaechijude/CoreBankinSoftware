@@ -5,7 +5,7 @@ namespace CustomerAPI.Entities
     public class RiskAssessment : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public User Customer { get; set; } = null!;
+        public UserProfile Customer { get; set; } = null!;
 
         public RiskAssessmentType RiskAssessmentType { get; set; } // Type of risk assessment (e.g., AML, PEP, etc.)
         public RiskAssessmentSummary RiskAssessmentSummary { get; set; } // Summary of the risk assessment

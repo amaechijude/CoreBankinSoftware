@@ -17,7 +17,7 @@
 //         public string IpAddress { get; set; }
 
 //         // Navigation property to link to the user
-//         public User? User { get; set; }
+//         public UserProfile? UserProfile { get; set; }
 //     }
 //     {
         

@@ -1,3 +1,5 @@
+using CustomerAPI.DTO.BvnNinVerification;
+
 namespace CustomerAPI.Entities.ValueObjects
 {
     public class NIN(string? value)
@@ -37,7 +39,7 @@ namespace CustomerAPI.Entities.ValueObjects
     public class NinData : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public User? Customer { get; set; }
+        public UserProfile? Customer { get; set; }
         public string? Birthdate { get; set; }
         public string? Email { get; set; }
         public string? EmploymentStatus { get; set; }
@@ -59,5 +61,10 @@ namespace CustomerAPI.Entities.ValueObjects
         public string? TelephoneNo { get; set; }
         public string? Title { get; set; }
         public string? TrackingId { get; set; }
+
+        internal NinData? Create(UserProfile userProfile, NINAPIResponse response)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

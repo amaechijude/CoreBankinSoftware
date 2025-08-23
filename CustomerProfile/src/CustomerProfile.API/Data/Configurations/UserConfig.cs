@@ -5,12 +5,12 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
 {
-    public partial class UserConfig : IEntityTypeConfiguration<User>
+    public partial class UserConfig : IEntityTypeConfiguration<UserProfile>
     {
-        public void Configure(EntityTypeBuilder<User> builder)
+        public void Configure(EntityTypeBuilder<UserProfile> builder)
         {
             // Ensure the correct namespace for 'ToTable' is included
-            builder.ToTable("Users");
+            builder.ToTable("UserProfiles");
 
 
             // Configure primary key

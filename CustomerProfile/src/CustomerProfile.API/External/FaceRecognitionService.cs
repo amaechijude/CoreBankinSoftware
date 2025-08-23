@@ -17,11 +17,8 @@ namespace CustomerAPI.External
 
       public async Task<ApiResponse<FaceComparisonResponse>> CompareFaces(IFormFile image1, string base64Image)
       {
-         Task<ProcessImageResult> task1 = ProcessLocalImage(image1);
-         Task<ProcessImageResult> task2 = ProcessBase64Image(base64Image);
-
-         var result1 = await task1;
-         var result2 = await task2;
+         var result1 = await ProcessLocalImage(image1);
+         var result2 = await ProcessBase64Image(base64Image);
 
          if (!result1.IsSuccess)
             return ApiResponse<FaceComparisonResponse>.Error(result1.ErrorMessage);

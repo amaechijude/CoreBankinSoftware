@@ -4,8 +4,8 @@ namespace CustomerAPI.Entities
 {
     public class Address : BaseEntity
     {
-        public Guid CustomerId { get; set; }
-        public User? Customer { get; set; }
+        public Guid UserProfileId { get; set; }
+        public UserProfile? UserProfile { get; set; }
         public AddressType AddressType { get; set; }
 
         // Address Details
@@ -21,7 +21,7 @@ namespace CustomerAPI.Entities
         // Address Verification
         public bool IsVerified { get; set; } = false;
         public DateTimeOffset? VerifiedAt { get; set; }
-        public string? VerifiedBy { get; set; } // User or system that verified the address
+        public string? VerifiedBy { get; set; } // UserProfile or system that verified the address
         public VerificationMethod VerificationMethod { get; set; } = VerificationMethod.Automated;
         public string? VerificationReference { get; set; } // Reference ID for the verification process
 

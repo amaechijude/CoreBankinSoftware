@@ -5,7 +5,7 @@ namespace CustomerAPI.Entities
     public class KYCDocument : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public User? Customer { get; set; }
+        public UserProfile? Customer { get; set; }
 
         //  Document Details
         public KycDocumentType DocumentType { get; set; }
@@ -15,7 +15,7 @@ namespace CustomerAPI.Entities
         public DateTimeOffset? ExpiryDate { get; set; }
         public bool IsVerified { get; set; } = false;
         public DateTimeOffset? VerifiedAt { get; set; }
-        public string? VerifiedBy { get; set; } // User or system that verified the document
+        public string? VerifiedBy { get; set; } // UserProfile or system that verified the document
         public string? VerificationReference { get; set; } // Reference ID for the verification process
         public string FileUrl { get; set; } = string.Empty;
 

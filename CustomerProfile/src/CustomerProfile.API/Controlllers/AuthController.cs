@@ -1,5 +1,6 @@
 ﻿using System.Security.Claims;
 using CustomerAPI.DTO;
+using CustomerAPI.DTO.BvnNinVerification;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -46,7 +47,8 @@ namespace CustomerAPI.Controlllers
         }
 
         [Authorize]
-        public async Task<IActionResult> SendDetailAsync(SetDetailsRequest request)
+        [HttpPost("set-profile")]
+        public async Task<IActionResult> SetProfileAsync([FromBody]SetProfileRequest request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -58,7 +60,18 @@ namespace CustomerAPI.Controlllers
 
                 return BadRequest("Request Timeout");
 
-            var result = await _onboardingCommandHandler.SetDetailsAsync(validId, request);
+            var result = await _onboardingCommandHandler.HandleSetProfileAsync(validId, request);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var result = await _onboardingCommandHandler.HandleLoginAsync(request);
             return result.IsSuccess
                 ? Ok(result.Data)
                 : BadRequest(result.ErrorMessage);

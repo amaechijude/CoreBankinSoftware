@@ -13,7 +13,7 @@
         AML, // Anti-Money Laundering
         PEP, // Politically Exposed Persons
         Sanctions, // Sanctions Lists
-        KYC, // Know Your User
+        KYC, // Know Your UserProfile
         FraudDetection, // Fraud Detection Checks
         RiskAssessment // Risk Assessment Checks
     }

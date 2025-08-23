@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CustomerProfile.Infrastructure.Data.Configurations
 {
-    public partial class UserConfig : IEntityTypeConfiguration<User>
+    public partial class UserConfig : IEntityTypeConfiguration<UserProfile>
     {
-        private static void ConfigureOwnedCollections(EntityTypeBuilder<User> builder)
+        private static void ConfigureOwnedCollections(EntityTypeBuilder<UserProfile> builder)
         {
             // Configure Owned Collections
 

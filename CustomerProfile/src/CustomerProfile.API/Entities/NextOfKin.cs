@@ -5,7 +5,7 @@ namespace CustomerAPI.Entities
     public class NextOfKin : BaseEntity
     {
         public Guid CustomerId { get; set; }
-        public User? Customer { get; set; }
+        public UserProfile? Customer { get; set; }
 
         // Personal Information
         public string FirstName { get; set; } = string.Empty;
