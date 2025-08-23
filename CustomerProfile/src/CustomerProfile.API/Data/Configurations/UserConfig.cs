@@ -20,23 +20,11 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
 
             builder.HasKey(c => c.Id);
 
-            // Configure Value Objects
-            builder.OwnsOne(c => c.BVN, b =>
-            {
-                b.Property(bvn => bvn.Value)
-                    .HasColumnName("BVN");
-            });
-            builder.OwnsOne(c => c.NIN, n =>
-            {
-                n.Property(nin => nin.Value)
-                    .HasColumnName("NIN");
-            });
-
 
             // Configure relationships explicitly
             builder.HasMany(c => c.Addresses)
-                   .WithOne(a => a.Customer)
-                   .HasForeignKey("CustomerId")
+                   .WithOne(a => a.UserProfile)
+                   .HasForeignKey(a => a.UserProfileId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             // Configure owned collections and Enums in separate partial class

@@ -4,8 +4,6 @@ obj
 .vscode
 bin/
 obj/
-Migrations/
-Migrations
 tessdata/**
 tessdata
 x64

@@ -31,8 +31,8 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             builder.OwnsOne(c => c.BvnData, bvn =>
             {
                 bvn.ToTable("BvnData");
-                bvn.WithOwner(n => n.Customer)
-                .HasForeignKey(c => c.CustomerId);
+                bvn.WithOwner(n => n.UserProfile)
+                .HasForeignKey(c => c.UserProfileId);
 
                 bvn.Property<Guid>(nk => nk.Id)
                     .ValueGeneratedOnAdd()
@@ -68,7 +68,7 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             });
 
             // kyc documents
-            builder.OwnsMany(c => c.KYCDocuments, k =>
+            builder.OwnsMany(c => c.KycDocuments, k =>
             {
                 k.ToTable("KYCDocuments");
                 k.WithOwner(ky => ky.Customer)
@@ -112,9 +112,10 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
             builder.OwnsMany(c => c.ComplianceChecks, cc =>
             {
                 cc.ToTable("ComplianceChecks");
-                cc.WithOwner(c => c.Customer)
-                    .HasForeignKey(c => c.CustomerId);
-                cc.Property<Guid>(c => c.CustomerId)
+                cc.WithOwner(c => c.UserProfile)
+                    .HasForeignKey(c => c.UserProfileId);
+
+                cc.Property<Guid>(c => c.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
 
