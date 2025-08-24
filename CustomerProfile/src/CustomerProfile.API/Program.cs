@@ -1,4 +1,5 @@
 using CustomerAPI;
+using CustomerAPI.Global;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Messaging;
 using Scalar.AspNetCore;
@@ -34,8 +35,8 @@ builder.Services.AddJwtAuthDependencyInjection();
 builder.Services.AddAuthorization(); // Authorization Service
 
 builder.Services.AddControllers();
-
-
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -48,7 +49,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-
+app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

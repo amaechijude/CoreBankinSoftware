@@ -4,6 +4,7 @@ using CustomerAPI.DTO;
 using CustomerAPI.Entities;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Messaging.SMS;
+using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,30 +44,7 @@ namespace CustomerAPI.Services
                 return ApiResponse<OnboardingResponse>.Error("Phone Number already registered, Try Login");
             }
 
-            var existingCode = await _context.VerificationCodes
-                .Where(v => v.UserPhoneNumber == command.PhoneNumber && v.UserEmail == command.Email)
-                .FirstOrDefaultAsync();
-
-            if (existingCode is not null)
-            {
-                existingCode.UpdateCode();
-                await _context.SaveChangesAsync();
-                var (tokn, expireIn) = _jwtTokenProvider
-                    .GenerateVerificationResponseJwtToken(existingCode);
-                await EnqueueSms(existingCode.UserPhoneNumber, existingCode.Code);
-                return ApiResponse<OnboardingResponse>
-                    .Success(new OnboardingResponse(tokn, expireIn));
-            }
-            var newCode = VerificationCode.CreateNew(command);
-
-            await _context.VerificationCodes.AddAsync(newCode);
-            await _context.SaveChangesAsync();
-            var (token, expiresIn) = _jwtTokenProvider
-                .GenerateVerificationResponseJwtToken(newCode);
-            await EnqueueSms(command.PhoneNumber, newCode.Code);
-            return ApiResponse<OnboardingResponse>
-                .Success(new OnboardingResponse(token, expiresIn));
-
+            return await HandleOtp(command.PhoneNumber,command.Email);
         }
 
         public async Task<ApiResponse<string>> VerifyOtpAsync(Guid vId, OtpVerifyRequestBody request)
@@ -85,43 +63,6 @@ namespace CustomerAPI.Services
             await _context.SaveChangesAsync();
 
             return ApiResponse<string>.Success("Success");
-        }
-
-        public async Task<ApiResponse<UserProfileResponse>> HandleSetProfileAsync(Guid validId, SetProfileRequest request)
-        {
-            var validator = new SetDetailsRequestValidator();
-            var validationResult = await validator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-            {
-                return ApiResponse<UserProfileResponse>
-                    .Error(validationResult.Errors.Select(s =>
-                    new { s.ErrorMessage, s.AttemptedValue }));
-            }
-
-            var vCode = await _context.VerificationCodes.FindAsync(validId);
-            if (vCode is null || !vCode.CanSetProfile)
-                return ApiResponse<UserProfileResponse>.Error("Request Timeout");
-
-            if( await _context.UserProfiles
-                .AnyAsync(u => u.PhoneNumber == vCode.UserPhoneNumber))
-                return ApiResponse<UserProfileResponse>.Error("Possible duplicate request, Try Login");
-
-            var user = UserProfile
-                .CreateNewUser(vCode.UserPhoneNumber, email: vCode.UserEmail, request.Username);
-
-            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
-
-            _context.UserProfiles.Add(user);
-
-            // delete vCode with executedeleteasync
-            await _context.VerificationCodes
-                .Where(v => v.Id == vCode.Id)
-                .ExecuteDeleteAsync();
-
-            await _context.SaveChangesAsync();
-
-            return ApiResponse<UserProfileResponse>
-                .Success(GenerateJWtAndMapToUserProfileResponse(user));
         }
 
         public async Task<ApiResponse<UserProfileResponse>> HandleLoginAsync(LoginRequest request)
@@ -144,6 +85,77 @@ namespace CustomerAPI.Services
                 .Success(GenerateJWtAndMapToUserProfileResponse(user));
         }
 
+
+        public async Task<ApiResponse<OnboardingResponse>> HandleForgotPasswordAsync(ForgotPasswordRequest request)
+        {
+            var validator = new ForgotPasswordRequestValidator();
+            var validationResult = await validator.ValidateAsync(request);
+            if (!validationResult.IsValid)
+            {
+                return ApiResponse<OnboardingResponse>
+                    .Error(validationResult.Errors.Select(s =>
+                    new { s.ErrorMessage, s.AttemptedValue }));
+            }
+            var user = await _context.UserProfiles
+                .FirstOrDefaultAsync(u => u.PhoneNumber == request.PhoneNumber);
+
+            if (user is null)
+                return ApiResponse<OnboardingResponse>.Error("User not found");
+            return await HandleOtp(user.PhoneNumber, "");
+        }
+        public async Task<ApiResponse<string>> HandleResetPasswordAsync(Guid validId, ResetPasswordRequest request)
+        {
+            var verificationCode = await _context.VerificationCodes
+                .Where(v => v.Id == validId && v.Code == request.OtpCode)
+                .FirstOrDefaultAsync();
+
+            if (verificationCode is null)
+                return ApiResponse<string>.Error("Reset Password Failed");
+
+            if (verificationCode.IsUsed || verificationCode.IsExpired)
+                return ApiResponse<string>.Error("Otp Expired");
+
+            var user = await _context.UserProfiles
+                .FirstOrDefaultAsync(u => u.PhoneNumber == verificationCode.UserPhoneNumber);
+            if (user is null)
+                return ApiResponse<string>.Error("Password reset failed");
+
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.NewPassword);
+
+            await _context.SaveChangesAsync();
+            await _context.VerificationCodes
+                .Where(v => v.Code == request.OtpCode)
+                .ExecuteDeleteAsync();
+
+            return ApiResponse<string>.Success("Password reset successful, login");
+        }
+
+        private async Task<ApiResponse<OnboardingResponse>> HandleOtp(string phoneNumber, string? email)
+        {
+            var existingCode = await _context.VerificationCodes
+                .Where(v => v.UserPhoneNumber == phoneNumber)
+                .FirstOrDefaultAsync();
+
+            if (existingCode is not null)
+            {
+                existingCode.UpdateCode();
+                await _context.SaveChangesAsync();
+                var (tokn, expireIn) = _jwtTokenProvider
+                    .GenerateVerificationResponseJwtToken(existingCode);
+                await EnqueueSms(existingCode.UserPhoneNumber, existingCode.Code);
+                return ApiResponse<OnboardingResponse>
+                    .Success(new OnboardingResponse(tokn, expireIn));
+            }
+            var newCode = VerificationCode.CreateNew(phoneNumber, email);
+
+            await _context.VerificationCodes.AddAsync(newCode);
+            await _context.SaveChangesAsync();
+            var (token, expiresIn) = _jwtTokenProvider
+                .GenerateVerificationResponseJwtToken(newCode);
+            await EnqueueSms(phoneNumber, newCode.Code);
+            return ApiResponse<OnboardingResponse>
+                .Success(new OnboardingResponse(token, expiresIn));
+        }
         private async Task EnqueueSms(string phoneNumber, string code)
         {
             var message = $"Your Otp is {code} ";
@@ -164,5 +176,6 @@ namespace CustomerAPI.Services
                 user.ImageUrl,
                 jwt);
         }
+
     }
 }

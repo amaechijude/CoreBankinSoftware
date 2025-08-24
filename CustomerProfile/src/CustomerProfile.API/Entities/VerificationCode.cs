@@ -20,12 +20,12 @@ namespace CustomerAPI.Entities
         public string ExpiryDuration => $"{_expiryDurationInMinutes} minutes";
 
         // Factory method to create 
-        public static VerificationCode CreateNew(OnboardingRequest request)
+        public static VerificationCode CreateNew(string phoneNumber, string? email)
         {
             return new VerificationCode
             {
-                UserPhoneNumber = request.PhoneNumber.Trim(),
-                UserEmail = request.Email.Trim(),
+                UserPhoneNumber = phoneNumber,
+                UserEmail = email ?? string.Empty,
                 Code = GlobalUtils.GenerateVerificationCode(),
                 ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_expiryDurationInMinutes),
             };

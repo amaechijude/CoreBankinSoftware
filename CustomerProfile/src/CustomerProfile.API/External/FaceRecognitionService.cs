@@ -38,7 +38,7 @@ namespace CustomerAPI.External
          return ApiResponse<FaceComparisonResponse>.Success(
             new FaceComparisonResponse
             {
-               Similarity = Similarity >= 0.42,
+               IsSimilar = Similarity >= 0.42,
                Comparison = comparison,
                Image1Embeddings = result1.Embedding,
                Image2Embeddings = result2.Embedding,
@@ -72,6 +72,16 @@ namespace CustomerAPI.External
 
             return ProcessImageResult.Success(embedding, faces.Count, face.Confidence);
          }
+           catch (NotSupportedException ex)
+            {
+                _logger.LogCritical("Image Format not supported {ex} ", ex);
+                return ProcessImageResult.Error("Image Format not supported");
+            }
+            catch (InvalidImageContentException ex)
+            {
+                _logger.LogCritical("Invalid Image Content: {ex}", ex);
+                return ProcessImageResult.Error("Invalid Image Content");
+            }
          catch (Exception ex)
          {
             _logger.LogError(ex, "Image processing failed.");
@@ -137,7 +147,7 @@ namespace CustomerAPI.External
 
    public class FaceComparisonResponse
    {
-      public bool Similarity { get; set; }
+      public bool IsSimilar { get; set; }
       public string Comparison { get; set; } = string.Empty;
       public float[]? Image1Embeddings { get; set; }
       public float[]? Image2Embeddings { get; set; }

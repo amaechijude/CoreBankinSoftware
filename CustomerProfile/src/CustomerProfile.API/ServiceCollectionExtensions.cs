@@ -91,9 +91,9 @@ namespace CustomerAPI
 
         public static IServiceCollection AddCustomServiceExtentions(this IServiceCollection services)
         {
-            services = AddCustomerDbContext(services);
-            services = AddFeaturesServices(services);
-            services = AddQuickVerifyServices(services);
+            services.AddCustomerDbContext();
+            services.AddFeaturesServices();
+            services.AddQuickVerifyServices();
 
             return services;
         }

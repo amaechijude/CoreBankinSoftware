@@ -1,6 +1,5 @@
 ﻿using System.Security.Claims;
 using CustomerAPI.DTO;
-using CustomerAPI.DTO.BvnNinVerification;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -38,29 +37,9 @@ namespace CustomerAPI.Controlllers
 
             bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
             if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
-                return BadRequest(ModelState);
+                return BadRequest();
 
             var result = await _onboardingCommandHandler.VerifyOtpAsync(validId, request);
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : BadRequest(result.ErrorMessage);
-        }
-
-        [Authorize]
-        [HttpPost("set-profile")]
-        public async Task<IActionResult> SetProfileAsync([FromBody]SetProfileRequest request)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
-            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-            bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
-            if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
-
-                return BadRequest("Request Timeout");
-
-            var result = await _onboardingCommandHandler.HandleSetProfileAsync(validId, request);
             return result.IsSuccess
                 ? Ok(result.Data)
                 : BadRequest(result.ErrorMessage);
@@ -77,5 +56,34 @@ namespace CustomerAPI.Controlllers
                 : BadRequest(result.ErrorMessage);
         }
 
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+            var result = await _onboardingCommandHandler.HandleForgotPasswordAsync(request);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
+        }
+
+        [Authorize]
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            // Get claims from the current user
+            var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
+            var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
+            if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
+                return BadRequest();
+
+            var result = await _onboardingCommandHandler.HandleResetPasswordAsync(validId, request);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(result.ErrorMessage);
+        }
     }
 }
