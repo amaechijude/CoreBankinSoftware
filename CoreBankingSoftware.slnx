@@ -1,6 +1,14 @@
 <Solution>
+  <Folder Name="/Account/">
+    <Project Path="AccountService/src/AccountGrpcService/AccountGrpcService.csproj" />
+  </Folder>
   <Folder Name="/APIGateWay/">
     <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="4d9f90c3-fc46-4140-9801-f663cb384726" />
   </Folder>
-  <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
+  <Folder Name="/CustomerProfile/">
+    <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
+  </Folder>
+  <Folder Name="/Protos/">
+    <Project Path="Protos/Protos.csproj" Id="009897d6-c1ff-43ec-8c15-66fd80b9afc6" />
+  </Folder>
 </Solution>
