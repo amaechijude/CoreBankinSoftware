@@ -43,27 +43,36 @@ namespace CustomerAPI.Services
             return ApiResponse<bool>.Success(true);
         }
 
-        public async Task<ApiResponse<FaceComparisonResponse>> FaceVerificationAsync(Guid validUserId, FaceVerificationRequest request)
+        public async Task<ApiResponse<string>> FaceVerificationAsync(Guid validUserId, FaceVerificationRequest request)
         {
             var validator = new FaceVerificationRequestValidator();
             var validationResult = await validator.ValidateAsync(request);
             if (!validationResult.IsValid)
             {
-                return ApiResponse<FaceComparisonResponse>
+                return ApiResponse<string>
                     .Error(validationResult.Errors.Select(s =>
                     new { s.ErrorMessage, s.AttemptedValue }));
             }
             var user = await _context.UserProfiles.FindAsync(validUserId);
             if (user is null)
-                return ApiResponse<FaceComparisonResponse>.Error("User not found, try login again");
+                return ApiResponse<string>.Error("User not found, try login again");
 
             if (user.BvnExists == false)
-                return ApiResponse<FaceComparisonResponse>.Error("BVN not found, complete BVN search first");
+                return ApiResponse<string>.Error("BVN not found, complete BVN search first");
             if (string.IsNullOrWhiteSpace(user.BvnBase64Image))
-                return ApiResponse<FaceComparisonResponse>.Error("BVN image not found, complete BVN search first");
+                return ApiResponse<string>.Error("BVN image not found, complete BVN search first");
 
-            return await faceRecognitionService
+            var result = await faceRecognitionService
                     .CompareFaces(request.ImageFile, user.BvnBase64Image);
+
+            if (!result.IsSimilar)
+                return ApiResponse<string>.Error("Face verification failed; Try again in a better light condition");
+
+            var account = Account.CreateNewAccount(user);
+            _context.Accounts.Add(account);
+            await _context.SaveChangesAsync();
+            return ApiResponse<string>.Success("Face verification successful");
+
         }
 
         public async Task<ApiResponse<UserProfileResponse>> HandleSetProfileAsync(Guid validId, SetProfileRequest request)

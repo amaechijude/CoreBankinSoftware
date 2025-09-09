@@ -15,18 +15,22 @@ namespace CustomerAPI.External
       private readonly IFaceDetector _faceDetector = faceDetector;
       private readonly IFaceEmbeddingsGenerator _faceEmbeddingsGenerator = faceEmbeddingsGenerator;
 
-      public async Task<ApiResponse<FaceComparisonResponse>> CompareFaces(IFormFile image1, string base64Image)
+      public async Task<FaceComparisonResponse> CompareFaces(IFormFile image1, string base64Image)
       {
-         var result1 = await ProcessLocalImage(image1);
-         var result2 = await ProcessBase64Image(base64Image);
+         var task1 = ProcessLocalImage(image1);
+         var task2 = ProcessBase64Image(base64Image);
 
+         await Task.WhenAll(task1, task2);
+
+         var result1 = task1.Result;
          if (!result1.IsSuccess)
-            return ApiResponse<FaceComparisonResponse>.Error(result1.ErrorMessage);
+            return new FaceComparisonResponse { };
 
+            var result2 = task2.Result;
          if (!result2.IsSuccess)
-            return ApiResponse<FaceComparisonResponse>.Error(result2.ErrorMessage);
+            return new FaceComparisonResponse { };
 
-         var Similarity = result1.Embedding!.Dot(result2.Embedding!);
+            var Similarity = result1.Embedding!.Dot(result2.Embedding!);
 
          var comparison = Similarity switch
          {
@@ -35,19 +39,14 @@ namespace CustomerAPI.External
             _ => "Different Person"
          };
 
-         return ApiResponse<FaceComparisonResponse>.Success(
+         return 
             new FaceComparisonResponse
             {
                IsSimilar = Similarity >= 0.42,
                Comparison = comparison,
                Image1Embeddings = result1.Embedding,
-               Image2Embeddings = result2.Embedding,
-               Image1FaceCount = result1.FaceCount,
-               Image2FaceCount = result2.FaceCount,
-               Image1Confidence = result1.Confidence,
-               Image2Confidence = result2.Confidence
-            }
-         );
+               Image1Confidence = result1.Confidence
+            };
       }
       private async Task<ProcessImageResult> ProcessLocalImage(IFormFile image)
       {
@@ -145,16 +144,12 @@ namespace CustomerAPI.External
       }
    }
 
-   public class FaceComparisonResponse
+   public sealed class FaceComparisonResponse
    {
-      public bool IsSimilar { get; set; }
-      public string Comparison { get; set; } = string.Empty;
-      public float[]? Image1Embeddings { get; set; }
-      public float[]? Image2Embeddings { get; set; }
-      public int Image1FaceCount { get; set; }
-      public int Image2FaceCount { get; set; }
-      public float? Image1Confidence { get; set; }
-      public float? Image2Confidence { get; set; }
+        public bool IsSimilar { get; set; } = false;
+        public string Comparison { get; set; } = string.Empty;
+        public float[]? Image1Embeddings { get; set; }
+        public float? Image1Confidence { get; set; }
    }
 
    public sealed class ProcessImageResult

@@ -14,6 +14,7 @@ namespace CustomerAPI.Entities
         public ICollection<KYCDocument> KycDocuments { get; private set; } = [];
         public ICollection<ComplianceCheck> ComplianceChecks { get; private set; } = [];
         public ICollection<RiskAssessment> RiskAssessments { get; private set; } = [];
+        public ICollection<Account> Accounts { get; private set; } = [];
 
 
         // Enums

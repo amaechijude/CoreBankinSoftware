@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/APIGateWay/">
+    <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="4d9f90c3-fc46-4140-9801-f663cb384726" />
+  </Folder>
+  <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
+</Solution>
