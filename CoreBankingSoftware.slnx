@@ -3,7 +3,7 @@
     <Project Path="AccountService/src/AccountGrpcService/AccountGrpcService.csproj" />
   </Folder>
   <Folder Name="/APIGateWay/">
-    <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="4d9f90c3-fc46-4140-9801-f663cb384726" />
+    <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="0c66585a-d4a7-4371-8b82-4cbf14847748" />
   </Folder>
   <Folder Name="/CustomerProfile/">
     <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
