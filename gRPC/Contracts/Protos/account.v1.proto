@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "SharedGrpcContracts.Protos";
+option csharp_namespace = "SharedGrpcContracts.Protos.Account.V1";
 
 package grpc.contracts;
 
@@ -14,7 +14,8 @@ message CreateAccountRequest {
 }
 
 message CreateAccountResponse {
-  string account_id = 1;
-  string account_number = 2;
-  double account_balance = 3;
+  bool success = 1;
+  string account_id = 2;
+  string account_number = 3;
+  double account_balance = 4;
 }

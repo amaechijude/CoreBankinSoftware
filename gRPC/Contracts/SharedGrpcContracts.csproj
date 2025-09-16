@@ -20,7 +20,4 @@
   <ItemGroup>
     <Protobuf Include="Protos\*.proto" GrpcServices="Both" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Protos\" />
-  </ItemGroup>
 </Project>

@@ -1,5 +1,7 @@
 <Solution>
-  <Folder Name="/Account/" />
+  <Folder Name="/Account/">
+    <Project Path="AccountServices/AccountServices.csproj" Id="2d3d8f6a-32fe-47ab-a331-ea817d4d9841" />
+  </Folder>
   <Folder Name="/APIGateWay/">
     <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="0c66585a-d4a7-4371-8b82-4cbf14847748" />
   </Folder>

@@ -2,7 +2,7 @@ using CustomerAPI;
 using CustomerAPI.Global;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Messaging;
-using CustomerProfile.API.Services.AccountAPI.AccountAPI;
+using CustomerAPI.Services.AccountAPI;
 using Scalar.AspNetCore;
 using Serilog;
 
