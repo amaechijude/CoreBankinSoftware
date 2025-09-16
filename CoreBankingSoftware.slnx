@@ -1,14 +1,12 @@
 <Solution>
-  <Folder Name="/Account/">
-    <Project Path="AccountService/src/AccountGrpcService/AccountGrpcService.csproj" />
-  </Folder>
+  <Folder Name="/Account/" />
   <Folder Name="/APIGateWay/">
     <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="0c66585a-d4a7-4371-8b82-4cbf14847748" />
   </Folder>
   <Folder Name="/CustomerProfile/">
     <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
   </Folder>
-  <Folder Name="/Protos/">
-    <Project Path="Protos/Protos.csproj" Id="009897d6-c1ff-43ec-8c15-66fd80b9afc6" />
+  <Folder Name="/gRPC/">
+    <Project Path="gRPC/Contracts/SharedGrpcContracts.csproj" />
   </Folder>
 </Solution>

@@ -12,12 +12,8 @@ namespace YarpApiGateWay
             {
                     RouteId = "customerServiceRoute",
                     ClusterId = _customerServiceClusterId,
-                    Match = new RouteMatch() { Path = "/customer/{**catch-all}" },
-                    Transforms = [
-                            new Dictionary<string, string>() {{"PathPattern" , "{**catch-all}" } },
-                        ]
-
-                }
+                    Match = new RouteMatch() { Path = "/customer/{**catch-all}" }
+            }
         ];
 
         // Cluster configuration
@@ -29,14 +25,6 @@ namespace YarpApiGateWay
                     {
                         { "customerServiceDestination", new DestinationConfig() { Address = "http://localhost:5039" } }
                     }
-            },
-            new ClusterConfig()
-            {
-                ClusterId = "jsonPlaceholderCluster",
-                Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
-                {
-                    { "jsonPlaceholderDestination", new DestinationConfig() { Address = "https://jsonplaceholder.typicode.com/" } }
-                }
             }
         ];
 

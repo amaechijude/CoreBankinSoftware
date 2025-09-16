@@ -2,6 +2,7 @@ using CustomerAPI;
 using CustomerAPI.Global;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Messaging;
+using CustomerProfile.API.Services.AccountAPI.AccountAPI;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -29,6 +30,8 @@ builder.Services.AddSerilog(); // <-- serilog
 // Add Service Extensions
 builder.Services.AddCustomServiceExtentions();
 builder.Services.AddSMSMessageServices(); // Messaging Service
+
+builder.Services.AddAccountApiOptions(); // Account API Options
 
 // Add Jwt Authentication
 builder.Services.AddJwtAuthDependencyInjection();

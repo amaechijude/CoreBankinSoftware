@@ -1,4 +1,3 @@
-using CustomerAPI.DTO;
 using FaceAiSharp;
 using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;

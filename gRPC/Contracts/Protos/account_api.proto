@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option csharp_namespace = "SharedGrpcContracts.Protos";
+
+package grpc.contracts;
+
+
+service AccountGrpcApiService {
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+}
+
+message CreateAccountRequest {
+  string customer_id = 1;  // snake_case is protobuf convention
+}
+
+message CreateAccountResponse {
+  string account_id = 1;
+  string account_number = 2;
+  double account_balance = 3;
+}

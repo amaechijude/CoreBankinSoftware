@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using CustomerAPI.DTO.BvnNinVerification;
+﻿using CustomerAPI.DTO.BvnNinVerification;
 using CustomerAPI.Entities.Enums;
 using CustomerAPI.Entities.ValueObjects;
 
