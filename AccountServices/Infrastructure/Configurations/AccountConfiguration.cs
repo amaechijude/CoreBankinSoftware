@@ -12,7 +12,10 @@ namespace AccountServices.Infrastructure.Configurations
       b.HasKey(x => x.Id);
       b.Property(x => x.AccountNumber).IsRequired().HasMaxLength(20);
       b.HasIndex(x => x.AccountNumber).IsUnique();
+      b.Property(x => x.CustomerId).IsRequired();
+      b.HasIndex(x => x.PhoneNumber).IsUnique();
       b.Property(x => x.Balance).HasColumnType("decimal(18,2)");
+      b.Property(x => x.Status).HasConversion<string>();
     }
   }
 }

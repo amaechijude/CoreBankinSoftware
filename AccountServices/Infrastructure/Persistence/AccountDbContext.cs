@@ -1,17 +1,14 @@
 using AccountServices.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace AccountServices.Infrastructure.Persistence
+namespace AccountServices.Infrastructure.Persistence;
+
+public sealed class AccountDbContext(DbContextOptions<AccountDbContext> options) : DbContext(options)
 {
-  public sealed class AccountDbContext : DbContext
+  public DbSet<Account> Accounts => Set<Account>();
+
+  protected override void OnModelCreating(ModelBuilder modelBuilder)
   {
-    public AccountDbContext(DbContextOptions<AccountDbContext> options) : base(options) { }
-
-    public DbSet<Account> Accounts => Set<Account>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-      modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccountDbContext).Assembly);
-    }
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AccountDbContext).Assembly);
   }
 }
