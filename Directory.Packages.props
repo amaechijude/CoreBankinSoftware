@@ -1,0 +1,56 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Dotnet DotNetEnv -->
+    <PackageVersion Include="DotNetEnv" Version="3.1.1"/>
+    <!-- FaceAISharp -->
+    <PackageVersion Include="FaceAiSharp.Bundle" Version="0.5.23"/>
+    <!-- FluentValidation -->
+    <PackageVersion Include="FluentValidation" Version="8.2.3"/>
+    <!-- Google.Protobuf and gRPC -->
+    <PackageVersion Include="Google.Protobuf" Version="3.32.1"/>
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0"/>
+    <PackageVersion Include="Grpc.Net.Client" Version="2.71.0"/>
+    <PackageVersion Include="Grpc.Tools" Version="2.72.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <!-- Microsoft.AspNetCore.Authentication.JwtBearer -->
+    <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.8"/>
+    <!-- Microsoft.AspNetCore.OpenApi -->
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.7"/>
+    <!-- Microsoft.EntityFrameworkCore -->
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.0"/>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.7">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageVersion>
+    <!-- Microsoft.ML.OnnxRuntime -->
+    <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.22.1"/>
+    <!-- Microsoft.VisualStudio.Azure.Containers.Tools.Targets -->
+    <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1"/>
+    <!-- Npgsql.EntityFrameworkCore.PostgreSQL -->
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4"/>
+    <!-- Scalar.AspNetCore -->
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.6.4"/>
+    <!-- Serilog -->
+    <PackageVersion Include="Serilog" Version="4.3.0"/>
+    <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0"/>
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0"/>
+    <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0"/>
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0"/>
+    <!-- Tesseract -->
+    <PackageVersion Include="Tesseract" Version="5.2.0"/>
+    <!-- Twilio.AspNet.Core -->
+    <PackageVersion Include="Twilio.AspNet.Core" Version="8.1.1"/>
+    <!-- Swashbuckle.AspNetCore -->
+    <PackageVersion Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+    <!-- Yarp.ReverseProxy -->
+    <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0"/>
+    
+
+  </ItemGroup>
+</Project>
