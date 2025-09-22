@@ -1,7 +1,7 @@
 using AccountServices.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace AccountServices.Infrastructure.Persistence;
+namespace AccountServices.Data;
 
 public sealed class AccountDbContext(DbContextOptions<AccountDbContext> options) : DbContext(options)
 {

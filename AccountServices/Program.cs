@@ -1,6 +1,4 @@
-using AccountServices.Application.Interfaces;
-using AccountServices.Infrastructure.Persistence;
-using AccountServices.Infrastructure.Repositories;
+using AccountServices.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

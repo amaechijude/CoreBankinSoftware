@@ -7,10 +7,13 @@ package grpc.contracts;
 
 service AccountGrpcApiService {
   rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+  rpc GetAccountById(GetAccountByCustomerIdRequest) returns (GetAccountResponse);
+  rpc GetAccountByNumber(GetAccountByPhoneAccountNumberRequest) returns (GetAccountResponse);
 }
 
 message CreateAccountRequest {
-  string customer_id = 1;  // snake_case is protobuf convention
+  string customer_id = 1;
+  string phone_number = 2;
 }
 
 message CreateAccountResponse {
@@ -18,4 +21,22 @@ message CreateAccountResponse {
   string account_id = 2;
   string account_number = 3;
   double account_balance = 4;
+  string error = 5;
+}
+
+message GetAccountByCustomerIdRequest {
+  string account_id = 1;
+}
+
+message GetAccountByPhoneAccountNumberRequest {
+  string phone_number = 1;
+}
+message GetAccountResponse {
+  bool success = 1;
+  string account_id = 2;
+  string account_number = 3;
+  bool is_active = 4;
+  bool can_transact = 5;
+  double account_balance = 6;
+  string error = 7;
 }
