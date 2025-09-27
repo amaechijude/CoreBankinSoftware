@@ -22,7 +22,9 @@ public sealed class Account
     {
       Id = Guid.CreateVersion7(),
       CustomerId = customerId,
-      PhoneAccountNumber = PhoneToAccountNumber(phoneNumber),
+      PhoneAccountNumber = IsValidPhoneAccountNumber(phoneNumber) 
+                            ? phoneNumber 
+                            : PhoneToAccountNumber(phoneNumber),
       Type = AccountType.Savings,
       Status = AccountStatus.Active,
       Balance = 0,
@@ -44,4 +46,6 @@ public sealed class Account
 
     return phone[1..]; // 10 digit account number
   }
+    private static bool IsValidPhoneAccountNumber(string phone) => 
+        phone.Length == 10 && phone.All(char.IsDigit);
 }

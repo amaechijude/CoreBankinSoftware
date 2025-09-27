@@ -42,4 +42,8 @@
     <Folder Include="Logs\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\gRPC\Contracts\SharedGrpcContracts.csproj" />
+  </ItemGroup>
+
 </Project>

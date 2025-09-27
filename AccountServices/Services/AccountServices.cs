@@ -1,108 +1,76 @@
-﻿using System.Security.AccessControl;
-using AccountServices.Data;
+﻿using AccountServices.Data;
 using AccountServices.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using SharedGrpcContracts.Protos.Account.V1;
 
- namespace AccountServices.Services;
+namespace AccountServices.Services;
 
 public class AccountServices(AccountDbContext dbContext) : AccountGrpcApiService.AccountGrpcApiServiceBase
 {
     private readonly AccountDbContext _dbContext = dbContext;
     public override async Task<CreateAccountResponse> CreateAccount(CreateAccountRequest request, Grpc.Core.ServerCallContext context)
     {
+        var (cleanedPhone, error) = CleanedPhoneNumber(request.PhoneNumber);
+        if (error is not null || cleanedPhone is null)
+            return ApiResponse.Error(error!);
+
         var validator = new AccountRequestValidators();
         var validationResult = await validator.ValidateAsync(request);
         if (!validationResult.IsValid)
-            return ServiceResponse.Error(validationResult.Errors.Select(x => new { x.ErrorMessage, x.AttemptedValue }));
+            return ApiResponse.Error(validationResult.Errors.Select(x => new { x.ErrorMessage, x.AttemptedValue }));
 
         if (!Guid.TryParse(request.CustomerId, out Guid id))
-            return ServiceResponse.Error("Invalid Customer");
+            return ApiResponse.Error("Invalid Customer");
 
         if (await IsExistingAccount(id))
-            return ServiceResponse.Error("Duplicate Account");
+            return ApiResponse.Error("Duplicate Account");
 
-        var newAccount = Account.Create(id, request.PhoneNumber);
+        var newAccount = Account.Create(id, cleanedPhone);
         await _dbContext.Accounts.AddAsync(newAccount);
         await _dbContext.SaveChangesAsync();
 
-        return ServiceResponse.Success(newAccount);
+        return ApiResponse.Success(newAccount);
     }
 
     public override async Task<GetAccountResponse> GetAccountById(GetAccountByCustomerIdRequest request, Grpc.Core.ServerCallContext context)
     {
         if (!Guid.TryParse(request.AccountId, out Guid id))
-            return ServiceResponse.GetAccountError("Invalid Customer");
+            return ApiResponse.GetAccountError("Invalid Customer");
 
         Account? account = await _dbContext.Accounts
            .FirstOrDefaultAsync(a => a.CustomerId == id);
         if (account is null)
-            return ServiceResponse.GetAccountError("Account not found");
+            return ApiResponse.GetAccountError("Account not found");
 
-        return ServiceResponse.GetSuccess(account);
+        return ApiResponse.GetSuccess(account);
     }
 
     public override async Task<GetAccountResponse> GetAccountByNumber(GetAccountByPhoneAccountNumberRequest request, Grpc.Core.ServerCallContext context)
     {
-      Account? account = await _dbContext.Accounts
-            .FirstOrDefaultAsync(a => a.PhoneAccountNumber ==  CleanedPhoneNumber(request.PhoneNumber));
-        if (account is null)
-            return ServiceResponse.GetAccountError("Account not found");
+        var (cleanedPhone, error) = CleanedPhoneNumber(request.PhoneNumber);
+        if (error is not null || cleanedPhone is null)
+            return ApiResponse.GetAccountError(error!);
 
-        return ServiceResponse.GetSuccess(account);
+        Account? account = await _dbContext.Accounts
+            .FirstOrDefaultAsync(a => a.PhoneAccountNumber ==  cleanedPhone);
+        if (account is null)
+            return ApiResponse.GetAccountError("Account not found");
+
+        return ApiResponse.GetSuccess(account);
     }
 
     private async Task<bool> IsExistingAccount(Guid customerId) =>
         await _dbContext.Accounts.AnyAsync(a => a.CustomerId == customerId);
 
-    private static string CleanedPhoneNumber(string phone)
+    private static (string? phone, string? error) CleanedPhoneNumber(string phone)
     {
         phone = phone.Trim();
-        return phone[1..];
-    }
-}
+        if (!phone.All(char.IsDigit))
+            return (null, "Phone number is not all digit");
+        if (phone.Length != 11 || !phone.StartsWith('0'))
+            return (null ,"phone number does not start with 0");
 
-public static class ServiceResponse
-{
-    public static CreateAccountResponse Success(Account account)
-    {
-        return new CreateAccountResponse
-        {
-            Success = true,
-            AccountId = account.Id.ToString(),
-            AccountNumber = account.PhoneAccountNumber,
-            AccountBalance = (double)account.Balance,
-        };
-    }
-    public static CreateAccountResponse Error(object error)
-    {
-        return new CreateAccountResponse
-        {
-            Success = false,
-            Error = error.ToString()
-        };
-    }
-
-    public static GetAccountResponse GetSuccess(Account account)
-    {
-        return new GetAccountResponse
-        {
-            Success = true,
-            AccountId = account.Id.ToString(),
-            AccountNumber = account.PhoneAccountNumber,
-            AccountBalance = (double)account.Balance,
-            IsActive = account.Status == Domain.Enums.AccountStatus.Active,
-            CanTransact = account.IsOnPostNoDebit,
-            Error = string.Empty
-        };
-    }
-
-    public static GetAccountResponse GetAccountError(string error)
-    {
-        return new GetAccountResponse
-        {
-            Success = false,
-            Error = error
-        };
+        // remove leading 0
+        return (phone[1..], null);
     }
 }

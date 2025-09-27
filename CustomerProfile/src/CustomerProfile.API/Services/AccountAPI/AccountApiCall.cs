@@ -1,6 +1,4 @@
-using Grpc.Core;
 using Microsoft.Extensions.Options;
-using SharedGrpcContracts.Protos.Account.V1;
 
 
 namespace CustomerAPI.Services.AccountAPI;

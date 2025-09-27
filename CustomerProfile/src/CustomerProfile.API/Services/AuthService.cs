@@ -85,7 +85,6 @@ namespace CustomerAPI.Services
                 .Success(GenerateJWtAndMapToUserProfileResponse(user));
         }
 
-
         public async Task<ApiResponse<OnboardingResponse>> HandleForgotPasswordAsync(ForgotPasswordRequest request)
         {
             var validator = new ForgotPasswordRequestValidator();
