@@ -13,6 +13,7 @@
     <PackageReference Include="FaceAiSharp.Bundle" />
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="Google.Protobuf" />
+    <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
@@ -41,9 +42,8 @@
   <ItemGroup>
     <Folder Include="Logs\" />
   </ItemGroup>
-
   <ItemGroup>
-    <ProjectReference Include="..\..\..\gRPC\Contracts\SharedGrpcContracts.csproj" />
+    <Protobuf Include="..\..\..\gRPC\Contracts\Protos\*.proto" GrpcServices="client" />
   </ItemGroup>
 
 </Project>

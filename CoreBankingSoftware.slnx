@@ -11,4 +11,7 @@
   <Folder Name="/gRPC/">
     <Project Path="gRPC/Contracts/SharedGrpcContracts.csproj" />
   </Folder>
+  <Folder Name="/TransactionService/">
+    <Project Path="TransactionService/TransactionService.csproj" Id="dd51a1a0-eac7-43e2-8425-898aa08afafe" />
+  </Folder>
 </Solution>

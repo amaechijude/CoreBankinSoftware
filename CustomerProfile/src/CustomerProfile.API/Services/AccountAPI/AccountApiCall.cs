@@ -1,11 +1,12 @@
 using Microsoft.Extensions.Options;
+using SharedGrpcContracts.Protos.Account.V1;
 
 
 namespace CustomerAPI.Services.AccountAPI;
 
 public class AccountApiCall(IOptions<AccountApiOptions> options)
 {
-    
+
     private readonly string _accountApiUrl = options.Value.AccountApiUrl;
     public async Task<bool> CreateAccountGrpc(string id)
     {
