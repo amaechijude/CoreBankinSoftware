@@ -12,9 +12,7 @@
     <PackageReference Include="DotNetEnv" />
     <PackageReference Include="FaceAiSharp.Bundle" />
     <PackageReference Include="FluentValidation" />
-    <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="Grpc.AspNetCore" />
-    <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
