@@ -1,6 +1,6 @@
 namespace TransactionService.Entity.Enums
 {
-    public enum Status
+    public enum TransactionStatus
     {
         PENDING,
         SUCCESSFUL,

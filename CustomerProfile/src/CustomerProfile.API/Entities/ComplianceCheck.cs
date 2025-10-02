@@ -18,9 +18,9 @@ namespace CustomerAPI.Entities
 
 
         // Helper Properties
-        public bool IsPassed => 
+        public bool IsPassed =>
             Status == ComplianceCheckStatus.Passed;
-        public bool IsOverdue => 
+        public bool IsOverdue =>
             NextCheckDue.HasValue && NextCheckDue.Value < DateTimeOffset.UtcNow;
     }
 }

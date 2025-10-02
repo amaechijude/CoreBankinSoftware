@@ -76,7 +76,7 @@ namespace CustomerAPI.Entities
         public int Age => DateTime.Now.Year - DateOfBirth.Year - (DateTime.Now.DayOfYear < DateOfBirth.DayOfYear ? 1 : 0);
         public bool IsMinor => Age < 18;
         public bool IsDormant => LastTransactionDate.HasValue && LastTransactionDate.Value < DateTimeOffset.Now.AddDays(-365);
-        
+
 
         // Factory methods to create user
         public static UserProfile CreateNewUser(string phoneNumber, string email, string username)
@@ -92,7 +92,7 @@ namespace CustomerAPI.Entities
 
             var bvnData = BvnData.Create(this, response);
             if (bvnData is null) return;
-            
+
             BvnData = bvnData;
             BvnBase64Image = response.Data?.Base64Image;
             BVNAddedAt = DateTimeOffset.UtcNow;

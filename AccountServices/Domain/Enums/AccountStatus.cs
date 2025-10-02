@@ -1,9 +1,9 @@
 namespace AccountServices.Domain.Enums
 {
-  public enum AccountStatus
-  {
-    Active,
-    Closed,
-    Suspended
-  }
+    public enum AccountStatus
+    {
+        Active,
+        Closed,
+        Suspended
+    }
 }

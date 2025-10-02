@@ -55,7 +55,7 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
                 n.HasKey(k => k.Id);
-               
+
                 n.Property(n => n.Gender)
                     .HasConversion<string>()
                     .HasMaxLength(20);
@@ -83,7 +83,7 @@ namespace CustomerProfile.Infrastructure.Data.Configurations
                     .HasMaxLength(50);
                 k.Property(d => d.DocumentMimeType)
                     .HasConversion<string>()
-                    .HasMaxLength(50);   
+                    .HasMaxLength(50);
             });
 
             // risk asssessment

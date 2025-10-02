@@ -41,7 +41,7 @@ namespace CustomerAPI.Entities.Enums
         Event,
         Other,
     }
-    
+
     public enum KYCStatus
     {
         NotStarted,

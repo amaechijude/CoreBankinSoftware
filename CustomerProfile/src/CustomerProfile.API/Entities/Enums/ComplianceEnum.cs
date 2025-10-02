@@ -7,7 +7,7 @@
         Failed,
         Overdue
     }
-    
+
     public enum ComplianceCheckType
     {
         AML, // Anti-Money Laundering

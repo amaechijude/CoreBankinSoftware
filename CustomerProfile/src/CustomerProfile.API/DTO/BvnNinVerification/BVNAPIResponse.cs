@@ -108,4 +108,4 @@ namespace CustomerAPI.DTO.BvnNinVerification
         public string? Reference { get; set; }
     }
 
-  }
+}

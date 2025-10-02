@@ -1,9 +1,13 @@
-namespace TransactionService.Entity;
+namespace TransactionService.Entity.Enums;
 
 public enum TransactionType
 {
     Debit,
-    Credit
+    Credit,
+    Transfer,
+    Withdrawal,
+    Deposit,
+    BillPayment
 }
 
 public enum TransactionChannel
@@ -11,5 +15,9 @@ public enum TransactionChannel
     MobileApp,
     ATM,
     USSD,
-    CreditCard
+    CreditCard,
+    BankTeller,
+    Website,
+    API,
+    POS
 }

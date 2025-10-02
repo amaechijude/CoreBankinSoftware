@@ -16,7 +16,7 @@ namespace CustomerAPI.External
 
                 return await response.Content.ReadFromJsonAsync<NINAPIResponse>();
             }
-            catch {return null;}
+            catch { return null; }
         }
 
         public async Task<BvnApiResponse?> BvnSearchRequest(string bvn)

@@ -44,7 +44,7 @@ namespace CustomerAPI.Services
                 return ApiResponse<OnboardingResponse>.Error("Phone Number already registered, Try Login");
             }
 
-            return await HandleOtp(command.PhoneNumber,command.Email);
+            return await HandleOtp(command.PhoneNumber, command.Email);
         }
 
         public async Task<ApiResponse<string>> VerifyOtpAsync(Guid vId, OtpVerifyRequestBody request)

@@ -14,7 +14,7 @@ namespace CustomerAPI.DTO
                 .Length(11).WithMessage("Phone number lenght Must be 11")
                 .Must(IsAllDigit).WithMessage("Phone number must contain only digits.");
         }
-        private bool IsAllDigit (string phoneNumber) => phoneNumber.All(char.IsDigit);
+        private bool IsAllDigit(string phoneNumber) => phoneNumber.All(char.IsDigit);
     }
 
     public record ResetPasswordRequest(string OtpCode, string NewPassword, string ConfirmPassword);

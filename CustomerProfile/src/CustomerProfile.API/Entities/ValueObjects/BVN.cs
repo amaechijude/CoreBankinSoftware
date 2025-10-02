@@ -70,7 +70,7 @@ namespace CustomerAPI.Entities.ValueObjects
         public static BvnData? Create(UserProfile user, BvnApiResponse response)
         {
             if (response?.Data is null) return null;
-;
+            ;
 
             return new BvnData
             {

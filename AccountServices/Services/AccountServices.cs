@@ -52,7 +52,7 @@ public class AccountServices(AccountDbContext dbContext) : AccountGrpcApiService
             return ApiResponse.GetAccountError(error!);
 
         Account? account = await _dbContext.Accounts
-            .FirstOrDefaultAsync(a => a.PhoneAccountNumber ==  cleanedPhone);
+            .FirstOrDefaultAsync(a => a.PhoneAccountNumber == cleanedPhone);
         if (account is null)
             return ApiResponse.GetAccountError("Account not found");
 
@@ -68,7 +68,7 @@ public class AccountServices(AccountDbContext dbContext) : AccountGrpcApiService
         if (!phone.All(char.IsDigit))
             return (null, "Phone number is not all digit");
         if (phone.Length != 11 || !phone.StartsWith('0'))
-            return (null ,"phone number does not start with 0");
+            return (null, "phone number does not start with 0");
 
         // remove leading 0
         return (phone[1..], null);

@@ -33,7 +33,7 @@ namespace CustomerAPI.Messaging.SMS
         }
         private async Task SendViaTwilioAsync(SendSMSCommand command)
         {
-            TwilioClient.Init( _twilioSettings.Value.AccountSid, _twilioSettings.Value.AuthToken);
+            TwilioClient.Init(_twilioSettings.Value.AccountSid, _twilioSettings.Value.AuthToken);
 
             var messageOptions = new CreateMessageOptions(new Twilio.Types.PhoneNumber(command.PhoneNumber))
             {

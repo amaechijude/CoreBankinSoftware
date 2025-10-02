@@ -12,7 +12,7 @@ namespace CustomerAPI.Data.Configurations
             builder.Property(vc => vc.Id)
                 .ValueGeneratedOnAdd()
                 .HasValueGenerator<CustomGuidV7Generator>();
-                
+
             builder.HasKey(vc => vc.Id);
             builder.HasIndex(vc => vc.UserPhoneNumber);
         }

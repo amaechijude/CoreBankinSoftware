@@ -29,7 +29,7 @@ namespace CustomerAPI.JwtTokenService
                 Audience = _jwtOptions.Audience,
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = signingCredentials,
-                
+
             };
 
             JsonWebTokenHandler jsonWebTokenHandler = new();
@@ -67,5 +67,5 @@ namespace CustomerAPI.JwtTokenService
         }
     }
 
-   internal sealed class JwtGenException(string message) : Exception(message);
+    internal sealed class JwtGenException(string message) : Exception(message);
 }
