@@ -18,5 +18,9 @@
   <ItemGroup>
     <Protobuf Include="..\gRPC\Contracts\Protos\*.proto" GrpcServices="client" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="NewFolder\" />
+  </ItemGroup>
 
 </Project>
