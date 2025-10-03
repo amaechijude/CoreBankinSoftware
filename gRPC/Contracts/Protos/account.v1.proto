@@ -7,8 +7,9 @@ package grpc.contracts;
 
 service AccountGrpcApiService {
   rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
-  rpc GetAccountById(GetAccountByCustomerIdRequest) returns (GetAccountResponse);
-  rpc GetAccountByNumber(GetAccountByPhoneAccountNumberRequest) returns (GetAccountResponse);
+  rpc GetAccountByByCustomerId(GetAccountByCustomerIdRequest) returns (GetAccountResponse);
+  rpc GetAccountByAccountId(GetAccountByAccountIdRequest) returns (GetAccountResponse);
+  rpc GetAccountByPhoneAccountNumber(GetAccountByPhoneAccountNumberRequest) returns (GetAccountResponse);
 }
 
 message CreateAccountRequest {
@@ -25,6 +26,10 @@ message CreateAccountResponse {
 }
 
 message GetAccountByCustomerIdRequest {
+  string customer_id = 1;
+}
+
+message GetAccountByAccountIdRequest {
   string account_id = 1;
 }
 

@@ -2,9 +2,14 @@ namespace TransactionService.Entity.Enums
 {
     public enum TransactionStatus
     {
-        PENDING,
-        SUCCESSFUL,
-        FAILED,
-        REVERSED
+        Initiated,
+        Validated,
+        Authorized,
+        Processing,
+        Completed,
+        Failed,
+        Reversed,
+        Blocked,
+        Cancelled
     }
 }

@@ -5,7 +5,7 @@ using SharedGrpcContracts.Protos.Account.V1;
 
 namespace AccountServices.Services;
 
-public class AccountServices(AccountDbContext dbContext) : AccountGrpcApiService.AccountGrpcApiServiceBase
+public class AccountService(AccountDbContext dbContext) : AccountGrpcApiService.AccountGrpcApiServiceBase
 {
     private readonly AccountDbContext _dbContext = dbContext;
     public override async Task<CreateAccountResponse> CreateAccount(CreateAccountRequest request, Grpc.Core.ServerCallContext context)
@@ -32,9 +32,9 @@ public class AccountServices(AccountDbContext dbContext) : AccountGrpcApiService
         return ApiResponse.Success(newAccount);
     }
 
-    public override async Task<GetAccountResponse> GetAccountById(GetAccountByCustomerIdRequest request, Grpc.Core.ServerCallContext context)
+    public override async Task<GetAccountResponse> GetAccountByByCustomerId(GetAccountByCustomerIdRequest request, Grpc.Core.ServerCallContext context)
     {
-        if (!Guid.TryParse(request.AccountId, out Guid id))
+        if (!Guid.TryParse(request.CustomerId, out Guid id))
             return ApiResponse.GetAccountError("Invalid Customer");
 
         Account? account = await _dbContext.Accounts
@@ -45,7 +45,7 @@ public class AccountServices(AccountDbContext dbContext) : AccountGrpcApiService
         return ApiResponse.GetSuccess(account);
     }
 
-    public override async Task<GetAccountResponse> GetAccountByNumber(GetAccountByPhoneAccountNumberRequest request, Grpc.Core.ServerCallContext context)
+    public override async Task<GetAccountResponse> GetAccountByPhoneAccountNumber(GetAccountByPhoneAccountNumberRequest request, Grpc.Core.ServerCallContext context)
     {
         var (cleanedPhone, error) = CleanedPhoneNumber(request.PhoneNumber);
         if (error is not null || cleanedPhone is null)
