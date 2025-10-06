@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Grpc.Core;
-using Grpc.Net.Client;
-using SharedGrpcContracts.Protos.Account.V1;
-
 namespace TransactionService.Services;
 
 public class PerformTransaction(NubanAccountLookUp nubanAccountLookUp)
@@ -24,14 +16,14 @@ public class PerformTransaction(NubanAccountLookUp nubanAccountLookUp)
 
             return ApiResponse.Success("Account found", accountDetails);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log the exception (ex) as needed
             return ApiResponse.Error("An error occurred while fetching account details");
         }
     }
 
-    public async Task<ApiResponse> InitiateTransaction(decimal amount, string senderAccountNumber, string senderBankCode, string receiverAccountNumber, string receiverBankCode, string narration)
+    public async Task<ApiResponse> InitiateTransaction()
     {
         try
         {
@@ -45,7 +37,7 @@ public class PerformTransaction(NubanAccountLookUp nubanAccountLookUp)
             // Assuming the transaction was successful
             return ApiResponse.Success("Transaction initiated successfully", new { TransactionId = Guid.NewGuid() });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // Log the exception (ex) as needed
             return ApiResponse.Error("An error occurred while initiating the transaction");

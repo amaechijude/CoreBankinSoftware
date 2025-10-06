@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using SharedGrpcContracts.Protos.Account.V1;
+using TransactionService.NIBBS;
 using TransactionService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +38,26 @@ builder.Services.AddHttpClient<NubanAccountLookUp>((provider, client) =>
     client.DefaultRequestHeaders.Add("api_key", nubanOptions.ApiKey);
     client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
+
+// Nibss Service Http typed client with xml accept header
+builder.Services.Configure<NibssOptions>(options =>
+{
+    options.ApiKey = builder.Configuration["NibssSettings:NibssApiKey"]
+        ?? throw new InvalidOperationException("Nibss API key is not configured.");
+    options.BaseUrl = builder.Configuration["NibssSettings:NibssApiUrl"]
+        ?? throw new InvalidOperationException("Nibss Base URL is not configured.");
+});
+builder.Services.AddOptions<NibssOptions>()
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddHttpClient<NibssService>((provider, client) =>
+{
+    var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
+    client.BaseAddress = new Uri(nibssOptions.BaseUrl);
+    client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
+    client.DefaultRequestHeaders.Add("Accept", "application/xml");
+});
+
 
 var app = builder.Build();
 
