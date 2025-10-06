@@ -21,7 +21,7 @@ public sealed class NubanOptions
     public string BaseUrl { get; set; } = string.Empty;
 }
 
-public class AccountDetails
+public sealed class AccountDetails
 {
     public string AccountName { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;

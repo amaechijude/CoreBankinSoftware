@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Xml.Serialization;
 
-namespace TransactionService.NIBBS;
+namespace TransactionService.Utils;
 
 
 internal static class XmlSerializationHelper

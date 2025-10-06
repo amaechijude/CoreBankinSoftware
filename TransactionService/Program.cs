@@ -1,10 +1,12 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Scalar.AspNetCore;
 using TransactionService.NIBBS;
 using TransactionService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+builder.Services.AddControllers();
 
 // Add and validate connectionString option on startup
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -17,8 +19,6 @@ builder.Services.AddDbContext<TransactionService.Data.TransactionDbContext>(opti
 var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
 if (string.IsNullOrEmpty(accountGrpcUrl))
     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
-
-//builder.Services.AddScoped<PerformTransaction>();
 
 // Nuban Service options and Http typed client
 builder.Services.Configure<NubanOptions>(options =>
@@ -58,8 +58,17 @@ builder.Services.AddHttpClient<NibssService>((provider, client) =>
     client.DefaultRequestHeaders.Add("Accept", "application/xml");
 });
 
+builder.Services.AddScoped<PerformTransaction>();
 
 var app = builder.Build();
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.MapScalarApiReference();
+}
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
 app.MapGet("/", () => "Hello World!");
 

@@ -17,7 +17,7 @@ public class FTSingleCreditRequest
     [XmlElement("AccountName")]
     public required string AccountName { get; set; }
 
-    [XmlElement("AccountNumber")]
+    [XmlElement("DestinationAccountNumber")]
     public required string AccountNumber { get; set; }
 
     [XmlElement("OriginatorName")]
@@ -49,7 +49,7 @@ public class FTSingleCreditResponse
     [XmlElement("AccountName")]
     public required string AccountName { get; set; }
 
-    [XmlElement("AccountNumber")]
+    [XmlElement("DestinationAccountNumber")]
     public required string AccountNumber { get; set; }
 
     [XmlElement("OriginatorName")]

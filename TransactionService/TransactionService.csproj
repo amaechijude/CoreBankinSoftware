@@ -13,17 +13,11 @@
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	  <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
   
   <ItemGroup>
     <Protobuf Include="..\gRPC\Contracts\Protos\*.proto" GrpcServices="client" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <Compile Remove="NewFolder\**" />
-    <Content Remove="NewFolder\**" />
-    <EmbeddedResource Remove="NewFolder\**" />
-    <None Remove="NewFolder\**" />
   </ItemGroup>
 
 </Project>

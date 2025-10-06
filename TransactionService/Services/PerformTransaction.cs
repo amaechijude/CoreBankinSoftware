@@ -1,64 +1,68 @@
+using TransactionService.DTOs;
+using TransactionService.NIBBS;
+using TransactionService.NIBBS.XmlQueryAndResponseBody;
+using TransactionService.Utils;
+
 namespace TransactionService.Services;
 
-public class PerformTransaction(NubanAccountLookUp nubanAccountLookUp)
+public class PerformTransaction(NibssService nibssService, NubanAccountLookUp nubanAccountLookUp, ILogger<PerformTransaction> logger)
 {
-    public async Task<ApiResponse> GetBeneficiaryAccountDetails(string accountNumber, string bankName, string? bankNubanCode)
+    private readonly NibssService _nibssService = nibssService;
+    private readonly NubanAccountLookUp _nubanAccountLookUp = nubanAccountLookUp;
+    private readonly ILogger<PerformTransaction> _logger = logger;
+
+    public async Task<ApiResultResponse<NESingleResponse>> GetBeneficiaryAccountDetails(NameEnquiryRequest request)
     {
-        string? bankCode = !string.IsNullOrWhiteSpace(bankNubanCode) ? bankNubanCode : BankCodes.GetBankCode(bankName);
+        string? bankCode = !string.IsNullOrWhiteSpace(request.DestinationBankNubanCode)
+            ? request.DestinationBankNubanCode
+            : BankCodes.GetBankCode(request.DestinationBankName);
         if (bankCode == null)
-            return ApiResponse.Error("Bank not supported");
+            return ApiResultResponse<NESingleResponse>.Error("Bank not supported");
 
+        var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderBankNubanCode, request.DestinationBankNubanCode);
         try
         {
-            AccountDetails? accountDetails = await nubanAccountLookUp.GetAccountDetails(accountNumber, bankCode);
-            if (accountDetails == null)
-                return ApiResponse.Error("Account not found");
+            var (data, error) = await _nibssService.NameEnquiryAsync(new NESingleRequest
+            {
+                SessionID = sessionId,
+                DestinationBankCode = request.DestinationBankNubanCode,
+                ChannelCode = "1", // mobile channel code; adjust as necessary
+                AccountNumber = request.DestinationAccountNumber
+            });
+            if (data is not null && data.ResponseCode == "00")
+                return ApiResultResponse<NESingleResponse>.Success(data);
 
-            return ApiResponse.Success("Account found", accountDetails);
+            return ApiResultResponse<NESingleResponse>.Error("Account not found");
         }
-        catch (Exception)
+        catch (HttpRequestException)
         {
-            // Log the exception (ex) as needed
-            return ApiResponse.Error("An error occurred while fetching account details");
+            // fallback to local NUBAN lookup
+            _logger.LogWarning("Nibss name enquiry failed, falling back to local NUBAN lookup");
+            return await GetBeneficiaryAccountDetailsFallback(request);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during NIBSS name enquiry");
+            return ApiResultResponse<NESingleResponse>.Error("Internal server error");
         }
     }
 
-    public async Task<ApiResponse> InitiateTransaction()
+    private async Task<ApiResultResponse<NESingleResponse>> GetBeneficiaryAccountDetailsFallback(NameEnquiryRequest request)
     {
-        try
-        {
-            // Simulate transaction processing logic
-            await Task.Delay(1000); // Simulating async work
+        var accountDetails = await _nubanAccountLookUp.GetAccountDetails(request.DestinationAccountNumber, request.DestinationBankNubanCode);
+        if (accountDetails is null)
+            return ApiResultResponse<NESingleResponse>.Error("Account not found");
 
-            // In a real-world scenario, you would call your transaction processing service here
-            // For example:
-            // var transactionResult = await transactionService.ProcessTransaction(...);
-
-            // Assuming the transaction was successful
-            return ApiResponse.Success("Transaction initiated successfully", new { TransactionId = Guid.NewGuid() });
-        }
-        catch (Exception)
+        return ApiResultResponse<NESingleResponse>.Success(new NESingleResponse
         {
-            // Log the exception (ex) as needed
-            return ApiResponse.Error("An error occurred while initiating the transaction");
-        }
+            AccountName = accountDetails.AccountName,
+            AccountNumber = accountDetails.AccountNumber,
+            DestinationBankCode = accountDetails.BankCode,
+            SessionID = $"Fallback {DateTime.UtcNow:yyyyMMddHHmm}",
+            ChannelCode = "1", // mobile channel code; adjust as necessary
+            ResponseCode = "00"
+        });
+
     }
 }
 
-public class ApiResponse
-{
-    public bool Status { get; private set; }
-    public string Message { get; private set; } = string.Empty;
-    public object? Data { get; private set; }
-
-    public static ApiResponse Success(string message, object? data = null)
-    {
-        return new ApiResponse { Status = true, Message = message, Data = data };
-    }
-
-    public static ApiResponse Error(string message)
-    {
-        return new ApiResponse { Status = false, Message = message };
-    }
-
-}
