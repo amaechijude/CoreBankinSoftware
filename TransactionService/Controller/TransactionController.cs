@@ -5,7 +5,7 @@ using TransactionService.Services;
 namespace TransactionService.Controller;
 
 [ApiController]
-[Route("")]
+[Route("/")]
 public class TransactionController(PerformTransaction performTransaction) : ControllerBase
 {
     private readonly PerformTransaction _performTransaction = performTransaction;

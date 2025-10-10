@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
+using SharedGrpcContracts.Protos.Account.V1;
 using TransactionService.NIBBS;
 using TransactionService.Services;
 
@@ -15,10 +16,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Add dbcontext with postgreql
 builder.Services.AddDbContext<TransactionService.Data.TransactionDbContext>(options =>
     options.UseNpgsql(connectionString));
-
-var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
-if (string.IsNullOrEmpty(accountGrpcUrl))
-    throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
 
 // Nuban Service options and Http typed client
 builder.Services.Configure<NubanOptions>(options =>
@@ -56,6 +53,17 @@ builder.Services.AddHttpClient<NibssService>((provider, client) =>
     client.BaseAddress = new Uri(nibssOptions.BaseUrl);
     client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
     client.DefaultRequestHeaders.Add("Accept", "application/xml");
+});
+
+// Add gRPC client for Account service
+
+var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
+if (string.IsNullOrEmpty(accountGrpcUrl))
+    throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
+builder.Services.AddGrpcClient<AccountGrpcApiService.AccountGrpcApiServiceClient>(options =>
+{
+    options.Address = new Uri(accountGrpcUrl);
+
 });
 
 builder.Services.AddScoped<PerformTransaction>();

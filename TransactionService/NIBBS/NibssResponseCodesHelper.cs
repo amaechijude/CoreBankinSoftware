@@ -4,7 +4,7 @@ namespace TransactionService.NIBBS;
 /// Provides static methods for retrieving human-readable messages
 /// based on transaction response codes.
 /// </summary>
-public static class ResponseCodeHelper
+public static class NibssResponseCodesHelper
 {
     /// <summary>
     /// Retrieves the appropriate description message for a given response code string.
@@ -13,11 +13,7 @@ public static class ResponseCodeHelper
     /// <returns>The corresponding message, or "Unknown response code" if no match is found.</returns>
     public static string GetMessageForCode(string responseCode)
     {
-        // Normalize the input code by converting to uppercase and trimming whitespace
-        // to ensure robustness, then use a switch expression for mapping.
-        string code = responseCode?.Trim().ToUpperInvariant() ?? string.Empty;
-
-        return code switch
+        return responseCode switch
         {
             // Successful responses
             "00" => "Approved or completed successfully",

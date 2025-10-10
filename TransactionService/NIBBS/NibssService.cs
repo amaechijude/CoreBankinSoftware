@@ -52,7 +52,7 @@ public class NibssService(HttpClient client)
     /// </summary>
     /// <param name="request">The balance enquiry request.</param>
     /// <returns>A tuple containing the balance enquiry response on success, or an error message on failure.</returns>
-    public async Task<(BalanceEnquiryResponse? data, string error)> BalanceEnquiryAsync(BalanceEnquiryRequest request)
+    public async Task<(BalanceEnquiryResponse? data, string? error)> BalanceEnquiryAsync(BalanceEnquiryRequest request)
     {
         return await PostXmlAsync<BalanceEnquiryRequest, BalanceEnquiryResponse>(request, "/balance-enquiry", "Balance enquiry failed");
     }
@@ -79,7 +79,7 @@ public class NibssService(HttpClient client)
         catch (HttpRequestException)
         {
             // TODO: Add structured logging with request details.
-            return (null, "");
+            return (null, "Service unavailable");
         }
         catch (TimeoutException)
         {
