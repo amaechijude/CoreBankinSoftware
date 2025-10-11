@@ -1,5 +1,3 @@
-using System.Xml.Serialization;
-
 namespace TransactionService.NIBBS.XmlQueryAndResponseBody;
 
 using System.Xml.Serialization;
