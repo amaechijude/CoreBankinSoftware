@@ -1,15 +1,13 @@
-namespace TransactionService.Entity.Enums
+namespace TransactionService.Entity.Enums;
+public enum TransactionStatus
 {
-    public enum TransactionStatus
-    {
-        Initiated,
-        Validated,
-        Authorized,
-        Processing,
-        Completed,
-        Failed,
-        Reversed,
-        Blocked,
-        Cancelled
-    }
+    Initiated,
+    Validated,
+    Authorized,
+    Processing,
+    Completed,
+    Failed,
+    Reversed,
+    Blocked,
+    Cancelled
 }

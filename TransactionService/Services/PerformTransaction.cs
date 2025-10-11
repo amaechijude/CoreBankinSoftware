@@ -1,5 +1,6 @@
 using Grpc.Core;
 using SharedGrpcContracts.Protos.Account.V1;
+using TransactionService.Data;
 using TransactionService.DTOs;
 using TransactionService.NIBBS;
 using TransactionService.NIBBS.XmlQueryAndResponseBody;
@@ -10,13 +11,13 @@ namespace TransactionService.Services;
 public class PerformTransaction
     (
     NibssService nibssService,
-    // NubanAccountLookUp nubanAccountLookUp,
+    TransactionDbContext dbContext,
     ILogger<PerformTransaction> logger,
     AccountGrpcApiService.AccountGrpcApiServiceClient accountGrpcClient
     )
 {
     private readonly NibssService _nibssService = nibssService;
-    // private readonly NubanAccountLookUp _nubanAccountLookUp = nubanAccountLookUp;
+    private readonly TransactionDbContext _dbContext = dbContext;
     private readonly ILogger<PerformTransaction> _logger = logger;
     private readonly AccountGrpcApiService.AccountGrpcApiServiceClient _accountGrpcClient = accountGrpcClient;
     private static readonly int TRAANSACTION_FEE = 50; // Flat fee for demo purposes
@@ -94,7 +95,7 @@ public class PerformTransaction
         return ApiResultResponse<decimal>.Success((decimal)accountResponse.AccountBalance);
     }
 
-    public async Task<ApiResultResponse<FundCreditTransferResponse>> FundCreditTransfer(FundCreditTransferRequest request, string indempotencyKey, CancellationToken cancellationToken=default)
+    public async Task<ApiResultResponse<FundCreditTransferResponse>> FundCreditTransfer(FundCreditTransferRequest request, string indempotencyKey, CancellationToken cancellationToken = default)
     {
         // Validate Request
         var validator = new FundCreditTransferValidator();
@@ -141,25 +142,12 @@ public class PerformTransaction
                 return ApiResultResponse<FundCreditTransferResponse>.Error(error ?? "Fund credit transfer failed");
             if (data.ResponseCode != "00")
                 return ApiResultResponse<FundCreditTransferResponse>.Error(NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode));
+        }
+        catch
+        {
 
-            // Successful response
-            // return ApiResultResponse<FundCreditTransferResponse>.Success(new FundCreditTransferResponse
-            // {
-            //     Amount = request.Amount,
-            //     Status = data.ResponseCode,
-            //     TransactionDateTime = DateTime.Now,
-            //     SenderAccountNumber = request.SenderAccountNumber,
-            //     SenderBankName = request.SenderBankName,
-            //     SenderAccountName = senderAccountResponse.AccountName,
-            //     BeneficiaryAccountNumber = request.DestinationAccountNumber,
-            //     BeneficiaryBankName = request.DestinationBankName,
-            //     BeneficiaryAccountName = data.BeneficiaryAccountName ?? "N/A",
-            //     Narration = request.Narration ?? "N/A",
-            //     SessionID = sessionId,
-            //     TransactionReference = data.TransactionReference
-            // });
+        }
     }
-
     private async Task<(GetAccountResponse?, string error)> GetAccountBalanceFromAccountService(string customerId)
     {
         try
@@ -192,5 +180,26 @@ public class PerformTransaction
             _logger.LogError(ex, "Unexpected error while fetching account details for CustomerId: {CustomerId}", customerId);
             return (null, "Internal server error");
         }
+    }
+
+    private static FundCreditTransferResponse MapToFundCreditTransferResponse(FTSingleCreditResponse data, FundCreditTransferRequest request, GetAccountResponse senderAccountResponse, string status)
+    {
+        return new FundCreditTransferResponse(
+            Amount: request.Amount,
+            Status: status,
+            TransactionDateTime: DateTime.Now,
+
+            SenderAccountNumber: request.SenderAccountNumber,
+            SenderBankName: request.SenderBankName,
+            SenderAccountName: request.SenderAccountName,
+
+            BeneficiaryAccountNumber: request.DestinationAccountNumber,
+            BeneficiaryBankName: request.DestinationBankName,
+            BeneficiaryAccountName: data.AccountName ?? "N/A",
+
+            Narration: request.Narration ?? "N/A",
+            SessionID: data.SessionID,
+            TransactionReference: data.PaymentReference
+        );
     }
 }

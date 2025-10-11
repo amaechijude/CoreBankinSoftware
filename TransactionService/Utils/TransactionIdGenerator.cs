@@ -13,7 +13,7 @@ internal static class TransactionIdGenerator
     /// <param name="senderBankCode">3-character sender's bank code</param>
     /// <param name="destinationBankCode">3-character destination bank code</param>
     /// <returns>30-character transaction ID</returns>
-    public static string GenerateSessionId(string senderBankCode, string destinationBankCode) => 
+    public static string GenerateSessionId(string senderBankCode, string destinationBankCode) =>
         GenerateTransactionId(senderBankCode, destinationBankCode);
 
 

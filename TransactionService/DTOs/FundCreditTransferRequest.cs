@@ -6,9 +6,13 @@ public record FundCreditTransferRequest
     string SenderAccountNumber,
     string SenderBankName,
     string SenderBankNubanCode,
+    string SenderAccountName,
+
     string DestinationAccountNumber,
     string DestinationBankName,
     string DestinationBankNubanCode,
+    string DestinationAccountName,
+
     decimal Amount,
     string? Narration
 );
