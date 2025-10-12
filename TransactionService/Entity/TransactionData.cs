@@ -1,8 +1,10 @@
-﻿using TransactionService.Entity.Enums;
+﻿using System.Data;
+using TransactionService.DTOs;
+using TransactionService.Entity.Enums;
 
 namespace TransactionService.Entity;
 
-public class Transaction
+public class TransactionData
 {
     public Guid Id { get; private set; }
     public string TransactionRefrence { get; private set; } = string.Empty;
@@ -10,7 +12,7 @@ public class Transaction
     public Guid CustomerId { get; private set; }
 
     public decimal Amount { get; private set; }
-    public CurrencyType Currency { get; private set; } = CurrencyType.NGN;
+    public string Currency { get; private set; } = "NGN";
     public string? Narration { get; private set; } = string.Empty;
 
     public string SourceAccountNumber { get; private set; } = string.Empty;
@@ -41,7 +43,6 @@ public class Transaction
     public string SessionId { get; private set; } = string.Empty;
     public string DeviceInfo { get; private set; } = string.Empty;
     public string IpAddress { get; private set; } = string.Empty;
-    public string InitiatedBy { get; private set; } = string.Empty;
     public string? Longitude { get; private set; }
     public string? Latitude { get; private set; }
 
@@ -53,4 +54,70 @@ public class Transaction
     public ICollection<TransactionDispute> Disputes { get; set; } = [];
     public ICollection<TransactionHold> Holds { get; set; } = [];
     public ICollection<TransactionReversal> Reversals { get; set; } = [];
+
+
+    // static method to create
+    public static TransactionData Create(
+        string idempotencyKey,
+        Guid customerId,
+        string sessionId,
+        string refrence,
+        FundCreditTransferRequest request,
+        TransactionType transactionType,
+        TransactionChannel transactionChannel,
+        TransactionCategory transactionCategory,
+        TransactionStatus transactionStatus
+        )
+    {
+        return new TransactionData
+        {
+            Id = Guid.CreateVersion7(),
+            SessionId = sessionId,
+            TransactionRefrence = refrence,
+            IdempotencyKey = idempotencyKey,
+            CustomerId = customerId,
+
+            Amount = request.Amount,
+            Narration = request.Narration,
+            SourceAccountNumber = request.SenderAccountNumber,
+            SourceBankName = request.SenderBankName,
+            SourceAccountName = request.SenderAccountName,
+            SourceBankNubanCode = request.SenderBankNubanCode,
+            DestinationAcountNumber = request.DestinationAccountNumber,
+            DestinationBankName = request.DestinationBankName,
+            DestinationAccountName = request.DestinationAccountName,
+            DestinationBankNubanCode = request.DestinationBankNubanCode,
+            DeviceInfo = request.DeviceInfo,
+            IpAddress = request.IpAddress,
+            Longitude = request.Longitude,
+            Latitude = request.Latitude,
+
+
+            TransactionType = transactionType,
+            TransactionChannel = transactionChannel,
+            TransactionCategory = transactionCategory,
+            TransactionStatus = transactionStatus,
+        };
+    }
+
+    public void UpdateStatus(TransactionStatus newStatus, string? reason = null)
+    {
+        var oldStatus = TransactionStatus;
+        TransactionStatus = newStatus;
+
+        if (newStatus == TransactionStatus.Completed || newStatus == TransactionStatus.Failed)
+        {
+            ProcessedAt = DateTimeOffset.UtcNow;
+        }
+
+        StatusLogs.Add(new TransactionStatusLog
+        {
+            Id = Guid.CreateVersion7(),
+            TransactionId = Id,
+            TransactionReference = TransactionRefrence,
+            PreviousStatus = oldStatus,
+            NewStatus = newStatus,
+            ChangeReason = reason ?? string.Empty,
+        });
+    }
 }

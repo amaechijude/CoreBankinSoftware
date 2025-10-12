@@ -25,7 +25,7 @@ public class NibssService(HttpClient client)
     /// <returns>A tuple containing the fund transfer response on success, or an error message on failure.</returns>
     public async Task<(FTSingleCreditResponse? data, string error)> FundTransferCreditAsync(FTSingleCreditRequest request)
     {
-        return await PostXmlAsync<FTSingleCreditRequest, FTSingleCreditResponse>(request, "/fund-transfer", "Fund transfer failed");
+        return await PostXmlAsync<FTSingleCreditRequest, FTSingleCreditResponse>(request, "/fund-credit-transfer", "Fund transfer failed");
     }
     /// <summary>
     /// Initiates a single debit fund transfer
@@ -44,7 +44,7 @@ public class NibssService(HttpClient client)
 
     public async Task<(TSQuerySingleResponse? data, string error)> TransactionStatusQueryAsync(TSQuerySingleRequest request)
     {
-        return await PostXmlAsync<TSQuerySingleRequest, TSQuerySingleResponse>(request, "/transaction-status-query", "Transaction status query failed");
+        return await PostXmlAsync<TSQuerySingleRequest, TSQuerySingleResponse>(request, "/transaction-status-query", "TransactionData status query failed");
     }
 
     /// <summary>
@@ -56,6 +56,8 @@ public class NibssService(HttpClient client)
     {
         return await PostXmlAsync<BalanceEnquiryRequest, BalanceEnquiryResponse>(request, "/balance-enquiry", "Balance enquiry failed");
     }
+
+
 
     private async Task<(TResponse? data, string error)> PostXmlAsync<TRequest, TResponse>(TRequest request, string endpoint, string failureMessage)
         where TRequest : class
@@ -69,21 +71,17 @@ public class NibssService(HttpClient client)
 
             if (!response.IsSuccessStatusCode)
             {
-                // It might be useful to log the status code and response body here for debugging.
+                // log 
                 return (null, failureMessage);
             }
 
             var xmlResponse = await response.Content.ReadAsStringAsync();
             return (XmlSerializationHelper.Deserialize<TResponse>(xmlResponse), "");
         }
-        catch (HttpRequestException)
+        catch (Exception)
         {
-            // TODO: Add structured logging with request details.
+            // TODO: Add retry and structured logging with request details.
             return (null, "Service unavailable");
-        }
-        catch (TimeoutException)
-        {
-            return (null, "Request timeout");
         }
     }
 

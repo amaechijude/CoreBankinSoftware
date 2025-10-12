@@ -69,7 +69,7 @@ namespace CustomerAPI.Services
                 return ApiResponse<string>.Error("Face verification failed; Try again in a better light condition");
 
             var account = Account.CreateNewAccount(user);
-            _context.Accounts.Add(account);
+            await _context.Accounts.AddAsync(account);
             await _context.SaveChangesAsync();
             return ApiResponse<string>.Success("Face verification successful");
 

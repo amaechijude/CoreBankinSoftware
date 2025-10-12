@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TransactionService.Entity;
 
-namespace TransactionService.Data;
+namespace TransactionService.Data.FluentApiConfig;
 
 public class TransactionNotificationConfig : IEntityTypeConfiguration<TransactionNotification>
 {

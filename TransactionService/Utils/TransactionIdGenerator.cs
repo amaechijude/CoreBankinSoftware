@@ -26,6 +26,9 @@ internal static class TransactionIdGenerator
     public static string GenerateRecId(string senderBankCode, string destinationBankCode) =>
         GenerateTransactionId(senderBankCode, destinationBankCode);
 
+
+
+
     /// <summary>
     /// Generates a random numeric string of specified length.
     /// </summary>

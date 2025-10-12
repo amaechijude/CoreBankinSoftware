@@ -14,7 +14,12 @@ public record FundCreditTransferRequest
     string DestinationAccountName,
 
     decimal Amount,
-    string? Narration
+    string? Narration,
+
+    string DeviceInfo,
+    string IpAddress,
+    string? Longitude,
+    string? Latitude
 );
 
 public record FundCreditTransferResponse
@@ -36,12 +41,6 @@ public record FundCreditTransferResponse
     string TransactionReference
 );
 
-// public record BankInfoDetails 
-// (
-//     string AccountNumber,
-//     string AccountName,
-//     string BankName
-// );
 public class FundCreditTransferValidator : AbstractValidator<FundCreditTransferRequest>
 {
     public FundCreditTransferValidator()

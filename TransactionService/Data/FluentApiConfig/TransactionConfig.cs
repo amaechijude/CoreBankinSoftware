@@ -2,11 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TransactionService.Entity;
 
-namespace TransactionService.Data;
+namespace TransactionService.Data.FluentApiConfig;
 
-public class TransactionConfig : IEntityTypeConfiguration<Transaction>
+public class TransactionConfig : IEntityTypeConfiguration<TransactionData>
 {
-    public void Configure(EntityTypeBuilder<Transaction> builder)
+    public void Configure(EntityTypeBuilder<TransactionData> builder)
     {
         builder.ToTable("Transactions");
         builder.HasKey(t => t.Id);

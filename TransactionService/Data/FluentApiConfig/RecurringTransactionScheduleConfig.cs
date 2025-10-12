@@ -2,13 +2,13 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using TransactionService.Entity;
 
-namespace TransactionService.Data;
+namespace TransactionService.Data.FluentApiConfig;
 
 public class RecurringTransactionScheduleConfig : IEntityTypeConfiguration<RecurringTransactionSchedule>
 {
     public void Configure(EntityTypeBuilder<RecurringTransactionSchedule> builder)
     {
-        builder.ToTable("RecurringTransactionSchedules");
+        builder.ToTable("recurringTransactionSchedules");
         builder.HasKey(t => t.Id);
 
         builder.Property(t => t.Id)

@@ -1,3 +1,5 @@
+using TransactionService.Entity.Enums;
+
 namespace TransactionService.NIBBS;
 
 /// <summary>
@@ -13,6 +15,7 @@ public static class NibssResponseCodesHelper
     /// <returns>The corresponding message, or "Unknown response code" if no match is found.</returns>
     public static string GetMessageForCode(string responseCode)
     {
+        // Do not edit this except if there is changes from Nibss documentation.
         return responseCode switch
         {
             // Successful responses
@@ -41,8 +44,8 @@ public static class NibssResponseCodesHelper
 
             // Specific financial/limit errors
             "51" => "No sufficient funds",
-            "57" => "Transaction not permitted to sender",
-            "58" => "Transaction not permitted on channel",
+            "57" => "TransactionData not permitted to sender",
+            "58" => "TransactionData not permitted on channel",
             "61" => "Transfer limit Exceeded",
             "63" => "Security violation",
             "65" => "Exceeds withdrawal frequency",
@@ -57,6 +60,44 @@ public static class NibssResponseCodesHelper
 
             // Default case if the code is not recognized
             _ => "Unknown response code"
+        };
+    }
+
+    //Switch on transaction status
+    public static TransactionStatus GetTransactionStatus(string responseCode)
+    {
+        return responseCode switch
+        { 
+            // Success
+            "00" => TransactionStatus.Completed,
+
+            // In Progress
+            "09" => TransactionStatus.Processing,
+
+            // Declined by business rules (can be retried by user with different parameters)
+            "05" => TransactionStatus.Declined, // Do not honor
+            "06" => TransactionStatus.Declined, // Dormant Account
+            "57" => TransactionStatus.Declined, // Transaction not permitted to sender
+            "58" => TransactionStatus.Declined, // Transaction not permitted on channel
+            "61" => TransactionStatus.Declined, // Transfer limit Exceeded
+            "65" => TransactionStatus.Declined, // Exceeds withdrawal frequency
+
+            // Blocked for security reasons
+            "34" => TransactionStatus.Blocked,  // Suspected fraud
+            "63" => TransactionStatus.Blocked,  // Security violation
+
+            // Hard Failures (system/validation issues, not typically user-correctable)
+            "51" => TransactionStatus.Failed,
+            "01" => TransactionStatus.Failed,
+            "07" => TransactionStatus.Failed,
+            "08" => TransactionStatus.Failed,
+            "12" => TransactionStatus.Failed,
+            "13" => TransactionStatus.Failed,
+            "26" => TransactionStatus.Failed, // Duplicate record
+            "94" => TransactionStatus.Failed, // Duplicate transaction
+            "91" => TransactionStatus.Failed, // Beneficiary Bank not available
+            "96" => TransactionStatus.Failed, // System malfunction
+            _ => TransactionStatus.Failed,
         };
     }
 }

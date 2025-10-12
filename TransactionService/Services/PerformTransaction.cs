@@ -2,6 +2,8 @@ using Grpc.Core;
 using SharedGrpcContracts.Protos.Account.V1;
 using TransactionService.Data;
 using TransactionService.DTOs;
+using TransactionService.Entity;
+using TransactionService.Entity.Enums;
 using TransactionService.NIBBS;
 using TransactionService.NIBBS.XmlQueryAndResponseBody;
 using TransactionService.Utils;
@@ -95,7 +97,7 @@ public class PerformTransaction
         return ApiResultResponse<decimal>.Success((decimal)accountResponse.AccountBalance);
     }
 
-    public async Task<ApiResultResponse<FundCreditTransferResponse>> FundCreditTransfer(FundCreditTransferRequest request, string indempotencyKey, CancellationToken cancellationToken = default)
+    public async Task<ApiResultResponse<FundCreditTransferResponse>> FundCreditTransfer(Guid customerId, FundCreditTransferRequest request, string indempotencyKey, CancellationToken cancellationToken = default)
     {
         // Validate Request
         var validator = new FundCreditTransferValidator();
@@ -115,37 +117,63 @@ public class PerformTransaction
         if (senderAccountResponse.AccountBalance < (double)request.Amount + TRAANSACTION_FEE)
             return ApiResultResponse<FundCreditTransferResponse>.Error("Insufficient funds in sender's account");
 
-        // Get Bank Code
-        string? bankCode = !string.IsNullOrWhiteSpace(request.DestinationBankNubanCode)
-            ? request.DestinationBankNubanCode
-            : BankCodes.GetBankCode(request.DestinationBankName);
-        if (bankCode == null)
-            return ApiResultResponse<FundCreditTransferResponse>.Error("Destination bank not supported");
+
 
         var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderBankNubanCode, request.DestinationBankNubanCode);
+        var fctRequest = new FTSingleCreditRequest
+        {
+            SessionID = sessionId,
+            DestinationBankCode = request.DestinationBankNubanCode,
+            ChannelCode = "1", // mobile channel code; adjust as necessary
+            AccountName = request.DestinationBankName,
+            AccountNumber = request.DestinationAccountNumber,
+            OriginatorName = request.SenderBankName,
+            Narration = request.Narration ?? "N/A",
+            PaymentReference = indempotencyKey,
+            Amount = request.Amount
+        };
+        // record in database
+        var transactionData = TransactionData.Create(
+            idempotencyKey: indempotencyKey,
+            customerId: customerId,
+            sessionId: sessionId,
+            refrence: $"TXN{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            request: request,
+            transactionType: TransactionType.Credit,
+            transactionChannel: TransactionChannel.MobileApp,
+            transactionCategory: TransactionCategory.NIP_INTER_BANK_TRANSFER,
+            transactionStatus: TransactionStatus.Initiated
+        );
         try
         {
-            var fctRequest = new FTSingleCreditRequest
-            {
-                SessionID = sessionId,
-                DestinationBankCode = request.DestinationBankNubanCode,
-                ChannelCode = "1", // mobile channel code; adjust as necessary
-                AccountName = request.DestinationBankName,
-                AccountNumber = request.DestinationAccountNumber,
-                OriginatorName = request.SenderBankName,
-                Narration = request.Narration ?? "N/A",
-                PaymentReference = indempotencyKey,
-                Amount = request.Amount
-            };
             var (data, error) = await _nibssService.FundTransferCreditAsync(fctRequest);
             if (data is null)
+            {
+                transactionData.UpdateStatus(TransactionStatus.Failed, error);
                 return ApiResultResponse<FundCreditTransferResponse>.Error(error ?? "Fund credit transfer failed");
-            if (data.ResponseCode != "00")
-                return ApiResultResponse<FundCreditTransferResponse>.Error(NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode));
-        }
-        catch
-        {
+            }
 
+            var code = NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode);
+            var status = NibssResponseCodesHelper.GetTransactionStatus(data.ResponseCode);
+            transactionData.UpdateStatus(status, code);
+
+            if (data.ResponseCode != "00" || data.ResponseCode != "09")
+            {
+                transactionData.UpdateStatus(status, code);
+                await _dbContext.Transactions.AddAsync(transactionData, cancellationToken);
+                return ApiResultResponse<FundCreditTransferResponse>.Error(code);
+            }
+
+            transactionData.UpdateStatus(status, code);
+            await _dbContext.Transactions.AddAsync(transactionData, cancellationToken);
+
+            return ApiResultResponse<FundCreditTransferResponse>
+                    .Success(MapToFundCreditTransferResponse(data, request, code));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error: {message}", ex.Message);
+            return ApiResultResponse<FundCreditTransferResponse>.Error("Error ");
         }
     }
     private async Task<(GetAccountResponse?, string error)> GetAccountBalanceFromAccountService(string customerId)
@@ -182,7 +210,7 @@ public class PerformTransaction
         }
     }
 
-    private static FundCreditTransferResponse MapToFundCreditTransferResponse(FTSingleCreditResponse data, FundCreditTransferRequest request, GetAccountResponse senderAccountResponse, string status)
+    private static FundCreditTransferResponse MapToFundCreditTransferResponse(FTSingleCreditResponse data, FundCreditTransferRequest request, string status)
     {
         return new FundCreditTransferResponse(
             Amount: request.Amount,

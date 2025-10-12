@@ -7,6 +7,5 @@ public class TransactionNibssDetail
     public string? NibbsSessionId { get; set; }
     public string? NibbsResponseCode { get; set; }
     public string? NibbsResponseMessage { get; set; }
-    public string? FailureReason { get; set; }
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
 }
