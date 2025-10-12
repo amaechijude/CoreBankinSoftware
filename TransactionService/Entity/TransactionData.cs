@@ -1,5 +1,5 @@
 ﻿using System.Data;
-using TransactionService.DTOs;
+using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity.Enums;
 
 namespace TransactionService.Entity;

@@ -47,7 +47,7 @@ builder.Services.AddGrpcClient<AccountGrpcApiService.AccountGrpcApiServiceClient
 
 });
 
-builder.Services.AddScoped<PerformTransaction>();
+builder.Services.AddScoped<NipInterBankService>();
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.

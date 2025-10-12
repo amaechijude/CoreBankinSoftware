@@ -1,5 +1,5 @@
 using FluentValidation;
-namespace TransactionService.DTOs;
+namespace TransactionService.DTOs.NipInterBank;
 
 public record FundCreditTransferRequest
 (

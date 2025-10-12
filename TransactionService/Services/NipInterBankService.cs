@@ -1,7 +1,7 @@
 using Grpc.Core;
 using SharedGrpcContracts.Protos.Account.V1;
 using TransactionService.Data;
-using TransactionService.DTOs;
+using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
 using TransactionService.Entity.Enums;
 using TransactionService.NIBBS;
@@ -10,19 +10,20 @@ using TransactionService.Utils;
 
 namespace TransactionService.Services;
 
-public class PerformTransaction
+public class NipInterBankService
     (
     NibssService nibssService,
     TransactionDbContext dbContext,
-    ILogger<PerformTransaction> logger,
+    ILogger<NipInterBankService> logger,
     AccountGrpcApiService.AccountGrpcApiServiceClient accountGrpcClient
     )
 {
     private readonly NibssService _nibssService = nibssService;
     private readonly TransactionDbContext _dbContext = dbContext;
-    private readonly ILogger<PerformTransaction> _logger = logger;
+    private readonly ILogger<NipInterBankService> _logger = logger;
     private readonly AccountGrpcApiService.AccountGrpcApiServiceClient _accountGrpcClient = accountGrpcClient;
     private static readonly int TRAANSACTION_FEE = 50; // Flat fee for demo purposes
+    private static readonly int MINIMUM_BALANCE = 50;
 
     public async Task<ApiResultResponse<NameEnquiryResponse>> GetBeneficiaryAccountDetails(NameEnquiryRequest request)
     {
@@ -42,8 +43,7 @@ public class PerformTransaction
             return ApiResultResponse<NameEnquiryResponse>.Error("Bank not supported");
 
         var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderBankNubanCode, request.DestinationBankNubanCode);
-        try
-        {
+        
             var nESingleRequest = new NESingleRequest
             {
                 SessionID = sessionId,
@@ -64,25 +64,6 @@ public class PerformTransaction
                 BankCode: data.DestinationBankCode,
                 BankName: request.DestinationBankName
             ));
-
-        }
-        catch (HttpRequestException)
-        {
-            // fallback to local NUBAN lookup
-            _logger.LogWarning("Nibss name enquiry failed, falling back to local NUBAN lookup");
-            return ApiResultResponse<NameEnquiryResponse>.Error("Internal server error");
-        }
-        catch (TimeoutException)
-        {
-            // fallback to local NUBAN lookup
-            _logger.LogWarning("Nibss name enquiry timed out, falling back to local NUBAN lookup");
-            return ApiResultResponse<NameEnquiryResponse>.Error("Internal server error");
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during NIBSS name enquiry");
-            return ApiResultResponse<NameEnquiryResponse>.Error("Internal server error");
-        }
     }
 
     public async Task<ApiResultResponse<decimal>> GetAccountBalance(string customerId)
@@ -111,11 +92,11 @@ public class PerformTransaction
         // Get Sender Account Details
         var (senderAccountResponse, senderError) = await GetAccountBalanceFromAccountService(request.SenderAccountNumber);
         if (senderAccountResponse is null)
-            return ApiResultResponse<FundCreditTransferResponse>.Error($"Sender account error: {senderError}");
+            return ApiResultResponse<FundCreditTransferResponse>.Error(senderError ?? "Sender account validation failed.");
 
         // Check Sufficient Balance
-        if (senderAccountResponse.AccountBalance < (double)request.Amount + TRAANSACTION_FEE)
-            return ApiResultResponse<FundCreditTransferResponse>.Error("Insufficient funds in sender's account");
+        if (senderAccountResponse.AccountBalance < (double)request.Amount + TRAANSACTION_FEE + MINIMUM_BALANCE)
+            return ApiResultResponse<FundCreditTransferResponse>.Error("Insufficient funds.");
 
 
 
@@ -127,7 +108,7 @@ public class PerformTransaction
             ChannelCode = "1", // mobile channel code; adjust as necessary
             AccountName = request.DestinationBankName,
             AccountNumber = request.DestinationAccountNumber,
-            OriginatorName = request.SenderBankName,
+            OriginatorName = request.SenderAccountName,
             Narration = request.Narration ?? "N/A",
             PaymentReference = indempotencyKey,
             Amount = request.Amount
@@ -144,38 +125,37 @@ public class PerformTransaction
             transactionCategory: TransactionCategory.NIP_INTER_BANK_TRANSFER,
             transactionStatus: TransactionStatus.Initiated
         );
-        try
+        // Add the initial record to the context before the external call.
+        await _dbContext.Transactions.AddAsync(transactionData, cancellationToken);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        var (data, error) = await _nibssService.FundTransferCreditAsync(fctRequest);
+        if (data is null)
         {
-            var (data, error) = await _nibssService.FundTransferCreditAsync(fctRequest);
-            if (data is null)
-            {
-                transactionData.UpdateStatus(TransactionStatus.Failed, error);
-                return ApiResultResponse<FundCreditTransferResponse>.Error(error ?? "Fund credit transfer failed");
-            }
-
-            var code = NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode);
-            var status = NibssResponseCodesHelper.GetTransactionStatus(data.ResponseCode);
-            transactionData.UpdateStatus(status, code);
-
-            if (data.ResponseCode != "00" || data.ResponseCode != "09")
-            {
-                transactionData.UpdateStatus(status, code);
-                await _dbContext.Transactions.AddAsync(transactionData, cancellationToken);
-                return ApiResultResponse<FundCreditTransferResponse>.Error(code);
-            }
-
-            transactionData.UpdateStatus(status, code);
-            await _dbContext.Transactions.AddAsync(transactionData, cancellationToken);
-
-            return ApiResultResponse<FundCreditTransferResponse>
-                    .Success(MapToFundCreditTransferResponse(data, request, code));
+            transactionData.UpdateStatus(TransactionStatus.Failed, error);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return ApiResultResponse<FundCreditTransferResponse>.Error(error ?? "Fund credit transfer failed");
         }
-        catch (Exception ex)
+
+        var code = NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode);
+        var status = NibssResponseCodesHelper.GetTransactionStatus(data.ResponseCode);
+
+        // The correct logic is to check if the code is NOT "00" AND NOT "09".
+        if (data.ResponseCode != "00" && data.ResponseCode != "09")
         {
-            _logger.LogError(ex, "Error: {message}", ex.Message);
-            return ApiResultResponse<FundCreditTransferResponse>.Error("Error ");
+            transactionData.UpdateStatus(status, code);
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            return ApiResultResponse<FundCreditTransferResponse>.Error(code);
         }
+
+        // This handles the success ("00") and pending ("09") cases.
+        transactionData.UpdateStatus(status, code);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return ApiResultResponse<FundCreditTransferResponse>
+                .Success(MapToFundCreditTransferResponse(data, request, code));
     }
+
     private async Task<(GetAccountResponse?, string error)> GetAccountBalanceFromAccountService(string customerId)
     {
         try

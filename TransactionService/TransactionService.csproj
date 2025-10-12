@@ -20,5 +20,9 @@
   <ItemGroup>
     <Protobuf Include="..\gRPC\Contracts\Protos\*.proto" GrpcServices="client" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <Folder Include="DTOs\Intrabank\" />
+  </ItemGroup>
 
 </Project>

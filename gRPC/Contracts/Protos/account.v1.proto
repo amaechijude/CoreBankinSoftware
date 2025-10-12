@@ -10,6 +10,7 @@ service AccountGrpcApiService {
   rpc GetAccountByByCustomerId(GetAccountByCustomerIdRequest) returns (GetAccountResponse);
   rpc GetAccountByAccountId(GetAccountByAccountIdRequest) returns (GetAccountResponse);
   rpc GetAccountByPhoneAccountNumber(GetAccountByPhoneAccountNumberRequest) returns (GetAccountResponse);
+  rpc GetAccountByAccountNumber(GetAccountByAccountNumberRequest) returns (GetAccountResponse);
 }
 
 message CreateAccountRequest {
@@ -36,6 +37,11 @@ message GetAccountByAccountIdRequest {
 message GetAccountByPhoneAccountNumberRequest {
   string phone_number = 1;
 }
+
+message GetAccountByAccountNumberRequest {
+  string account_number = 1;
+}
+
 message GetAccountResponse {
   bool success = 1;
   string account_id = 2;

@@ -2,7 +2,7 @@
 
 namespace TransactionService.NIBBS.XmlQueryAndResponseBody;
 
-[XmlRoot(ElementName = "NESingleRequest")]
+[XmlRoot("NESingleRequest")]
 public class NESingleRequest
 {
     public required string SessionID { get; set; }
@@ -12,7 +12,7 @@ public class NESingleRequest
 }
 
 
-[XmlRoot(ElementName = "NESingleResponse")]
+[XmlRoot("NESingleResponse")]
 public class NESingleResponse
 {
     public required string SessionID { get; set; }

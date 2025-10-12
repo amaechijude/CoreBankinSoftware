@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Mvc;
-using TransactionService.DTOs;
+using TransactionService.DTOs.NipInterBank;
 using TransactionService.Services;
 
 namespace TransactionService.Controller;
 
 [ApiController]
 [Route("/")]
-public class TransactionController(PerformTransaction performTransaction) : ControllerBase
+public class TransactionController(NipInterBankService performTransaction) : ControllerBase
 {
-    private readonly PerformTransaction _performTransaction = performTransaction;
+    private readonly NipInterBankService _performTransaction = performTransaction;
 
     [HttpPost("name-enquiry")]
     public async Task<IActionResult> NameEnquiry([FromBody] NameEnquiryRequest request)
