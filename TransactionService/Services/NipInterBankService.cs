@@ -43,27 +43,27 @@ public class NipInterBankService
             return ApiResultResponse<NameEnquiryResponse>.Error("Bank not supported");
 
         var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderBankNubanCode, request.DestinationBankNubanCode);
-        
-            var nESingleRequest = new NESingleRequest
-            {
-                SessionID = sessionId,
-                DestinationBankCode = request.DestinationBankNubanCode,
-                ChannelCode = "1", // mobile channel code; adjust as necessary
-                AccountNumber = request.DestinationAccountNumber
-            };
-            var (data, error) = await _nibssService.NameEnquiryAsync(nESingleRequest);
-            if (data is null)
-                return ApiResultResponse<NameEnquiryResponse>.Error(error ?? "Account name enquiry failed");
-            if (data.ResponseCode != "00")
-                return ApiResultResponse<NameEnquiryResponse>.Error(NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode));
-            // Successful response
-            return ApiResultResponse<NameEnquiryResponse>.Success(new NameEnquiryResponse
-            (
-                AccountNumber: data.AccountNumber,
-                AccountName: data.AccountName,
-                BankCode: data.DestinationBankCode,
-                BankName: request.DestinationBankName
-            ));
+
+        var nESingleRequest = new NESingleRequest
+        {
+            SessionID = sessionId,
+            DestinationBankCode = request.DestinationBankNubanCode,
+            ChannelCode = "1", // mobile channel code; adjust as necessary
+            AccountNumber = request.DestinationAccountNumber
+        };
+        var (data, error) = await _nibssService.NameEnquiryAsync(nESingleRequest);
+        if (data is null)
+            return ApiResultResponse<NameEnquiryResponse>.Error(error ?? "Account name enquiry failed");
+        if (data.ResponseCode != "00")
+            return ApiResultResponse<NameEnquiryResponse>.Error(NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode));
+        // Successful response
+        return ApiResultResponse<NameEnquiryResponse>.Success(new NameEnquiryResponse
+        (
+            AccountNumber: data.AccountNumber,
+            AccountName: data.AccountName,
+            BankCode: data.DestinationBankCode,
+            BankName: request.DestinationBankName
+        ));
     }
 
     public async Task<ApiResultResponse<decimal>> GetAccountBalance(string customerId)
@@ -118,7 +118,7 @@ public class NipInterBankService
             idempotencyKey: indempotencyKey,
             customerId: customerId,
             sessionId: sessionId,
-            refrence: $"TXN{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            reference: $"TXN{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
             request: request,
             transactionType: TransactionType.Credit,
             transactionChannel: TransactionChannel.MobileApp,

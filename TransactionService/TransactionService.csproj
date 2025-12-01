@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>2b5e0361-c199-46a9-8701-69f37d5cd74f</UserSecretsId>
@@ -9,11 +9,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Confluent.Kafka" />
+    <PackageReference Include="DotNetEnv" />
 	  <PackageReference Include="FluentValidation" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.Net.Client" />
+    <PackageReference Include="Hangfire.AspNetCore" />
+    <PackageReference Include="Hangfire.Core" />
+    <PackageReference Include="Hangfire.PostgreSql" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	  <PackageReference Include="Quartz" />
+	  <PackageReference Include="Quartz.Extensions.Hosting" />
+	  <PackageReference Include="Quartz.Serialization.Json" />
 	  <PackageReference Include="Scalar.AspNetCore" />
   </ItemGroup>
   
@@ -23,6 +31,11 @@
   
   <ItemGroup>
     <Folder Include="DTOs\Intrabank\" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
   </ItemGroup>
 
 </Project>

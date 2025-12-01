@@ -3,12 +3,14 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Confluent kafka -->
+    <PackageVersion Include="Confluent.Kafka" Version="2.12.0" />
     <!-- Dotnet DotNetEnv -->
     <PackageVersion Include="DotNetEnv" Version="3.1.1" />
     <!-- FaceAISharp -->
     <PackageVersion Include="FaceAiSharp.Bundle" Version="0.5.23" />
     <!-- FluentValidation -->
-    <PackageVersion Include="FluentValidation" Version="12.0.0" />
+    <PackageVersion Include="FluentValidation" Version="12.1.0" />
     <!-- Google.Protobuf and gRPC -->
     <PackageVersion Include="Google.Protobuf" Version="3.32.1" />
     <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
@@ -17,6 +19,9 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
     <!-- Microsoft.AspNetCore.Authentication.JwtBearer -->
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.22" />
+    <PackageVersion Include="Hangfire.Core" Version="1.8.22" />
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.12" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
     <!-- Microsoft.AspNetCore.OpenApi -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
@@ -25,6 +30,7 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.9">
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
@@ -34,8 +40,12 @@
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
     <!-- Npgsql.EntityFrameworkCore.PostgreSQL -->
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageVersion Include="NSubstitute" Version="5.3.0" />
     <!-- Scalar.AspNetCore -->
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.8.8" />
+    <PackageVersion Include="Quartz" Version="3.15.1" />
+    <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.1" />
+    <PackageVersion Include="Quartz.Serialization.Json" Version="3.15.1" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />
     <!-- Serilog -->
     <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
@@ -43,6 +53,7 @@
     <PackageVersion Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
     <!-- Tesseract -->
+    <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageVersion Include="Tesseract" Version="5.2.0" />
     <!-- Twilio.AspNet.Core -->
     <PackageVersion Include="Twilio.AspNet.Core" Version="8.1.2" />
@@ -50,5 +61,19 @@
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.4" />
     <!-- Yarp.ReverseProxy -->
     <PackageVersion Include="Yarp.ReverseProxy" Version="2.3.0" />
+    <!-- xUnit -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+    <!-- Services defaults -->
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
+    <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
+    <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
+    <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.0.0" />
   </ItemGroup>
 </Project>

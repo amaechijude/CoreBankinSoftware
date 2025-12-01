@@ -1,4 +1,4 @@
-﻿namespace TransactionService.Services;
+﻿namespace TransactionService.Utils;
 
 public static class BankCodes
 {

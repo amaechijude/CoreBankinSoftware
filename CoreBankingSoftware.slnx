@@ -7,11 +7,21 @@
   </Folder>
   <Folder Name="/CustomerProfile/">
     <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
+    <Project Path="CustomerProfile/tests/CustomerProfile.Test/CustomerProfile.Test.csproj" Id="4feb31e3-55ea-4cc5-9ac7-9b9203a8547b" />
   </Folder>
   <Folder Name="/gRPC/">
     <Project Path="gRPC/Contracts/SharedGrpcContracts.csproj" />
   </Folder>
+  <Folder Name="/KafkaMessages/">
+    <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
+  </Folder>
+  <Folder Name="/NewFolder1/" />
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Packages.props" />
+  </Folder>
   <Folder Name="/TransactionService/">
     <Project Path="TransactionService/TransactionService.csproj" Id="dd51a1a0-eac7-43e2-8425-898aa08afafe" />
   </Folder>
+  <Project Path="CoreBankingSoftware.AppHost/CoreBankingSoftware.AppHost.csproj" Id="6220ac52-21c0-4ad9-a24e-08892ce6eed2" />
+  <Project Path="CoreBankingSoftware.ServiceDefaults/CoreBankingSoftware.ServiceDefaults.csproj" />
 </Solution>

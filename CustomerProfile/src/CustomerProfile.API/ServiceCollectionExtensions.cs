@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 
 namespace CustomerAPI
 {
-    public static class ServiceCollectionExtensions
+    internal static class ServiceCollectionExtensions
     {
         private static IServiceCollection AddCustomerDbContext(this IServiceCollection services)
         {

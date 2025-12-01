@@ -1,44 +1,74 @@
 ﻿using Grpc.Core;
 using SharedGrpcContracts.Protos.Account.V1;
 using TransactionService.Data;
+using TransactionService.DTOs.Intrabank;
 using TransactionService.DTOs.NipInterBank;
+using TransactionService.Entity;
 using TransactionService.Utils;
 
 namespace TransactionService.Services;
 
-public class IntraBankService(
+internal class IntraBankService(
     TransactionDbContext dbContext,
     ILogger<NipInterBankService> logger,
     AccountGrpcApiService.AccountGrpcApiServiceClient accountGrpcClient
     )
 {
-    private readonly TransactionDbContext _dbContext = dbContext;
-    private readonly ILogger<NipInterBankService> _logger = logger;
-    private readonly AccountGrpcApiService.AccountGrpcApiServiceClient _accountGrpcClient = accountGrpcClient;
 
-    private static readonly int TRAANSACTION_FEE = 50; // Flat fee for demo purposes
-    private static readonly int MINIMUM_BALANCE = 50;
-
-    public async Task<ApiResultResponse<FundCreditTransferResponse>> IntraFundCreditTransferAsync(FundCreditTransferRequest request, Guid CustomerId, CancellationToken cancellationToken = default)
+    public async Task<ApiResultResponse<IntraBankNameEnquiryResponse>> IntraNameEnquiryAsync(IntraBankNameEnquiryRequest request, CancellationToken cancellationToken)
     {
-        // Validate Request
-        var validator = new FundCreditTransferValidator();
+        var validator = new IntraBankNameEnquiryRequestValidator();
         var validationResult = await validator.ValidateAsync(request, cancellationToken);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-            return ApiResultResponse<FundCreditTransferResponse>.Error(string.Join("; ", errors));
+            return ApiResultResponse<IntraBankNameEnquiryResponse>.Error(string.Join(" ", errors));
         }
-        var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderAccountNumber, request.DestinationAccountNumber);
+        var query = await GetDestinationAccountByAccountNumberAsync(request.AccountNumber);
+        if (query is null)
+            return ApiResultResponse<IntraBankNameEnquiryResponse>.Error("Account not found");
 
-        var getCustomerAccountResponse = await GetAccountByCustomerIdAsync(CustomerId);
-        var getDestinationAccountResponse = await GetDestinationAccountByAccountNumberAsync(request.SenderAccountNumber);
-
-        if (getCustomerAccountResponse is null || getDestinationAccountResponse is null)
-            return ApiResultResponse<FundCreditTransferResponse>.Error("Account not found");
-
-        return ApiResultResponse<FundCreditTransferResponse>.Error("Not implemented");
+        return ApiResultResponse<IntraBankNameEnquiryResponse>
+            .Success(new IntraBankNameEnquiryResponse(
+            AccountName: query.AccountName,
+            AccountNuber: query.AccountNumber,
+            BankName: query.BankName
+        ));
     }
+    public async Task<ApiResultResponse<IntraBankTransferResponse>> HandleTransferRequestAsync(IntraBankTransferRequest request, CancellationToken ct)
+    {
+        var max_retries = 4;
+        List<TransactionData> transactions = [
+            TransactionData.Create()
+        ];
+
+    }
+
+
+    // public async Task<ApiResultResponse<FundCreditTransferResponse>> IntraFundCreditTransferAsync(FundCreditTransferRequest request, Guid customerId, CancellationToken cancellationToken)
+    // {
+    //     // Validate Request
+    //     var validator = new FundCreditTransferValidator();
+    //     var validationResult = await validator.ValidateAsync(request, cancellationToken);
+    //     if (!validationResult.IsValid)
+    //     {
+    //         var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+    //         return ApiResultResponse<FundCreditTransferResponse>.Error(string.Join("; ", errors));
+    //     }
+
+    //     var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderAccountNumber, request.DestinationAccountNumber);
+
+    //     var task1 = GetAccountByCustomerIdAsync(customerId);
+    //     var task2 = GetDestinationAccountByAccountNumberAsync(request.SenderAccountNumber);
+
+    //     var getCustomerAccountResponse = await task1;
+    //     var getDestinationAccountResponse = await task2;
+
+    //     if (getCustomerAccountResponse is null || getDestinationAccountResponse is null)
+    //         return ApiResultResponse<FundCreditTransferResponse>.Error("Account not found");
+
+    //     return ApiResultResponse<FundCreditTransferResponse>.Error(" ");
+    // }
 
     private async Task<GetAccountResponse?> GetAccountByCustomerIdAsync(Guid customerId)
     {
@@ -46,18 +76,20 @@ public class IntraBankService(
 
         try
         {
-            GetAccountResponse? response = await _accountGrpcClient.GetAccountByByCustomerIdAsync(request);
-            return response;
+            return await accountGrpcClient.GetAccountByByCustomerIdAsync(request);
         }
         catch (RpcException ex)
         {
             // retry and log
-            _logger.LogError(ex, "Account Service unavailable");
+            logger.LogError(ex, "Account Service unavailable");
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Account Enquiry for {customerId} failed", customerId.ToString());
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                logger.LogError(ex, "Account Enquiry for {customerId} failed", customerId.ToString());
+            }
             return null;
         }
     }
@@ -68,20 +100,25 @@ public class IntraBankService(
 
         try
         {
-            GetAccountResponse? response = await _accountGrpcClient.GetAccountByAccountNumberAsync(request);
+            var response = await accountGrpcClient.GetAccountByAccountNumberAsync(request);
             return response;
         }
         catch (RpcException ex)
         {
-            // log and retry
-            _logger.LogError(ex, "Account Service unavailable");
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                logger.LogError(ex, "Account Service unavailable");
+            }
             return null;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Account Enquiry for {accountNumber} failed", accountNumber);
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                logger.LogError(ex, "Account Enquiry for {accountNumber} failed", accountNumber);
+            }
             return null;
         }
     }
-    
+
 }

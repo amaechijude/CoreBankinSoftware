@@ -5,7 +5,7 @@ using SixLabors.ImageSharp.PixelFormats;
 
 namespace CustomerAPI.External
 {
-    public sealed class FaceRecognitionService(
+    public class FaceRecognitionService(
         ILogger<FaceRecognitionService> logger,
         IFaceDetector faceDetector,
         IFaceEmbeddingsGenerator faceEmbeddingsGenerator)

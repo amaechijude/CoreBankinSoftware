@@ -9,6 +9,8 @@ using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -45,6 +47,8 @@ builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

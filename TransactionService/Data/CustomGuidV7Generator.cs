@@ -1,18 +1,17 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace TransactionService.Data
+namespace TransactionService.Data;
+
+public class CustomGuidV7Generator : ValueGenerator<Guid>
 {
-    public class CustomGuidV7Generator : ValueGenerator<Guid>
+    public override bool GeneratesTemporaryValues => false; // Indicates that the generated values are not temporary
+
+    public override Guid Next(EntityEntry entry)
     {
-        public override bool GeneratesTemporaryValues => false; // Indicates that the generated values are not temporary
+        if (entry is null)
+            throw new ArgumentNullException(nameof(entry), "Entity entry cannot be null.");
 
-        public override Guid Next(EntityEntry entry)
-        {
-            if (entry == null)
-                throw new ArgumentNullException(nameof(entry), "Entity entry cannot be null.");
-
-            return Guid.CreateVersion7();
-        }
+        return Guid.CreateVersion7();
     }
 }

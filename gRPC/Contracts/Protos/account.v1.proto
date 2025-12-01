@@ -11,7 +11,20 @@ service AccountGrpcApiService {
   rpc GetAccountByAccountId(GetAccountByAccountIdRequest) returns (GetAccountResponse);
   rpc GetAccountByPhoneAccountNumber(GetAccountByPhoneAccountNumberRequest) returns (GetAccountResponse);
   rpc GetAccountByAccountNumber(GetAccountByAccountNumberRequest) returns (GetAccountResponse);
+  rpc UpdateAccountBalance(UpdateAccountBalanceRequest) returns (UpdateAccountBalanceResponse);
 }
+
+message UpdateAccountBalanceRequest {
+  string account_number = 1;
+  double new_balance = 2;
+}
+
+message UpdateAccountBalanceResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+
 
 message CreateAccountRequest {
   string customer_id = 1;
@@ -46,8 +59,10 @@ message GetAccountResponse {
   bool success = 1;
   string account_id = 2;
   string account_number = 3;
-  bool is_active = 4;
-  bool can_transact = 5;
-  double account_balance = 6;
-  string error = 7;
+  string account_name = 4;
+  bool is_active = 5;
+  bool can_transact = 6;
+  double account_balance = 7;
+  string error = 8;
+  string bank_name = 9;
 }

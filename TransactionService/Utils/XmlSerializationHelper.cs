@@ -3,15 +3,12 @@ using System.Xml.Serialization;
 
 namespace TransactionService.Utils;
 
-
 internal static class XmlSerializationHelper
 {
     private static readonly ConcurrentDictionary<Type, XmlSerializer> SerializerCache = new();
 
-    private static XmlSerializer GetSerializer(Type type)
-    {
-        return SerializerCache.GetOrAdd(type, t => new XmlSerializer(t));
-    }
+    private static XmlSerializer GetSerializer(Type type) =>
+        SerializerCache.GetOrAdd(type, t => new XmlSerializer(t));
 
     public static string Serialize<T>(T obj) where T : class
     {

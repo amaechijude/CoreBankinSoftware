@@ -3,7 +3,7 @@ using CustomerAPI.DTO.BvnNinVerification;
 
 namespace CustomerAPI.External
 {
-    public sealed class QuickVerifyBvnNinService(HttpClient client)
+    public class QuickVerifyBvnNinService(HttpClient client)
     {
         private readonly HttpClient _client = client;
         public async Task<NINAPIResponse?> NINSearchRequest(string nin)

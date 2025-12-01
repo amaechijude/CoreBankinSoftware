@@ -67,7 +67,7 @@ public static class NibssResponseCodesHelper
     public static TransactionStatus GetTransactionStatus(string responseCode)
     {
         return responseCode switch
-        { 
+        {
             // Success
             "00" => TransactionStatus.Completed,
 

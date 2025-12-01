@@ -17,16 +17,6 @@ public class NibssService(HttpClient client)
     {
         return await PostXmlAsync<NESingleRequest, NESingleResponse>(request, "/name-enquiry", "Name enquiry failed");
     }
-
-    /// <summary>
-    /// Initiates a single credit fund transfer, which moves funds from a sender's account to a beneficiary's account.
-    /// </summary>
-    /// <param name="request">The fund transfer request details.</param>
-    /// <returns>A tuple containing the fund transfer response on success, or an error message on failure.</returns>
-    public async Task<(FTSingleCreditResponse? data, string error)> FundTransferCreditAsync(FTSingleCreditRequest request)
-    {
-        return await PostXmlAsync<FTSingleCreditRequest, FTSingleCreditResponse>(request, "/fund-credit-transfer", "Fund transfer failed");
-    }
     /// <summary>
     /// Initiates a single debit fund transfer
     /// </summary>
@@ -57,7 +47,15 @@ public class NibssService(HttpClient client)
         return await PostXmlAsync<BalanceEnquiryRequest, BalanceEnquiryResponse>(request, "/balance-enquiry", "Balance enquiry failed");
     }
 
-
+    /// <summary>
+    /// Initiates a single credit fund transfer, which moves funds from a sender's account to a beneficiary's account.
+    /// </summary>
+    /// <param name="request">The fund transfer request details.</param>
+    /// <returns>A tuple containing the fund transfer response on success, or an error message on failure.</returns>
+    public async Task<(FTSingleCreditResponse? data, string error)> FundTransferCreditAsync(FTSingleCreditRequest request)
+    {
+        return await PostXmlAsync<FTSingleCreditRequest, FTSingleCreditResponse>(request, "/fund-credit-transfer", "Fund transfer failed");
+    }
 
     private async Task<(TResponse? data, string error)> PostXmlAsync<TRequest, TResponse>(TRequest request, string endpoint, string failureMessage)
         where TRequest : class

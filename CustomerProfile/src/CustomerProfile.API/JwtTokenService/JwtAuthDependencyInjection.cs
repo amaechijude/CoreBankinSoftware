@@ -10,11 +10,11 @@ namespace CustomerAPI.JwtTokenService
     public class JwtOptions
     {
         [Required, MinLength(64)]
-        public string SecretKey { get; set; } = string.Empty;
+        public required string SecretKey { get; set; }
         [Required, MinLength(5)]
-        public string Issuer { get; set; } = string.Empty;
+        public required string Issuer { get; set; }
         [Required, MinLength(5)]
-        public string Audience { get; set; } = string.Empty;
+        public required string Audience { get; set; }
     }
 
     public static class JwtAuthDependencyInjection

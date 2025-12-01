@@ -1,6 +1,6 @@
 namespace TransactionService.CustomBackgroundService;
 
-public class CustomBackgroundService : BackgroundService
+public class KafkaMessagePublisher(ILogger<KafkaMessagePublisher> logger, IServiceScopeFactory serviceScopeFactory) : BackgroundService
 {
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
