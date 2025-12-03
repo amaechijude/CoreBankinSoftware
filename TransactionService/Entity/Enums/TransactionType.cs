@@ -7,17 +7,6 @@ public enum TransactionType
     Transfer,
     Withdrawal,
     Deposit,
-    BillPayment
-}
-
-public enum TransactionChannel
-{
-    MobileApp,
-    ATM,
-    USSD,
-    CreditCard,
-    BankTeller,
-    Website,
-    API,
-    POS
+    BillPayment,
+    Utility
 }

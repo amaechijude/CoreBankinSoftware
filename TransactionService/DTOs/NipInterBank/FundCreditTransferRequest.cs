@@ -3,10 +3,15 @@ namespace TransactionService.DTOs.NipInterBank;
 
 public record FundCreditTransferRequest
 (
+    bool IsIntraBank,
+    string IdempotencyKey,
+    Guid CustomerId,
+
     string SenderAccountNumber,
     string SenderBankName,
     string SenderBankNubanCode,
     string SenderAccountName,
+
 
     string DestinationAccountNumber,
     string DestinationBankName,
@@ -19,7 +24,8 @@ public record FundCreditTransferRequest
     string DeviceInfo,
     string IpAddress,
     string? Longitude,
-    string? Latitude
+    string? Latitude,
+    string? TransactionChannel
 );
 
 public record FundCreditTransferResponse
@@ -45,16 +51,6 @@ public class FundCreditTransferValidator : AbstractValidator<FundCreditTransferR
 {
     public FundCreditTransferValidator()
     {
-        RuleFor(x => x.SenderAccountNumber)
-            .NotEmpty().WithMessage("SenderAccountNumber is required.")
-            .Length(10).WithMessage("SenderAccountNumber must be 10 characters long.")
-            .Must(IsAllDigit).WithMessage("SenderAccountNumber must contain only digits.");
-        RuleFor(x => x.SenderBankName)
-            .NotEmpty().WithMessage("SenderBankName is required.")
-            .MinimumLength(3).WithMessage("SenderBankName must be at least 3 characters long.");
-        RuleFor(x => x.SenderBankNubanCode)
-            .NotEmpty().WithMessage("SenderBankNubanCode is required.")
-            .Must(IsAllDigit).WithMessage("SenderBankNubanCode must contain only digits.");
         RuleFor(x => x.DestinationAccountNumber)
             .NotEmpty().WithMessage("DestinationAccountNumber is required.")
             .Length(10).WithMessage("DestinationAccountNumber must be 10 characters long.")

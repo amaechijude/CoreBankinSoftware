@@ -7,6 +7,7 @@ public class TransactionDbContext(DbContextOptions<TransactionDbContext> options
 {
 
     public DbSet<TransactionData> Transactions => Set<TransactionData>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -4,6 +4,7 @@ using TransactionService.Data;
 using TransactionService.DTOs.Intrabank;
 using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
+using TransactionService.Entity.Enums;
 using TransactionService.Utils;
 
 namespace TransactionService.Services;
@@ -24,59 +25,64 @@ internal class IntraBankService(
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
             return ApiResultResponse<IntraBankNameEnquiryResponse>.Error(string.Join(" ", errors));
         }
-        var query = await GetDestinationAccountByAccountNumberAsync(request.AccountNumber);
+        var query = await GetAccountDetails(request.AccountNumber);
         if (query is null)
             return ApiResultResponse<IntraBankNameEnquiryResponse>.Error("Account not found");
 
         return ApiResultResponse<IntraBankNameEnquiryResponse>
-            .Success(new IntraBankNameEnquiryResponse(
-            AccountName: query.AccountName,
-            AccountNuber: query.AccountNumber,
-            BankName: query.BankName
-        ));
-    }
-    public async Task<ApiResultResponse<IntraBankTransferResponse>> HandleTransferRequestAsync(IntraBankTransferRequest request, CancellationToken ct)
-    {
-        var max_retries = 4;
-        List<TransactionData> transactions = [
-            TransactionData.Create()
-        ];
-
+            .Success(query);
     }
 
 
-    // public async Task<ApiResultResponse<FundCreditTransferResponse>> IntraFundCreditTransferAsync(FundCreditTransferRequest request, Guid customerId, CancellationToken cancellationToken)
-    // {
-    //     // Validate Request
-    //     var validator = new FundCreditTransferValidator();
-    //     var validationResult = await validator.ValidateAsync(request, cancellationToken);
-    //     if (!validationResult.IsValid)
-    //     {
-    //         var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
-    //         return ApiResultResponse<FundCreditTransferResponse>.Error(string.Join("; ", errors));
-    //     }
-
-    //     var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderAccountNumber, request.DestinationAccountNumber);
-
-    //     var task1 = GetAccountByCustomerIdAsync(customerId);
-    //     var task2 = GetDestinationAccountByAccountNumberAsync(request.SenderAccountNumber);
-
-    //     var getCustomerAccountResponse = await task1;
-    //     var getDestinationAccountResponse = await task2;
-
-    //     if (getCustomerAccountResponse is null || getDestinationAccountResponse is null)
-    //         return ApiResultResponse<FundCreditTransferResponse>.Error("Account not found");
-
-    //     return ApiResultResponse<FundCreditTransferResponse>.Error(" ");
-    // }
-
-    private async Task<GetAccountResponse?> GetAccountByCustomerIdAsync(Guid customerId)
+    public async Task<ApiResultResponse<object>> IntraFundCreditTransferAsync(FundCreditTransferRequest request, Guid customerId, CancellationToken cancellationToken)
     {
-        var request = new GetAccountByCustomerIdRequest { CustomerId = customerId.ToString() };
+        // Validate Request
+        var validator = new FundCreditTransferValidator();
+        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        if (!validationResult.IsValid)
+        {
+            var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
+            return ApiResultResponse<object>.Error(string.Join("; ", errors));
+        }
+        var query = await GetAccountDetails(customerId);
+        if (query is null)
+            return ApiResultResponse<object>.Error("Unable to proceed with transfer, Try again later");
 
+        if (!query.AccountBalance.HasValue || (decimal)query.AccountBalance + 100 < request.Amount)
+            return ApiResultResponse<object>.Error("Insufficient Funds");
+
+        var sessionId = TransactionIdGenerator
+            .GenerateSessionId(request.SenderAccountNumber, request.DestinationAccountNumber);
+
+        // record in database
+        var transactionData = TransactionData.Create(
+            request: request,
+            transactionType: TransactionType.Transfer,
+            reference: $"TXN{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            category: TransactionCategory.INTRA_BANK_TRANSFER,
+            sessionId: sessionId
+        );
+        var outbox = OutboxMessage.Create(transactionData);
+
+        dbContext.Transactions.Add(transactionData);
+        dbContext.OutboxMessages.Add(outbox);
+
+        await dbContext.SaveChangesAsync(cancellationToken);
+        return ApiResultResponse<object>.Success(new { status = "Transfer processing" });
+    }
+
+    private async Task<IntraBankNameEnquiryResponse?> GetAccountDetails(Guid customerId)
+    {
         try
         {
-            return await accountGrpcClient.GetAccountByByCustomerIdAsync(request);
+            var request = new GetAccountByCustomerIdRequest { CustomerId = customerId.ToString() };
+            var query = await accountGrpcClient.GetAccountByByCustomerIdAsync(request);
+            return new IntraBankNameEnquiryResponse(
+            AccountName: query.AccountName,
+            AccountNuber: query.AccountNumber,
+            BankName: query.BankName,
+            AccountBalance: query.AccountBalance
+        );
         }
         catch (RpcException ex)
         {
@@ -94,14 +100,19 @@ internal class IntraBankService(
         }
     }
 
-    private async Task<GetAccountResponse?> GetDestinationAccountByAccountNumberAsync(string accountNumber)
+    private async Task<IntraBankNameEnquiryResponse?> GetAccountDetails(string accountNumber)
     {
         var request = new GetAccountByAccountNumberRequest { AccountNumber = accountNumber };
 
         try
         {
-            var response = await accountGrpcClient.GetAccountByAccountNumberAsync(request);
-            return response;
+            var query = await accountGrpcClient.GetAccountByAccountNumberAsync(request);
+            return new IntraBankNameEnquiryResponse(
+            AccountName: query.AccountName,
+            AccountNuber: query.AccountNumber,
+            BankName: query.BankName,
+            AccountBalance: null
+        );
         }
         catch (RpcException ex)
         {
@@ -120,5 +131,4 @@ internal class IntraBankService(
             return null;
         }
     }
-
 }

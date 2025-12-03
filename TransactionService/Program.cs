@@ -1,13 +1,10 @@
-using Hangfire;
-using Hangfire.PostgreSql;
+using Confluent.Kafka;
+using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using Quartz;
 using Scalar.AspNetCore;
 using SharedGrpcContracts.Protos.Account.V1;
-using TransactionService.CustomOptions;
 using TransactionService.Data;
-using TransactionService.KafaConfig;
 using TransactionService.NIBBS;
 using TransactionService.Services;
 
@@ -21,13 +18,7 @@ builder.Services.AddControllers();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-var quartzConnectionString = builder.Configuration.GetConnectionString("QuartzConnection")
-    ?? throw new InvalidOperationException("Connection string 'QuartzConnection' not found.");
-
-var hangFireConnectionString = builder.Configuration.GetConnectionString("HanfireConnection")
-    ?? throw new InvalidOperationException("Connection string 'HanfireConnection' not found.");
-
-// Add dbcontext with postgreql
+// Add dbContext with postgresql
 builder.Services.AddDbContext<TransactionDbContext>(options =>
     options.UseNpgsql(connectionString, npgsqlOptions =>
     {
@@ -72,33 +63,28 @@ builder.Services.AddGrpcClient<AccountGrpcApiService.AccountGrpcApiServiceClient
 builder.Services.AddScoped<NipInterBankService>();
 builder.Services.AddScoped<IntraBankService>();
 
-builder.Services.AddCustomKafkaServiceExtentions();
+// Kafka Singleton Producer
+builder.Services.AddSingleton<IProducer<string, string>>(kp =>
+{
+    var config = new ProducerConfig
+    {
+        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
+        Acks = Acks.All, // Leader and replica acknowledges writes
+        EnableIdempotence = true, // prevents duplicates
+        SocketKeepaliveEnable = true
+    };
 
-// Quartz Scheduler for background jobs
-// builder.Services.AddQuartz(qz =>
-// {
-//     qz.UsePersistentStore(options =>
-//     {
-//         options.UsePostgres(p =>
-//         {
-//             p.ConnectionString = quartzConnectionString;
-//             p.TablePrefix = "quartz_";
-//         });
-//     });
-// });
+    var producer = new ProducerBuilder<string, string>(config).Build();
 
-// builder.Services.AddQuartzHostedService(qz => qz.WaitForJobsToComplete = true);
+    // dispose on application stopping
+    var lifeTime = kp.GetRequiredService<IHostApplicationLifetime>();
+    lifeTime.ApplicationStopping.Register(() => producer.Dispose());
 
-// // Hangfire
-// builder.Services.AddHangfire(config => config
-//     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-//     .UseSimpleAssemblyNameTypeSerializer()
-//     .UseRecommendedSerializerSettings()
-//     .UsePostgreSqlStorage(hangFireConnectionString)
-// );
+    return producer;
+});
 
-// builder.Services.AddHangfireServer();
-// // builder.Services.AddMvc();
+// Background producer
+builder.Services.AddHostedService<EventPublisher>();
 
 var app = builder.Build();
 

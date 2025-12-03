@@ -3,7 +3,7 @@
 namespace TransactionService.DTOs.Intrabank;
 
 public record IntraBankNameEnquiryRequest(string AccountNumber);
-public record IntraBankNameEnquiryResponse(string AccountNuber, string AccountName, string BankName);
+public record IntraBankNameEnquiryResponse(string AccountNuber, string AccountName, string BankName, double? AccountBalance);
 
 public class IntraBankNameEnquiryRequestValidator : AbstractValidator<IntraBankNameEnquiryRequest>
 {

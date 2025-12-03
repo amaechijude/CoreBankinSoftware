@@ -4,9 +4,7 @@ using CustomerAPI.Entities;
 using CustomerAPI.External;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Services;
-using FaceAiSharp;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NSubstitute;
 
