@@ -1,7 +1,11 @@
+using AccountServices;
 using AccountServices.Data;
-using AccountServices.Services;
+using AccountServices.Validators;
+using Confluent.Kafka;
+using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,9 +19,35 @@ builder.Services.AddGrpc();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-// Add dbcontext with postgreql
+
 builder.Services.AddDbContext<AccountDbContext>(options =>
-    options.UseNpgsql(connectionString));
+    options.UseNpgsql(connectionString, npgSqlOptions =>
+    {
+        npgSqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(0.4),
+            errorCodesToAdd: null
+        );
+    })
+);
+
+// kafka producer
+builder.Services.AddSingleton(kp =>
+{
+    var config = new ProducerConfig
+    {
+        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
+
+    };
+    var producer = new ProducerBuilder<string, string>(config).Build();
+    return producer;
+});
+
+// Fluent validator
+builder.Services.AddSingleton<CreateAccountRequestValidator>();
+
+// Resilience
+builder.Services.AddSingleton<CustomResiliencePolicy>();
 
 var app = builder.Build();
 
@@ -26,13 +56,9 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapScalarApiReference();
-
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AccountDbContext>();
-    SeedData.Initialize(dbContext);
 }
 
-app.MapGrpcService<AccountService>();
+// app.MapGrpcService<AccountProtoService>();
 app.MapGet("/", () => "Account Service is running...");
 
 app.MapControllers();

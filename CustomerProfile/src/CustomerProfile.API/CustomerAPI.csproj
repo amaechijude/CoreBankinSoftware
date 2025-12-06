@@ -42,7 +42,7 @@
     <Folder Include="Logs\" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\..\..\gRPC\Contracts\Protos\*.proto" GrpcServices="client" />
+    <Protobuf Include="..\..\..\GrpcContracts\Protos\*.proto" GrpcServices="client" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />

@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+option csharp_namespace = 'SharedGrpcContracts.Protos.Account.Operations.V1';
+
+package grpc.contracts;
+
+service AccountOperationsGrpcService {
+  rpc CreateAccount(CreateAccountRequest) returns (AccountOperationResponse);
+  rpc Deposit(DepositRequest) returns (AccountOperationResponse);
+  rpc Withdraw(WithdrawRequest) returns (AccountOperationResponse);
+  rpc Reserve(ReserveRequest) returns (AccountOperationResponse);
+  rpc Release(ReleaseRequest) returns (AccountOperationResponse);
+  rpc Transfer(TransferRequest) returns (AccountOperationResponse);
+  rpc IntraBankNameEnquiry (IntraBankNameEnquiryRequest) returns (IntraBankNameEnquiryResponse);
+}
+
+enum AccountTypeRequest {
+  ACCOUNT_TYPE_UNSPECIFIED = 0;
+  PERSONAL = 1;
+  BUSINESS = 2;
+}
+
+
+message CreateAccountRequest {
+    string customer_id = 1;
+    string phone_number = 2;
+    string account_name = 3;
+    AccountTypeRequest account_type_request = 4;
+}
+
+message AccountOperationResponse {
+  bool success = 1;
+  string error = 2;
+}
+
+message DepositRequest {
+  string account_number = 1;
+  double amount = 2;
+}
+
+message WithdrawRequest {
+  string account_number = 1;
+  double amount = 2;
+}
+
+message ReserveRequest {
+  string customer_id = 1;
+  double amount = 2;
+}
+
+message ReleaseRequest {
+  string customer_id = 1;
+  double amount = 2;
+}
+
+message TransferRequest {
+  string customer_id = 1;
+  string to_account_number = 2;
+  double amount = 3;
+  string session_id = 4;
+}
+
+
+message IntraBankNameEnquiryRequest {
+    string account_number = 1;
+}
+
+message IntraBankNameEnquiryResponse {
+    bool success = 1;
+    string account_number = 2;
+    string account_name = 3;
+    string bank_name = 4;
+    string error = 6;
+}

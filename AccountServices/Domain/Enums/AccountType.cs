@@ -1,8 +1,7 @@
-namespace AccountServices.Domain.Enums
+namespace AccountServices.Domain.Enums;
+
+public enum AccountType
 {
-    public enum AccountType
-    {
-        Savings,
-        FixedDeposit
-    }
+    Personal,
+    Business
 }

@@ -1,4 +1,3 @@
-
 using Confluent.Kafka;
 using KafkaMessages;
 using KafkaMessages.AccountMessages;
@@ -16,60 +15,115 @@ public class TransactionEventPublisher(
     ) : BackgroundService
 {
     private static readonly string _topic = KafkaGlobalConfig.TransactionToAccountTopic;
+    private const int BatchSize = 100;
+    private const int InitialDelayMs = 4000;
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        // 1. BLOCK UNTIL KAFKA IS READY
+        await Broker.WaitForKafkaAsync(
+            KafkaGlobalConfig.BootstrapServers,
+            logger,
+            stoppingToken
+        );
+
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (Broker.IsKafkaBrokerAvailable())
+            try
             {
-                try
-                {
-                    await PublishAsync(stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    if (logger.IsEnabled(LogLevel.Error))
-                        logger.LogError(ex, "Error trying to publish to kafka topic {}", DateTimeOffset.UtcNow);
-                }
+                await PublishAsync(stoppingToken);
             }
-            else
+            catch (OperationCanceledException)
             {
-                if (logger.IsEnabled(LogLevel.Critical))
-                    logger.LogCritical("Kafka producer service down {}", DateTimeOffset.UtcNow);
-            }
-            if (stoppingToken.IsCancellationRequested)
+                logger.LogInformation("TransactionEventPublisher shutting down");
                 break;
-            await Task.Delay(Delay4SecondsWithJitter(), stoppingToken);
+            }
+            catch (Exception ex)
+            {
+                if (logger.IsEnabled(LogLevel.Error))
+                    logger.LogError(ex, "Unexpected error in TransactionEventPublisher at {Timestamp}", DateTimeOffset.UtcNow);
+            }
+
+            if (!stoppingToken.IsCancellationRequested)
+                await Task.Delay(GetDelayWithJitter(InitialDelayMs), stoppingToken);
         }
     }
 
     private async Task PublishAsync(CancellationToken ct)
     {
-        await using (var scope = serviceScopeFactory.CreateAsyncScope())
+        await using var scope = serviceScopeFactory.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<TransactionDbContext>();
+
+        var skip = 0;
+        var hasMore = true;
+
+        while (hasMore && !ct.IsCancellationRequested)
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<TransactionDbContext>();
             var messages = await dbContext.OutboxMessages
-                    .Where(m => m.Status == OutboxStatus.Pending)
-                    .ToListAsync(ct);
-            if (messages.Count != 0)
+                .Where(m => m.Status == OutboxStatus.Pending)
+                .OrderBy(m => m.CreatedAt)
+                .Skip(skip)
+                .Take(BatchSize)
+                .ToListAsync(ct);
+
+            hasMore = messages.Count == BatchSize;
+
+            if (messages.Count == 0) break;
+
+            List<OutboxMessage> messagesToUpdate = [];
+
+            foreach (var outboxMsg in messages)
             {
-                foreach (var m in messages)
+                try
                 {
-                    Message<string, string> message = new()
+                    var @event = CreateEvent(outboxMsg);
+                    var kafkaMessage = new Message<string, string>
                     {
-                        Key = m.TransactionId.ToString(),
-                        Value = CustomMessageSerializer
-                            .Serialize(CreateEvent(m))
+                        Key = outboxMsg.TransactionId.ToString(),
+                        Value = CustomMessageSerializer.Serialize(@event)
                     };
 
-                    await kafkaProducer.ProduceAsync(topic: _topic, message: message, cancellationToken: ct);
+                    var deliveryReport = await kafkaProducer.ProduceAsync(_topic, kafkaMessage, ct);
 
-                    m.Status = OutboxStatus.Published;
-                    m.PublishedAt = DateTimeOffset.UtcNow;
+                    if (deliveryReport.Status == PersistenceStatus.Persisted)
+                    {
+                        outboxMsg.Status = OutboxStatus.Published;
+                        outboxMsg.PublishedAt = DateTimeOffset.UtcNow;
+                        messagesToUpdate.Add(outboxMsg);
+                    }
+                    else
+                    {
+                        if (logger.IsEnabled(LogLevel.Warning))
+                            logger.LogWarning(
+                            "Message {TransactionId} failed to persist. Status: {Status}",
+                            outboxMsg.TransactionId, deliveryReport.Status);
+                    }
                 }
-                await dbContext.SaveChangesAsync(ct);
+                catch (KafkaException kafkaEx)
+                {
+                    if (logger.IsEnabled(LogLevel.Error))
+                        logger.LogError(kafkaEx,
+                        "Kafka error publishing message {TransactionId}. Code: {Code}",
+                        outboxMsg.TransactionId, kafkaEx.Error.Code);
+                }
+                catch (Exception ex)
+                {
+                    if (logger.IsEnabled(LogLevel.Error))
+                        logger.LogError(ex, "Error processing outbox message {TransactionId}", outboxMsg.TransactionId);
+                }
             }
+
+            // Batch update only successfully published messages
+            if (messagesToUpdate.Count > 0)
+            {
+                dbContext.OutboxMessages.UpdateRange(messagesToUpdate);
+                await dbContext.SaveChangesAsync(ct);
+
+                if (logger.IsEnabled(LogLevel.Information))
+                    logger.LogInformation("Published {Count} messages to Kafka", messagesToUpdate.Count);
+            }
+
+            skip += BatchSize;
         }
     }
 
@@ -86,54 +140,25 @@ public class TransactionEventPublisher(
             Amount = message.Amount,
             TransactionFee = message.TransactionFee,
             Timestamp = message.CreatedAt,
-            EventType = message.TransactionType == TransactionType.Credit
-                ? EventType.Credit
-                : message.TransactionType == TransactionType.Debit
-                    ? EventType.Debit
-                    : message.TransactionType == TransactionType.Transfer
-                        ? EventType.Transfer
-                        : EventType.Utility
+            EventType = MapTransactionType(message.TransactionType)
         };
     }
 
-    private static TimeSpan Delay4SecondsWithJitter()
+    private static EventType MapTransactionType(TransactionType transactionType)
     {
-        var jitterMs = (int)(Random.Shared.NextDouble() * 1000.0);
-        return TimeSpan.FromMilliseconds(4000 + jitterMs);
+        return transactionType switch
+        {
+            TransactionType.Credit => EventType.Credit,
+            TransactionType.Debit => EventType.Debit,
+            TransactionType.Transfer => EventType.Transfer,
+            _ => EventType.Utility
+        };
     }
-}
 
-// 
-
-public static class Broker
-{
-    private static bool? _isKafkaBrokerAvailable;
-    private static DateTime _lastCheckTime;
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromSeconds(3.9);
-
-    public static bool IsKafkaBrokerAvailable()
+    private static TimeSpan GetDelayWithJitter(int baseDelayMs)
     {
-        // Check if the cached result is still valid
-        if (_isKafkaBrokerAvailable.HasValue && (DateTime.UtcNow - _lastCheckTime) < CacheDuration)
-        {
-            _lastCheckTime = DateTime.UtcNow;
-            return _isKafkaBrokerAvailable.Value;
-        }
-
-        try
-        {
-            var adminConfig = new AdminClientConfig { BootstrapServers = KafkaGlobalConfig.BootstrapServers };
-            using var adminClient = new AdminClientBuilder(adminConfig).Build();
-            var metadata = adminClient.GetMetadata(TimeSpan.FromSeconds(5));
-            _isKafkaBrokerAvailable = metadata.Brokers.Count > 0;
-        }
-        catch
-        {
-            _isKafkaBrokerAvailable = false;
-        }
-
-        // Update the last check time
-        _lastCheckTime = DateTime.UtcNow;
-        return _isKafkaBrokerAvailable.Value;
+        var jitterMs = Random.Shared.Next(0, 1000);
+        return TimeSpan.FromMilliseconds(baseDelayMs + jitterMs);
     }
+
 }

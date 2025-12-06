@@ -84,7 +84,7 @@ builder.Services.AddSingleton<IProducer<string, string>>(kp =>
 });
 
 // Background producer
-builder.Services.AddHostedService<EventPublisher>();
+builder.Services.AddHostedService<TransactionEventPublisher>();
 
 var app = builder.Build();
 

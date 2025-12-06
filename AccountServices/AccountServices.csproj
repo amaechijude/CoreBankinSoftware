@@ -17,17 +17,18 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Polly" />
+    <PackageReference Include="Polly.Extensions" />
     <PackageReference Include="Scalar.AspNetCore" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="..\gRPC\Contracts\Protos\*.proto" GrpcServices="server" />
+    <Protobuf Include="..\GrpcContracts\Protos\Accounts\*.proto" GrpcServices="server" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
-    <ProjectReference Include="..\gRPC\Contracts\SharedGrpcContracts.csproj" />
     <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
   </ItemGroup>
 
