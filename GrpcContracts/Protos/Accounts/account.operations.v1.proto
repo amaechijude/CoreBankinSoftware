@@ -8,8 +8,6 @@ service AccountOperationsGrpcService {
   rpc CreateAccount(CreateAccountRequest) returns (AccountOperationResponse);
   rpc Deposit(DepositRequest) returns (AccountOperationResponse);
   rpc Withdraw(WithdrawRequest) returns (AccountOperationResponse);
-  rpc Reserve(ReserveRequest) returns (AccountOperationResponse);
-  rpc Release(ReleaseRequest) returns (AccountOperationResponse);
   rpc Transfer(TransferRequest) returns (AccountOperationResponse);
   rpc IntraBankNameEnquiry (IntraBankNameEnquiryRequest) returns (IntraBankNameEnquiryResponse);
 }
@@ -40,16 +38,6 @@ message DepositRequest {
 
 message WithdrawRequest {
   string account_number = 1;
-  double amount = 2;
-}
-
-message ReserveRequest {
-  string customer_id = 1;
-  double amount = 2;
-}
-
-message ReleaseRequest {
-  string customer_id = 1;
   double amount = 2;
 }
 

@@ -12,6 +12,9 @@
   <Folder Name="/KafkaMessages/">
     <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
   </Folder>
+  <Folder Name="/Notification/">
+    <Project Path="Notification/Notification.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />
   </Folder>

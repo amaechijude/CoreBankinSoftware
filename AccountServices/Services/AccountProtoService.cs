@@ -16,7 +16,7 @@ public sealed class AccountProtoService(
 {
     public override async Task<AccountOperationResponse> CreateAccount(CreateAccountRequest request, ServerCallContext context)
     {
-        var validate = await validator.ValidateAsync(request);
+        var validate = await validator.ValidateAsync(request, context.CancellationToken);
         if (!validate.IsValid)
         {
             var error = string.Join(", ", validate.Errors.Select(x => x.ErrorMessage));
@@ -29,7 +29,7 @@ public sealed class AccountProtoService(
         dbContext.Accounts.Add(newAccount);
         try
         {
-            await dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync(context.CancellationToken);
             return ApiResponseFactory.Success();
         }
         catch (DbUpdateException)
@@ -53,7 +53,7 @@ public sealed class AccountProtoService(
 
         var account = await dbContext.Accounts
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.AccountNumber == accountNumber);
+            .FirstOrDefaultAsync(x => x.AccountNumber == accountNumber, context.CancellationToken);
 
         return account is null
             ? ApiResponseFactory.Failed("Account not found")
@@ -62,84 +62,130 @@ public sealed class AccountProtoService(
 
     public override async Task<AccountOperationResponse> Deposit(DepositRequest request, ServerCallContext context)
     {
-        var amount = (decimal)request.Amount;
-        if (amount < 50)
-            return ApiResponseFactory.Error("Minimum deposit is 50");
+        return await resiliencePolicy.DbConcurrencyRetryWithFallback
+            .ExecuteAsync(async () =>
+            {
+                try
+                {
+                    var amount = (decimal)request.Amount;
+                    if (amount < 50)
+                        return ApiResponseFactory.Error("Minimum deposit is 50");
 
-        // update in one database query
-        var rowsAffected = await dbContext.Accounts
-            .Where(a => a.AccountNumber == request.AccountNumber && a.Status == AccountStatus.Active)
-            .ExecuteUpdateAsync(s => s
-                .SetProperty(a => a.Balance, a => a.Balance + amount)
-                .SetProperty(a => a.UpdatedAt, DateTimeOffset.UtcNow)
-            );
+                    var account = await dbContext.Accounts
+                        .FirstOrDefaultAsync(a => a.AccountNumber == request.AccountNumber, context.CancellationToken);
 
-        if (rowsAffected == 0)
-        {
-            // Check if account exists or just Inactive
-            var accountExists = await dbContext.Accounts
-                .AnyAsync(a => a.AccountNumber == request.AccountNumber);
+                    if (account is null)
+                        return ApiResponseFactory.Error("Account not found");
 
-            return ApiResponseFactory.Error(accountExists ? "Account Inactive" : "Account not found");
-        }
+                    account.CreditAccount(amount);
 
-        return ApiResponseFactory.Success();
+                    await dbContext.SaveChangesAsync(context.CancellationToken);
+
+                    return ApiResponseFactory.Success();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw; // Re-throw to allow Polly to handle the retry
+                }
+                catch (Exception)
+                {
+                    return ApiResponseFactory.Error("Deposit failed");
+                }
+            });
     }
 
     public override async Task<AccountOperationResponse> Withdraw(WithdrawRequest request, ServerCallContext context)
     {
         // handle concurrency with polly
-        return await resiliencePolicy.DbConcurrencyRetryPolicy
-            .ExecuteAsync<AccountOperationResponse>(async () =>
+        return await resiliencePolicy.DbConcurrencyRetryWithFallback.ExecuteAsync(async () =>
             {
+                try
+                {
+                    var amount = (decimal)request.Amount;
 
-                var amount = (decimal)request.Amount;
+                    var account = await dbContext.Accounts
+                        .FirstOrDefaultAsync(a => a.AccountNumber == request.AccountNumber, context.CancellationToken);
 
-                // fetch from db without tracking
-                var account = await dbContext.Accounts
-                    .AsNoTracking()
-                    .FirstOrDefaultAsync(a => a.AccountNumber == request.AccountNumber);
+                    if (account is null)
+                        return ApiResponseFactory.Error("Account not found");
+                    if (account.IsInsufficient(amount))
+                        return ApiResponseFactory.Error("Insufficient funds");
+                    if (account.IsOnPostNoDebit)
+                        return ApiResponseFactory.Error("Witdhrawal forbidden, Visit your bank");
 
-                if (account is null)
-                    return ApiResponseFactory.Error("Account not found");
-                if (account.IsInsufficient(amount))
-                    return ApiResponseFactory.Error("Insufficient funds");
-                if (account.IsOnPostNoDebit)
-                    return ApiResponseFactory.Error("Witdhrawal forbidden, Visit your bank");
+                    account.DebitAccount(amount);
+                    await dbContext.SaveChangesAsync(context.CancellationToken);
 
-                // update in one round trip
-                var rowsAffected = await dbContext.Accounts
-                    .Where(a =>
-                        a.AccountNumber == account.AccountNumber
-                        && a.RowVersion == account.RowVersion
-                    )
-                    .ExecuteUpdateAsync(s => s
-                        .SetProperty(a => a.Balance, a => a.Balance - amount)
-                        .SetProperty(a => a.UpdatedAt, DateTimeOffset.UtcNow)
-                );
-
-                if (rowsAffected == 0)
-                    throw new DbUpdateConcurrencyException(""); // Polly will handle retries
-
-                return ApiResponseFactory.Success();
+                    return ApiResponseFactory.Success();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw; // Re-throw to allow Polly to handle the retry
+                }
+                catch (Exception)
+                {
+                    return ApiResponseFactory.Error("Withdrawal failed");
+                }
             }
         );
     }
 
-    public override Task<AccountOperationResponse> Transfer(TransferRequest request, ServerCallContext context)
+    public override async Task<AccountOperationResponse> Transfer(TransferRequest request, ServerCallContext context)
     {
-        return base.Transfer(request, context);
+        return await resiliencePolicy.DbConcurrencyRetryWithFallback.ExecuteAsync(async () =>
+        {
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(context.CancellationToken);
+
+            try
+            {
+                var amount = (decimal)request.Amount;
+                if (amount < 50)
+                    return ApiResponseFactory.Error("Transfer amount must be 50 and above");
+
+                if (!Guid.TryParse(request.CustomerId, out var customerId))
+                    return ApiResponseFactory.Error("Invalid customer id");
+
+                // Fetch and lock the source and destination accounts
+                var fromAccount = await dbContext.Accounts
+                    .FirstOrDefaultAsync(a => a.CustomerId == customerId, context.CancellationToken);
+
+                var toAccount = await dbContext.Accounts
+                    .FirstOrDefaultAsync(a => a.AccountNumber == request.ToAccountNumber, context.CancellationToken);
+
+                if (fromAccount is null)
+                    return ApiResponseFactory.Error("Source account not found.");
+                if (toAccount is null)
+                    return ApiResponseFactory.Error("Destination account not found.");
+
+                if (fromAccount.IsInsufficient(amount))
+                    return ApiResponseFactory.Error("Insufficient funds.");
+                if (fromAccount.IsOnPostNoDebit)
+                    return ApiResponseFactory.Error("Withdrawal forbidden on source account. Visit your bank.");
+                if (toAccount.Status != AccountStatus.Active)
+                    return ApiResponseFactory.Error("Destination account is not active.");
+
+                // Perform the transfer
+                fromAccount.DebitAccount(amount);
+                toAccount.CreditAccount(amount);
+
+                await dbContext.SaveChangesAsync(context.CancellationToken);
+                await transaction.CommitAsync(context.CancellationToken);
+
+                return ApiResponseFactory.Success();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                await transaction.RollbackAsync(context.CancellationToken);
+                throw; // Re-throw to allow Polly to handle the retry
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync(context.CancellationToken);
+                return ApiResponseFactory.Error("Transfer failed");
+            }
+        });
     }
 
-    public override Task<AccountOperationResponse> Reserve(ReserveRequest request, ServerCallContext context)
-    {
-        return base.Reserve(request, context);
-    }
-
-    public override Task<AccountOperationResponse> Release(ReleaseRequest request, ServerCallContext context)
-    {
-        return base.Release(request, context);
-    }
 
     private static AccountType SwitchAccountType(AccountTypeRequest accountType)
     {
