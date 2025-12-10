@@ -3,11 +3,11 @@ using System.Threading.Channels;
 
 namespace CustomerAPI.Messaging.SMS
 {
-    public class SMSBackgroundService(
+    public sealed class SMSBackgroundService(
         TwilioSmsSender twilioSmsSender,
         Channel<SendSMSCommand> smsChannel,
         ILogger<SMSBackgroundService> logger
-            ) : BackgroundService
+    ) : BackgroundService
     {
         private readonly TwilioSmsSender _twilloSmsSender = twilioSmsSender;
         private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
@@ -32,7 +32,10 @@ namespace CustomerAPI.Messaging.SMS
             }
         }
 
-        private async Task ProcessSmsWithRetryAsync(SendSMSCommand command, CancellationToken cancellationToken)
+        private async Task ProcessSmsWithRetryAsync(
+            SendSMSCommand command,
+            CancellationToken cancellationToken
+        )
         {
             int attempt = 0;
             while (attempt < _maxRetryAttempts)
@@ -46,7 +49,11 @@ namespace CustomerAPI.Messaging.SMS
                 {
                     if (attempt >= _maxRetryAttempts)
                     {
-                        _logger.LogCritical("Failed to send SMS to after {MaxAttempts} attempts.", _maxRetryAttempts);
+                        if (_logger.IsEnabled(LogLevel.Critical))
+                            _logger.LogCritical(
+                                "Failed to send SMS to after {MaxAttempts} attempts.",
+                                _maxRetryAttempts
+                            );
                         return; // Exit after max attempts
                     }
                     attempt++;
@@ -74,12 +81,10 @@ namespace CustomerAPI.Messaging.SMS
                 HttpRequestException => true,
                 TimeoutException => true,
                 SocketException => true,
-                TaskCanceledException => true,
+                TaskCanceledException => false,
 
-                _ => false
+                _ => false,
             };
         }
-
     }
-
 }

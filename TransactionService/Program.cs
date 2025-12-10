@@ -3,7 +3,7 @@ using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
-using SharedGrpcContracts.Protos.Account.V1;
+using SharedGrpcContracts.Protos.Account.Operations.V1;
 using TransactionService.Data;
 using TransactionService.NIBBS;
 using TransactionService.Services;
@@ -55,7 +55,7 @@ builder.Services.AddHttpClient<NibssService>((provider, client) =>
 var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
 if (string.IsNullOrEmpty(accountGrpcUrl))
     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
-builder.Services.AddGrpcClient<AccountGrpcApiService.AccountGrpcApiServiceClient>(options =>
+builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(options =>
 {
     options.Address = new Uri(accountGrpcUrl);
 });

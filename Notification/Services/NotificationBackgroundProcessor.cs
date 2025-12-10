@@ -9,7 +9,10 @@ public sealed class NotificationBackgroundProcessor : BackgroundService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConsumer<string, string> _consumer;
 
-    public NotificationBackgroundProcessor(ILogger<NotificationBackgroundProcessor> logger, IServiceScopeFactory scopeFactory)
+    public NotificationBackgroundProcessor(
+        ILogger<NotificationBackgroundProcessor> logger,
+        IServiceScopeFactory scopeFactory
+    )
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
@@ -18,14 +21,16 @@ public sealed class NotificationBackgroundProcessor : BackgroundService
         {
             BootstrapServers = KafkaGlobalConfig.BootstrapServers,
             GroupId = KafkaGlobalConfig.NotificationTopic,
-            AutoOffsetReset = AutoOffsetReset.Earliest
+            AutoOffsetReset = AutoOffsetReset.Earliest,
         };
 
         _consumer = new ConsumerBuilder<string, string>(config).Build();
     }
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken) { }
+
+    private async Task ProcessEmail(CancellationToken ct)
     {
-
+        await using (var scope = _scopeFactory.CreateAsyncScope()) { }
     }
-
 }

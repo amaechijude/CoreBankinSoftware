@@ -4,7 +4,10 @@ using Twilio.Rest.Api.V2010.Account;
 
 namespace CustomerAPI.Messaging.SMS
 {
-    public class TwilioSmsSender(IOptions<TwilioSettings> twilioSettings, ILogger<TwilioSmsSender> logger) : ISmsSender
+    public sealed class TwilioSmsSender(
+        IOptions<TwilioSettings> twilioSettings,
+        ILogger<TwilioSmsSender> logger
+    ) : ISmsSender
     {
         private readonly IOptions<TwilioSettings> _twilioSettings = twilioSettings;
         private readonly ILogger<TwilioSmsSender> _logger = logger;
@@ -14,10 +17,16 @@ namespace CustomerAPI.Messaging.SMS
             try
             {
                 if (string.IsNullOrWhiteSpace(command.PhoneNumber))
-                    throw new ArgumentException("Phone number cannot be null or empty.", nameof(command));
+                    throw new ArgumentException(
+                        "Phone number cannot be null or empty.",
+                        nameof(command)
+                    );
 
                 if (string.IsNullOrWhiteSpace(command.Message))
-                    throw new ArgumentException("Message cannot be null or empty.", nameof(command));
+                    throw new ArgumentException(
+                        "Message cannot be null or empty.",
+                        nameof(command)
+                    );
 
                 // Ensure the phone number starts with a '+' sign
                 if (command.PhoneNumber[0] != '+')
@@ -31,14 +40,17 @@ namespace CustomerAPI.Messaging.SMS
                 throw;
             }
         }
+
         private async Task SendViaTwilioAsync(SendSMSCommand command)
         {
             TwilioClient.Init(_twilioSettings.Value.AccountSid, _twilioSettings.Value.AuthToken);
 
-            var messageOptions = new CreateMessageOptions(new Twilio.Types.PhoneNumber(command.PhoneNumber))
+            var messageOptions = new CreateMessageOptions(
+                new Twilio.Types.PhoneNumber(command.PhoneNumber)
+            )
             {
                 From = new Twilio.Types.PhoneNumber(_twilioSettings.Value.FromPhoneNumber),
-                Body = command.Message
+                Body = command.Message,
             };
 
             await MessageResource.CreateAsync(messageOptions);
@@ -46,6 +58,7 @@ namespace CustomerAPI.Messaging.SMS
     }
 
     public record SendSMSCommand(string PhoneNumber, string Message);
+
     public interface ISmsSender
     {
         Task SendAsync(SendSMSCommand command);

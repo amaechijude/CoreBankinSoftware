@@ -1,6 +1,3 @@
 namespace AccountServices.Domain.Entities;
 
-public class NotificationOutboxMessage
-{
-
-}
+public class NotificationOutboxMessage { }

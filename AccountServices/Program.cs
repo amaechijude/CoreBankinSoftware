@@ -6,7 +6,6 @@ using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
@@ -16,29 +15,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddGrpc();
 
 // Add and validate connectionString option on startup
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
-
 builder.Services.AddDbContext<AccountDbContext>(options =>
-    options.UseNpgsql(connectionString, npgSqlOptions =>
-    {
-        npgSqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(0.4),
-            errorCodesToAdd: null
-        );
-    })
+    options.UseNpgsql(
+        connectionString,
+        npgSqlOptions =>
+        {
+            npgSqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(0.4),
+                errorCodesToAdd: null
+            );
+        }
+    )
 );
 
 // kafka producer
 builder.Services.AddSingleton(kp =>
 {
-    var config = new ProducerConfig
-    {
-        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
-
-    };
+    var config = new ProducerConfig { BootstrapServers = KafkaGlobalConfig.BootstrapServers };
     var producer = new ProducerBuilder<string, string>(config).Build();
     return producer;
 });

@@ -6,11 +6,9 @@ using CustomerAPI.Services.AccountAPI;
 using Scalar.AspNetCore;
 using Serilog;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
-
 
 Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
@@ -18,16 +16,16 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.WithProperty("Environment", builder.Environment.EnvironmentName)
     .MinimumLevel.Information()
     .WriteTo.Console()
-    .WriteTo.File("Logs/log-.txt",
-    rollingInterval: RollingInterval.Hour,
-    fileSizeLimitBytes: 10_485_760, // 10 MB
-    rollOnFileSizeLimit: true,
-    retainedFileCountLimit: null,
-    outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+    .WriteTo.File(
+        "Logs/log-.txt",
+        rollingInterval: RollingInterval.Hour,
+        fileSizeLimitBytes: 10_485_760, // 10 MB
+        rollOnFileSizeLimit: true,
+        retainedFileCountLimit: null,
+        outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
     )
     .CreateLogger();
 builder.Services.AddSerilog(); // <-- serilog
-
 
 // Add Service Extensions
 builder.Services.AddCustomServiceExtentions();

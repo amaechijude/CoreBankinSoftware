@@ -1,6 +1,6 @@
-﻿using AccountServices.Data;
+﻿using System.Data;
+using AccountServices.Data;
 using KafkaMessages.AccountMessages;
-using System.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountServices.Services;
@@ -18,14 +18,19 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
             {
                 var execute = await strategy.ExecuteAsync<bool>(async () =>
                 {
-                    await using var dbTransaction = await dbContext.Database.BeginTransactionAsync(ct);
+                    await using var dbTransaction = await dbContext.Database.BeginTransactionAsync(
+                        ct
+                    );
                     try
                     {
-                        var customerAccount = await dbContext.Accounts
-                            .FirstOrDefaultAsync(a => a.CustomerId == @event.CustomerId, ct);
-                        var beneficiaryAccount = await dbContext.Accounts
-                            .FirstOrDefaultAsync(a =>
-                                a.AccountNumber == @event.DestinationAccountNumber, ct);
+                        var customerAccount = await dbContext.Accounts.FirstOrDefaultAsync(
+                            a => a.CustomerId == @event.CustomerId,
+                            ct
+                        );
+                        var beneficiaryAccount = await dbContext.Accounts.FirstOrDefaultAsync(
+                            a => a.AccountNumber == @event.DestinationAccountNumber,
+                            ct
+                        );
                         if (customerAccount is null || beneficiaryAccount is null)
                             return false;
 
@@ -45,7 +50,6 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
                             logger.LogError(e, "exceptions occured");
                         throw;
                     }
-
                 });
 
                 return execute;
@@ -53,16 +57,16 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
             catch (DBConcurrencyException)
             {
                 retries--;
-                if (retries == 0) return false;
+                if (retries == 0)
+                    return false;
 
                 await Task.Delay(70, ct);
             }
-
         }
-
 
         return false;
     }
+
     internal async Task<bool> HandleCredit(TransactionAccountEvent @event, CancellationToken ct)
     {
         var retries = 5;
@@ -70,8 +74,10 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
         {
             try
             {
-                var account = await dbContext.Accounts
-                    .FirstOrDefaultAsync(a => a.CustomerId == @event.CustomerId, ct);
+                var account = await dbContext.Accounts.FirstOrDefaultAsync(
+                    a => a.CustomerId == @event.CustomerId,
+                    ct
+                );
 
                 account?.CreditAccount(@event.Amount);
                 await dbContext.SaveChangesAsync(ct);
@@ -80,17 +86,16 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
             catch (DBConcurrencyException)
             {
                 retries--;
-                if (retries == 0) return false;
+                if (retries == 0)
+                    return false;
                 await Task.Delay(100, ct);
             }
         }
         return false;
     }
 
-    internal async Task ProcessEvent(TransactionAccountEvent @event, CancellationToken ct)
-    {
+    internal async Task ProcessEvent(TransactionAccountEvent @event, CancellationToken ct) { }
 
-    }
     internal async Task<bool> HandleDebit(TransactionAccountEvent @event, CancellationToken ct)
     {
         var retries = 5;
@@ -98,9 +103,12 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
         {
             try
             {
-                var account = await dbContext.Accounts
-                    .FirstOrDefaultAsync(a => a.CustomerId == @event.CustomerId, ct);
-                if (account is null) return false;
+                var account = await dbContext.Accounts.FirstOrDefaultAsync(
+                    a => a.CustomerId == @event.CustomerId,
+                    ct
+                );
+                if (account is null)
+                    return false;
 
                 account.DebitAccount(@event.Amount);
                 await dbContext.SaveChangesAsync(ct);
@@ -109,7 +117,8 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
             catch (DBConcurrencyException)
             {
                 retries--;
-                if (retries == 0) return false;
+                if (retries == 0)
+                    return false;
                 await Task.Delay(100, ct);
             }
         }
@@ -124,9 +133,12 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
         {
             try
             {
-                var account = await dbContext.Accounts
-                    .FirstOrDefaultAsync(a => a.CustomerId == @event.CustomerId, ct);
-                if (account is null) return false;
+                var account = await dbContext.Accounts.FirstOrDefaultAsync(
+                    a => a.CustomerId == @event.CustomerId,
+                    ct
+                );
+                if (account is null)
+                    return false;
 
                 account.DebitAccount(@event.Amount);
                 await dbContext.SaveChangesAsync(ct);
@@ -135,7 +147,8 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
             catch (DBConcurrencyException)
             {
                 retries--;
-                if (retries == 0) return false;
+                if (retries == 0)
+                    return false;
                 await Task.Delay(100, ct);
             }
         }

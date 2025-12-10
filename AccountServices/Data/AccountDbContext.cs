@@ -3,7 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AccountServices.Data;
 
-public sealed class AccountDbContext(DbContextOptions<AccountDbContext> options) : DbContext(options)
+public sealed class AccountDbContext(DbContextOptions<AccountDbContext> options)
+    : DbContext(options)
 {
     public DbSet<Account> Accounts => Set<Account>();
 

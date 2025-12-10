@@ -21,7 +21,12 @@ public sealed class Account
     public string? AccountName { get; private set; }
     public string? BankName { get; set; }
 
-    public static Account Create(Guid customerId, string phoneNumber, AccountType accountType, string accountName)
+    public static Account Create(
+        Guid customerId,
+        string phoneNumber,
+        AccountType accountType,
+        string accountName
+    )
     {
         return new Account
         {
@@ -38,8 +43,7 @@ public sealed class Account
         };
     }
 
-    private static string PhoneToAccountNumber(string phone)
-        => phone[1..]; // 10-digit account number
+    private static string PhoneToAccountNumber(string phone) => phone[1..]; // 10-digit account number
 
     public void DebitAccount(decimal amount)
     {
@@ -54,6 +58,7 @@ public sealed class Account
         Balance += amount;
         UpdatedAt = DateTimeOffset.UtcNow;
     }
+
     internal bool IsInsufficient(decimal amount) => amount > AvailableBalance + 101;
 }
 

@@ -10,6 +10,8 @@
     <!-- FaceAISharp -->
     <PackageVersion Include="FaceAiSharp.Bundle" Version="0.5.23" />
     <!-- FluentValidation -->
+    <PackageVersion Include="FluentEmail.Core" Version="3.0.2" />
+    <PackageVersion Include="FluentEmail.Smtp" Version="3.0.2" />
     <PackageVersion Include="FluentValidation" Version="12.1.0" />
     <!-- Google.Protobuf and gRPC -->
     <PackageVersion Include="Google.Protobuf" Version="3.32.1" />
@@ -22,6 +24,7 @@
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.22" />
     <PackageVersion Include="Hangfire.Core" Version="1.8.22" />
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.12" />
+    <PackageVersion Include="MailKit" Version="2.7.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
     <!-- Microsoft.AspNetCore.OpenApi -->
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
