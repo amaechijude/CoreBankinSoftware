@@ -1,29 +1,82 @@
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using Microsoft.Extensions.Options;
+using MimeKit;
 using Notification.IOptions;
+using Polly;
+using Polly.Registry;
 
 namespace Notification.Workers;
 
-public sealed class EmailService(IOptions<EmailOptions> options, ILogger<EmailService> logger)
-    : IEmailService
+internal sealed class EmailService(
+    ILogger<EmailService> logger,
+    IOptions<EmailOptions> options,
+    ResiliencePipelineProvider<string> pipelineProvider
+)
 {
-    private readonly EmailOptions _options = options.Value;
     private readonly ILogger<EmailService> _logger = logger;
+    private readonly EmailOptions _options = options.Value;
+    private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(
+        PollyMailkitHandler.Pkey
+    );
 
-    public Task SendEmailAsync(EmailRequest request, CancellationToken ct)
+    public async Task<bool> SendEmailAsync(EmailRequest request, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var message = new MimeMessage();
+        message.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
+        message.To.Add(new MailboxAddress(request.FullName, request.TargetEmailAddress));
+        message.Subject = request.Subject;
+        message.Body = new TextPart("html") { Text = request.Body };
+
+        try
+        {
+            await SendMimeMessage(message, ct);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send email");
+            return false;
+        }
     }
 
-    public Task SendToMultipleAsync(
-        List<string> recipients,
-        EmailRequest request,
-        CancellationToken ct
-    )
+    private async Task SendMimeMessage(MimeMessage mimeMessage, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        await _pipeline.ExecuteAsync(
+            async ct =>
+            {
+                using var client = new SmtpClient();
+                client.Timeout = _options.TimeoutSeconds * 1000;
+
+                var secureSocketOptions = _options.UseSsl
+                    ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.Auto;
+
+                await client.ConnectAsync(
+                    host: _options.SmtpHost,
+                    port: _options.SmtpPort,
+                    options: secureSocketOptions,
+                    cancellationToken: ct
+                );
+
+                await client.AuthenticateAsync(
+                    userName: _options.Username,
+                    password: _options.Password,
+                    cancellationToken: ct
+                );
+
+                await client.SendAsync(message: mimeMessage, cancellationToken: ct);
+
+                await client.DisconnectAsync(quit: true, cancellationToken: ct);
+            },
+            cancellationToken
+        );
     }
 }
 
-public record EmailRequest(string Subject, string TargetEmailAddress, string Body);
-
-internal sealed class FluentEmailExceptions(string message) : Exception(message);
+internal record EmailRequest(
+    string Subject,
+    string TargetEmailAddress,
+    string FullName,
+    string Body
+);

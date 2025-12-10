@@ -1,0 +1,28 @@
+syntax = "proto3";
+option csharp_namespace =  'SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1';
+
+package grpc.contracts;
+
+service CustomerNotificationGrpcPrefrenceService {
+    rpc GetCustmonerPrefrence (GetCustomerPrefrenceRequest) returns (GetCustomerPrefrenceResponse);
+}
+
+message GetCustomerPrefrenceRequest {
+    string customer_id = 1;
+}
+
+enum NotificationChannel {
+    NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+    EMAIL = 1;
+    SMS = 2;
+    PUSH_NOTIFICATION = 3;
+}
+
+message GetCustomerPrefrenceResponse {
+    bool success = 1;
+    string error = 2;
+    string full_name = 3;
+    string email = 4;
+    string phone_number = 5;
+    repeated NotificationChannel notification_channels = 6;
+}

@@ -1,12 +1,30 @@
+using System.Net.Sockets;
+using MailKit.Net.Smtp;
 using MailKit.Security;
 using Polly;
+using Polly.Retry;
 
 namespace Notification.Workers;
 
 public static class PollyMailkitHandler
 {
-    private static IAsyncPolicy HandleSmptpAuth =>
-        Policy
-            .Handle<AuthenticationException>()
-            .CircuitBreakerAsync(0, TimeSpan.FromMilliseconds(1));
+    public static readonly ResiliencePipeline pipeline = new ResiliencePipelineBuilder()
+        .AddRetry(
+            new RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder()
+                    .Handle<TimeoutException>()
+                    .Handle<SocketException>()
+                    .Handle<HttpRequestException>()
+                    .Handle<SmtpProtocolException>(),
+
+                MaxRetryAttempts = 3,
+                BackoffType = DelayBackoffType.Exponential,
+                Delay = TimeSpan.FromSeconds(2),
+                UseJitter = true,
+            }
+        )
+        .Build();
+
+    public const string Pkey = "pipeline";
 }
