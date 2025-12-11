@@ -11,57 +11,63 @@ using TransactionService.Services;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
+
 // Add services to the container.
 builder.Services.AddControllers();
 
 // Add and validate connectionString option on startup
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+var connectionString =
+    builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Add dbContext with postgresql
 builder.Services.AddDbContext<TransactionDbContext>(options =>
-    options.UseNpgsql(connectionString, npgsqlOptions =>
-    {
-        npgsqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(1),
-            errorCodesToAdd: null
-        );
-    })
+    options.UseNpgsql(
+        connectionString,
+        npgsqlOptions =>
+        {
+            npgsqlOptions.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(1),
+                errorCodesToAdd: null
+            );
+        }
+    )
 );
-
 
 // Mock Nibss Service Http typed client with xml accept header
 builder.Services.Configure<NibssOptions>(options =>
 {
-    options.ApiKey = builder.Configuration["NibssSettings:NibssApiKey"]
+    options.ApiKey =
+        builder.Configuration["NibssSettings:NibssApiKey"]
         ?? throw new InvalidOperationException("Nibss API key is not configured.");
-    options.BaseUrl = builder.Configuration["NibssSettings:NibssApiUrl"]
+    options.BaseUrl =
+        builder.Configuration["NibssSettings:NibssApiUrl"]
         ?? throw new InvalidOperationException("Nibss Base URL is not configured.");
 });
-builder.Services.AddOptions<NibssOptions>()
-    .ValidateDataAnnotations()
-    .ValidateOnStart();
-builder.Services.AddHttpClient<NibssService>((provider, client) =>
-{
-    var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
-    client.BaseAddress = new Uri(nibssOptions.BaseUrl);
-    client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
-    client.DefaultRequestHeaders.Add("Accept", "application/xml");
-});
-
+builder.Services.AddOptions<NibssOptions>().ValidateDataAnnotations().ValidateOnStart();
+builder.Services.AddHttpClient<NibssService>(
+    (provider, client) =>
+    {
+        var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
+        client.BaseAddress = new Uri(nibssOptions.BaseUrl);
+        client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
+        client.DefaultRequestHeaders.Add("Accept", "application/xml");
+    }
+);
 
 // Add gRPC client for Account service
 var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
 if (string.IsNullOrEmpty(accountGrpcUrl))
     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
-builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(options =>
-{
-    options.Address = new Uri(accountGrpcUrl);
-});
+builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
+    options =>
+    {
+        options.Address = new Uri(accountGrpcUrl);
+    }
+);
 
 builder.Services.AddScoped<NipInterBankService>();
-builder.Services.AddScoped<IntraBankService>();
 
 // Kafka Singleton Producer
 builder.Services.AddSingleton<IProducer<string, string>>(kp =>
@@ -71,7 +77,7 @@ builder.Services.AddSingleton<IProducer<string, string>>(kp =>
         BootstrapServers = KafkaGlobalConfig.BootstrapServers,
         Acks = Acks.All, // Leader and replica acknowledges writes
         EnableIdempotence = true, // prevents duplicates
-        SocketKeepaliveEnable = true
+        SocketKeepaliveEnable = true,
     };
 
     var producer = new ProducerBuilder<string, string>(config).Build();
@@ -89,6 +95,7 @@ builder.Services.AddHostedService<TransactionEventPublisher>();
 var app = builder.Build();
 
 app.MapDefaultEndpoints();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

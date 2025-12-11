@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CustomerProfile\src\CustomerProfile.API\CustomerAPI.csproj" />
+    <ProjectReference Include="..\CustomerProfile\src\CustomerProfile.API\CustomerProfile.csproj" />
     <ProjectReference Include="..\Notification\Notification.csproj" />
   </ItemGroup>
 

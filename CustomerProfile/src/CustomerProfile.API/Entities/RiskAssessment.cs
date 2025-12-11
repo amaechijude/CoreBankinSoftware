@@ -2,7 +2,7 @@
 
 namespace CustomerAPI.Entities
 {
-    public class RiskAssessment : BaseEntity
+    public sealed class RiskAssessment : BaseEntity
     {
         public Guid CustomerId { get; set; }
         public UserProfile Customer { get; set; } = null!;
@@ -14,11 +14,9 @@ namespace CustomerAPI.Entities
         public string? Assessor { get; set; } // Person who performed the assessment
         public string? Notes { get; set; } // Additional notes or comments
 
-
         // Helper Properties
         public bool IsHighRisk => RiskLevel == RiskLevel.High;
         public bool IsModerateRisk => RiskLevel == RiskLevel.Medium;
         public bool IsLowRisk => RiskLevel == RiskLevel.Low;
-
     }
 }

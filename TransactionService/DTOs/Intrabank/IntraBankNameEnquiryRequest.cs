@@ -3,7 +3,13 @@
 namespace TransactionService.DTOs.Intrabank;
 
 public record IntraBankNameEnquiryRequest(string AccountNumber);
-public record IntraBankNameEnquiryResponse(string AccountNuber, string AccountName, string BankName, double? AccountBalance);
+
+public record IntraBankNameEnquiryResponse(
+    string AccountNuber,
+    string AccountName,
+    string BankName,
+    double? AccountBalance
+);
 
 public class IntraBankNameEnquiryRequestValidator : AbstractValidator<IntraBankNameEnquiryRequest>
 {
@@ -16,7 +22,7 @@ public class IntraBankNameEnquiryRequestValidator : AbstractValidator<IntraBankN
             .WithMessage("Account Number must be digits only")
             .Length(10)
             .WithMessage("Account number must be 10 digits");
-
     }
+
     private bool IsAllDigit(string accountNumber) => accountNumber.All(char.IsDigit);
 }

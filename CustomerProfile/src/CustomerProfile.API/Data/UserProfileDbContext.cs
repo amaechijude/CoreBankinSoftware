@@ -1,19 +1,18 @@
 ﻿using CustomerAPI.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CustomerAPI.Data
-{
-    public class UserProfileDbContext(DbContextOptions<UserProfileDbContext> options) : DbContext(options)
-    {
-        public DbSet<UserProfile> UserProfiles { get; set; }
-        public DbSet<Account> Accounts { get; set; }
-        public DbSet<Address> Addresses { get; set; }
-        public DbSet<VerificationCode> VerificationCodes { get; set; }
+namespace CustomerAPI.Data;
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserProfileDbContext).Assembly);
-        }
+public sealed class UserProfileDbContext(DbContextOptions<UserProfileDbContext> options)
+    : DbContext(options)
+{
+    public DbSet<UserProfile> UserProfiles => Set<UserProfile>();
+    public DbSet<Address> Addresses => Set<Address>();
+    public DbSet<VerificationCode> VerificationCodes => Set<VerificationCode>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserProfileDbContext).Assembly);
     }
 }

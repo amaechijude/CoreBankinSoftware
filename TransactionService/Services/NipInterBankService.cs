@@ -8,18 +8,14 @@ using TransactionService.Utils;
 
 namespace TransactionService.Services;
 
-public class NipInterBankService
-    (
-    NibssService nibssService,
-    TransactionDbContext dbContext,
-    ILogger<NipInterBankService> logger
-    )
+public class NipInterBankService(NibssService nibssService, TransactionDbContext dbContext)
 {
     private readonly NibssService _nibssService = nibssService;
     private readonly TransactionDbContext _dbContext = dbContext;
-    private readonly ILogger<NipInterBankService> _logger = logger;
 
-    public async Task<ApiResultResponse<NameEnquiryResponse>> GetBeneficiaryAccountDetails(NameEnquiryRequest request)
+    public async Task<ApiResultResponse<NameEnquiryResponse>> GetBeneficiaryAccountDetails(
+        NameEnquiryRequest request
+    )
     {
         // Validate Request
         var validator = new NameEnquiryValidator();
@@ -36,30 +32,43 @@ public class NipInterBankService
         if (bankCode == null)
             return ApiResultResponse<NameEnquiryResponse>.Error("Bank not supported");
 
-        var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderBankNubanCode, request.DestinationBankNubanCode);
+        var sessionId = TransactionIdGenerator.GenerateSessionId(
+            request.SenderBankNubanCode,
+            request.DestinationBankNubanCode
+        );
 
         var nESingleRequest = new NESingleRequest
         {
             SessionID = sessionId,
             DestinationBankCode = request.DestinationBankNubanCode,
             ChannelCode = "1", // mobile channel code; adjust as necessary
-            AccountNumber = request.DestinationAccountNumber
+            AccountNumber = request.DestinationAccountNumber,
         };
         var (data, error) = await _nibssService.NameEnquiryAsync(nESingleRequest);
         if (data is null)
-            return ApiResultResponse<NameEnquiryResponse>.Error(error ?? "Account name enquiry failed");
+            return ApiResultResponse<NameEnquiryResponse>.Error(
+                error ?? "Account name enquiry failed"
+            );
         if (data.ResponseCode != "00")
-            return ApiResultResponse<NameEnquiryResponse>.Error(NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode));
+            return ApiResultResponse<NameEnquiryResponse>.Error(
+                NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode)
+            );
         // Successful response
-        return ApiResultResponse<NameEnquiryResponse>.Success(new NameEnquiryResponse
-        (
-            AccountNumber: data.AccountNumber,
-            AccountName: data.AccountName,
-            BankCode: data.DestinationBankCode,
-            BankName: request.DestinationBankName
-        ));
+        return ApiResultResponse<NameEnquiryResponse>.Success(
+            new NameEnquiryResponse(
+                AccountNumber: data.AccountNumber,
+                AccountName: data.AccountName,
+                BankCode: data.DestinationBankCode,
+                BankName: request.DestinationBankName
+            )
+        );
     }
-    public async Task<ApiResultResponse<FundCreditTransferResponse>> FundCreditTransfer(Guid customerId, FundCreditTransferRequest request, CancellationToken cancellationToken)
+
+    public async Task<ApiResultResponse<FundCreditTransferResponse>> FundCreditTransfer(
+        Guid customerId,
+        FundCreditTransferRequest request,
+        CancellationToken cancellationToken
+    )
     {
         // Validate Request
         var validator = new FundCreditTransferValidator();
@@ -70,8 +79,10 @@ public class NipInterBankService
             return ApiResultResponse<FundCreditTransferResponse>.Error(string.Join("; ", errors));
         }
 
-
-        var sessionId = TransactionIdGenerator.GenerateSessionId(request.SenderBankNubanCode, request.DestinationBankNubanCode);
+        var sessionId = TransactionIdGenerator.GenerateSessionId(
+            request.SenderBankNubanCode,
+            request.DestinationBankNubanCode
+        );
         var fctRequest = new FTSingleCreditRequest
         {
             SessionID = sessionId,
@@ -82,7 +93,7 @@ public class NipInterBankService
             OriginatorName = request.SenderAccountName,
             Narration = request.Narration ?? "N/A",
             PaymentReference = request.IdempotencyKey,
-            Amount = request.Amount
+            Amount = request.Amount,
         };
         // record in database
         var transactionData = TransactionData.Create(
@@ -101,7 +112,9 @@ public class NipInterBankService
         {
             transactionData.UpdateStatus(TransactionStatus.Failed, error);
             await _dbContext.SaveChangesAsync(cancellationToken);
-            return ApiResultResponse<FundCreditTransferResponse>.Error(error ?? "Fund credit transfer failed");
+            return ApiResultResponse<FundCreditTransferResponse>.Error(
+                error ?? "Fund credit transfer failed"
+            );
         }
 
         var code = NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode);
@@ -119,26 +132,27 @@ public class NipInterBankService
         transactionData.UpdateStatus(status, code);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        return ApiResultResponse<FundCreditTransferResponse>
-                .Success(MapToFundCreditTransferResponse(data, request, code));
+        return ApiResultResponse<FundCreditTransferResponse>.Success(
+            MapToFundCreditTransferResponse(data, request, code)
+        );
     }
 
-
-    private static FundCreditTransferResponse MapToFundCreditTransferResponse(FTSingleCreditResponse data, FundCreditTransferRequest request, string status)
+    private static FundCreditTransferResponse MapToFundCreditTransferResponse(
+        FTSingleCreditResponse data,
+        FundCreditTransferRequest request,
+        string status
+    )
     {
         return new FundCreditTransferResponse(
             Amount: request.Amount,
             Status: status,
             TransactionDateTime: DateTime.Now,
-
             SenderAccountNumber: request.SenderAccountNumber,
             SenderBankName: request.SenderBankName,
             SenderAccountName: request.SenderAccountName,
-
             BeneficiaryAccountNumber: request.DestinationAccountNumber,
             BeneficiaryBankName: request.DestinationBankName,
             BeneficiaryAccountName: data.AccountName ?? "N/A",
-
             Narration: request.Narration ?? "N/A",
             SessionID: data.SessionID,
             TransactionReference: data.PaymentReference

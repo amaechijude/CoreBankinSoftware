@@ -6,8 +6,7 @@
     <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="0c66585a-d4a7-4371-8b82-4cbf14847748" />
   </Folder>
   <Folder Name="/CustomerProfile/">
-    <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerAPI.csproj" />
-    <Project Path="CustomerProfile/tests/CustomerProfile.Test/CustomerProfile.Test.csproj" Id="4feb31e3-55ea-4cc5-9ac7-9b9203a8547b" />
+    <Project Path="CustomerProfile/src/CustomerProfile.API/CustomerProfile.csproj" />
   </Folder>
   <Folder Name="/KafkaMessages/">
     <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
