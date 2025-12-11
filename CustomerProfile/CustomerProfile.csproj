@@ -44,10 +44,10 @@
     <Folder Include="Logs\" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\..\..\GrpcContracts\Protos\*.proto" GrpcServices="client" />
+    <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="both" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

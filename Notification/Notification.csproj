@@ -24,7 +24,7 @@
     <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="client" />
+    <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="both" />
   </ItemGroup>
   
 </Project>
