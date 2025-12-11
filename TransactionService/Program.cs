@@ -1,7 +1,10 @@
 using Confluent.Kafka;
 using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Options;
+using Polly;
+using Polly.Fallback;
 using Scalar.AspNetCore;
 using SharedGrpcContracts.Protos.Account.Operations.V1;
 using TransactionService.Data;
@@ -46,6 +49,7 @@ builder.Services.Configure<NibssOptions>(options =>
         ?? throw new InvalidOperationException("Nibss Base URL is not configured.");
 });
 builder.Services.AddOptions<NibssOptions>().ValidateDataAnnotations().ValidateOnStart();
+
 builder.Services.AddHttpClient<NibssService>(
     (provider, client) =>
     {
@@ -53,6 +57,28 @@ builder.Services.AddHttpClient<NibssService>(
         client.BaseAddress = new Uri(nibssOptions.BaseUrl);
         client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
         client.DefaultRequestHeaders.Add("Accept", "application/xml");
+    }
+);
+
+builder.Services.AddResiliencePipeline(
+    "key",
+    pipelineBuilder =>
+    {
+        pipelineBuilder.AddRetry(
+            new Polly.Retry.RetryStrategyOptions
+            {
+                ShouldHandle = new PredicateBuilder()
+                    .Handle<HttpRequestException>(ex =>
+                        ex.StatusCode >= System.Net.HttpStatusCode.BadRequest
+                        && ex.StatusCode <= System.Net.HttpStatusCode.InternalServerError
+                    )
+                    .Handle<TimeoutException>(),
+                BackoffType = DelayBackoffType.Linear,
+                MaxRetryAttempts = 3,
+                MaxDelay = TimeSpan.FromMilliseconds(100),
+                UseJitter = true,
+            }
+        );
     }
 );
 

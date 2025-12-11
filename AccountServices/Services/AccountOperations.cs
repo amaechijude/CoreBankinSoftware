@@ -94,7 +94,10 @@ internal class AccountOperations(AccountDbContext dbContext, ILogger<AccountOper
         return false;
     }
 
-    internal async Task ProcessEvent(TransactionAccountEvent @event, CancellationToken ct) { }
+    internal static async Task ProcessEvent(
+        TransactionAccountEvent @event,
+        CancellationToken ct
+    ) { }
 
     internal async Task<bool> HandleDebit(TransactionAccountEvent @event, CancellationToken ct)
     {

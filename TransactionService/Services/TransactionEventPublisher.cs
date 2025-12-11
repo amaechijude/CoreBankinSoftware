@@ -12,7 +12,7 @@ public class TransactionEventPublisher(
     IServiceScopeFactory serviceScopeFactory,
     ILogger<TransactionEventPublisher> logger,
     IProducer<string, string> kafkaProducer
-    ) : BackgroundService
+) : BackgroundService
 {
     private static readonly string _topic = KafkaGlobalConfig.TransactionToAccountTopic;
     private const int BatchSize = 100;
@@ -21,11 +21,7 @@ public class TransactionEventPublisher(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // 1. BLOCK UNTIL KAFKA IS READY
-        await Broker.WaitForKafkaAsync(
-            KafkaGlobalConfig.BootstrapServers,
-            logger,
-            stoppingToken
-        );
+        await Broker.WaitForKafkaAsync(KafkaGlobalConfig.BootstrapServers, logger, stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -41,7 +37,11 @@ public class TransactionEventPublisher(
             catch (Exception ex)
             {
                 if (logger.IsEnabled(LogLevel.Error))
-                    logger.LogError(ex, "Unexpected error in TransactionEventPublisher at {Timestamp}", DateTimeOffset.UtcNow);
+                    logger.LogError(
+                        ex,
+                        "Unexpected error in TransactionEventPublisher at {Timestamp}",
+                        DateTimeOffset.UtcNow
+                    );
             }
 
             if (!stoppingToken.IsCancellationRequested)
@@ -59,8 +59,8 @@ public class TransactionEventPublisher(
 
         while (hasMore && !ct.IsCancellationRequested)
         {
-            var messages = await dbContext.OutboxMessages
-                .Where(m => m.Status == OutboxStatus.Pending)
+            var messages = await dbContext
+                .OutboxMessages.Where(m => m.Status == OutboxStatus.Pending)
                 .OrderBy(m => m.CreatedAt)
                 .Skip(skip)
                 .Take(BatchSize)
@@ -68,7 +68,8 @@ public class TransactionEventPublisher(
 
             hasMore = messages.Count == BatchSize;
 
-            if (messages.Count == 0) break;
+            if (messages.Count == 0)
+                break;
 
             List<OutboxMessage> messagesToUpdate = [];
 
@@ -80,7 +81,7 @@ public class TransactionEventPublisher(
                     var kafkaMessage = new Message<string, string>
                     {
                         Key = outboxMsg.TransactionId.ToString(),
-                        Value = CustomMessageSerializer.Serialize(@event)
+                        Value = CustomMessageSerializer.Serialize(@event),
                     };
 
                     var deliveryReport = await kafkaProducer.ProduceAsync(_topic, kafkaMessage, ct);
@@ -95,21 +96,30 @@ public class TransactionEventPublisher(
                     {
                         if (logger.IsEnabled(LogLevel.Warning))
                             logger.LogWarning(
-                            "Message {TransactionId} failed to persist. Status: {Status}",
-                            outboxMsg.TransactionId, deliveryReport.Status);
+                                "Message {TransactionId} failed to persist. Status: {Status}",
+                                outboxMsg.TransactionId,
+                                deliveryReport.Status
+                            );
                     }
                 }
                 catch (KafkaException kafkaEx)
                 {
                     if (logger.IsEnabled(LogLevel.Error))
-                        logger.LogError(kafkaEx,
-                        "Kafka error publishing message {TransactionId}. Code: {Code}",
-                        outboxMsg.TransactionId, kafkaEx.Error.Code);
+                        logger.LogError(
+                            kafkaEx,
+                            "Kafka error publishing message {TransactionId}. Code: {Code}",
+                            outboxMsg.TransactionId,
+                            kafkaEx.Error.Code
+                        );
                 }
                 catch (Exception ex)
                 {
                     if (logger.IsEnabled(LogLevel.Error))
-                        logger.LogError(ex, "Error processing outbox message {TransactionId}", outboxMsg.TransactionId);
+                        logger.LogError(
+                            ex,
+                            "Error processing outbox message {TransactionId}",
+                            outboxMsg.TransactionId
+                        );
                 }
             }
 
@@ -120,7 +130,10 @@ public class TransactionEventPublisher(
                 await dbContext.SaveChangesAsync(ct);
 
                 if (logger.IsEnabled(LogLevel.Information))
-                    logger.LogInformation("Published {Count} messages to Kafka", messagesToUpdate.Count);
+                    logger.LogInformation(
+                        "Published {Count} messages to Kafka",
+                        messagesToUpdate.Count
+                    );
             }
 
             skip += BatchSize;
@@ -140,7 +153,7 @@ public class TransactionEventPublisher(
             Amount = message.Amount,
             TransactionFee = message.TransactionFee,
             Timestamp = message.CreatedAt,
-            EventType = MapTransactionType(message.TransactionType)
+            EventType = MapTransactionType(message.TransactionType),
         };
     }
 
@@ -151,7 +164,7 @@ public class TransactionEventPublisher(
             TransactionType.Credit => EventType.Credit,
             TransactionType.Debit => EventType.Debit,
             TransactionType.Transfer => EventType.Transfer,
-            _ => EventType.Utility
+            _ => EventType.Utility,
         };
     }
 
@@ -160,5 +173,4 @@ public class TransactionEventPublisher(
         var jitterMs = Random.Shared.Next(0, 1000);
         return TimeSpan.FromMilliseconds(baseDelayMs + jitterMs);
     }
-
 }

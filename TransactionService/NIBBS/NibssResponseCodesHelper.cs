@@ -59,7 +59,7 @@ public static class NibssResponseCodesHelper
             "97" => "Timeout waiting for response from destination",
 
             // Default case if the code is not recognized
-            _ => "Unknown response code"
+            _ => "Unknown response code",
         };
     }
 
@@ -83,8 +83,8 @@ public static class NibssResponseCodesHelper
             "65" => TransactionStatus.Declined, // Exceeds withdrawal frequency
 
             // Blocked for security reasons
-            "34" => TransactionStatus.Blocked,  // Suspected fraud
-            "63" => TransactionStatus.Blocked,  // Security violation
+            "34" => TransactionStatus.Blocked, // Suspected fraud
+            "63" => TransactionStatus.Blocked, // Security violation
 
             // Hard Failures (system/validation issues, not typically user-correctable)
             "51" => TransactionStatus.Failed,

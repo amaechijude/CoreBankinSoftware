@@ -1,6 +1,5 @@
 using System.Net.Sockets;
 using MailKit.Net.Smtp;
-using MailKit.Security;
 using Polly;
 using Polly.Retry;
 

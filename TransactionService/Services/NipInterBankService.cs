@@ -14,12 +14,13 @@ public class NipInterBankService(NibssService nibssService, TransactionDbContext
     private readonly TransactionDbContext _dbContext = dbContext;
 
     public async Task<ApiResultResponse<NameEnquiryResponse>> GetBeneficiaryAccountDetails(
-        NameEnquiryRequest request
+        NameEnquiryRequest request,
+        CancellationToken ct
     )
     {
         // Validate Request
         var validator = new NameEnquiryValidator();
-        var validationResult = await validator.ValidateAsync(request);
+        var validationResult = await validator.ValidateAsync(request, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
@@ -44,7 +45,7 @@ public class NipInterBankService(NibssService nibssService, TransactionDbContext
             ChannelCode = "1", // mobile channel code; adjust as necessary
             AccountNumber = request.DestinationAccountNumber,
         };
-        var (data, error) = await _nibssService.NameEnquiryAsync(nESingleRequest);
+        var (data, error) = await _nibssService.NameEnquiryAsync(nESingleRequest, ct);
         if (data is null)
             return ApiResultResponse<NameEnquiryResponse>.Error(
                 error ?? "Account name enquiry failed"
@@ -107,7 +108,10 @@ public class NipInterBankService(NibssService nibssService, TransactionDbContext
         _dbContext.Transactions.Add(transactionData);
         await _dbContext.SaveChangesAsync(cancellationToken);
 
-        var (data, error) = await _nibssService.FundTransferCreditAsync(fctRequest);
+        var (data, error) = await _nibssService.FundTransferCreditAsync(
+            fctRequest,
+            cancellationToken
+        );
         if (data is null)
         {
             transactionData.UpdateStatus(TransactionStatus.Failed, error);

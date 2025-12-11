@@ -11,11 +11,12 @@ public class TransactionToAccountConsumer : BackgroundService
     private readonly ILogger<TransactionToAccountConsumer> _logger;
     private readonly IConsumer<string, string> _consumer;
     private readonly IProducer<string, string> _producer;
+
     public TransactionToAccountConsumer(
         IServiceScopeFactory scopeFactory,
         ILogger<TransactionToAccountConsumer> logger,
         IProducer<string, string> producer
-        )
+    )
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
@@ -25,12 +26,13 @@ public class TransactionToAccountConsumer : BackgroundService
             BootstrapServers = KafkaGlobalConfig.BootstrapServers,
             GroupId = KafkaGlobalConfig.TransactionToAccountGroupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
-            EnableAutoCommit = false // commit after db transaction succeeds
+            EnableAutoCommit = false, // commit after db transaction succeeds
         };
 
         _consumer = new ConsumerBuilder<string, string>(config).Build();
         _producer = producer;
     }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _consumer.Subscribe(topic: KafkaGlobalConfig.TransactionToAccountTopic);
@@ -46,6 +48,7 @@ public class TransactionToAccountConsumer : BackgroundService
                     var srs = CustomMessageSerializer.Deserialize<TransactionAccountEvent>(tEvent);
 
                     await ProcessEvent(srs, stoppingToken);
+                    _consumer.Commit();
                 }
                 catch (ConsumeException ex)
                 {
@@ -82,15 +85,14 @@ public class TransactionToAccountConsumer : BackgroundService
         var message = new Message<string, string>
         {
             Key = notification.NotificationId,
-            Value = CustomMessageSerializer.Serialize(notification)
+            Value = CustomMessageSerializer.Serialize(notification),
         };
 
-        var deliveryReport = await _producer
-            .ProduceAsync(
-                topic: KafkaGlobalConfig.NotificationTopic,
-                message: message,
-                cancellationToken: ct
-                );
+        var deliveryReport = await _producer.ProduceAsync(
+            topic: KafkaGlobalConfig.NotificationTopic,
+            message: message,
+            cancellationToken: ct
+        );
 
         if (deliveryReport.Status == PersistenceStatus.NotPersisted)
         {
@@ -99,7 +101,10 @@ public class TransactionToAccountConsumer : BackgroundService
         }
     }
 
-    private async Task<bool> HandleEvent(TransactionAccountEvent transactionAccountEvent, CancellationToken ct)
+    private async Task<bool> HandleEvent(
+        TransactionAccountEvent transactionAccountEvent,
+        CancellationToken ct
+    )
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         var operation = scope.ServiceProvider.GetRequiredService<AccountOperations>();

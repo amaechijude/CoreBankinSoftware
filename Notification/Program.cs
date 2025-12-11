@@ -6,7 +6,6 @@ using Notification.IOptions;
 using Notification.Services;
 using Notification.Workers;
 using Polly;
-using Polly.Fallback;
 
 var builder = WebApplication.CreateSlimBuilder(args);
 
@@ -73,6 +72,9 @@ builder.Services.AddResiliencePipeline(
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddHostedService<NotificationBackgroundProcessor>();
+
+// cache
+builder.Services.AddDistributedMemoryCache();
 
 var app = builder.Build();
 
