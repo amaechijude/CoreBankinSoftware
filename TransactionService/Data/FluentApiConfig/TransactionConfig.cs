@@ -4,7 +4,7 @@ using TransactionService.Entity;
 
 namespace TransactionService.Data.FluentApiConfig;
 
-public class TransactionConfig : IEntityTypeConfiguration<TransactionData>
+public sealed class TransactionConfig : IEntityTypeConfiguration<TransactionData>
 {
     public void Configure(EntityTypeBuilder<TransactionData> builder)
     {
@@ -30,12 +30,15 @@ public class TransactionConfig : IEntityTypeConfiguration<TransactionData>
         builder.Property(t => t.TransactionCategory).HasConversion<string>().IsRequired();
 
         // owned entities
-        builder.OwnsMany(t => t.TransactionStatusLogs, logs =>
-        {
-            logs.WithOwner(st => st.TransactionData).HasForeignKey(st => st.TransactionId);
-            logs.HasKey(st => st.Id);
-            logs.Property(st => st.CurrentStatus).HasConversion<string>();
-            logs.Property(st => st.PreviousStatus).HasConversion<string>();
-        });
+        builder.OwnsMany(
+            t => t.TransactionStatusLogs,
+            logs =>
+            {
+                logs.WithOwner(st => st.TransactionData).HasForeignKey(st => st.TransactionId);
+                logs.HasKey(st => st.Id);
+                logs.Property(st => st.CurrentStatus).HasConversion<string>();
+                logs.Property(st => st.PreviousStatus).HasConversion<string>();
+            }
+        );
     }
 }

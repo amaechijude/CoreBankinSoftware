@@ -2,7 +2,7 @@ using TransactionService.Entity.Enums;
 
 namespace TransactionService.Entity;
 
-public class OutboxMessage
+public sealed class OutboxMessage
 {
     public Guid Id { get; private init; }
     public Guid CustomerId { get; private init; }
@@ -18,7 +18,6 @@ public class OutboxMessage
     public OutboxStatus Status { get; set; }
     public DateTimeOffset CreatedAt { get; private init; }
     public DateTimeOffset? PublishedAt { get; set; }
-
 
     public static OutboxMessage Create(TransactionData transactionData)
     {
@@ -36,7 +35,7 @@ public class OutboxMessage
             TransactionType = transactionData.TransactionType,
             CreatedAt = DateTimeOffset.UtcNow,
             Status = OutboxStatus.Pending,
-            TransactionStatus = transactionData.TransactionStatus.ToString()
+            TransactionStatus = transactionData.TransactionStatus.ToString(),
         };
     }
 }
@@ -45,5 +44,5 @@ public enum OutboxStatus
 {
     Pending,
     Published,
-    Failed
+    Failed,
 }

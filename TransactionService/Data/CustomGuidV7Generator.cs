@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration;
 
 namespace TransactionService.Data;
 
-public class CustomGuidV7Generator : ValueGenerator<Guid>
+public sealed class CustomGuidV7Generator : ValueGenerator<Guid>
 {
     public override bool GeneratesTemporaryValues => false; // Indicates that the generated values are not temporary
 

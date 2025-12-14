@@ -45,6 +45,17 @@ public sealed class NotificationBackgroundProcessor : BackgroundService
                 await ProcessEmail(notificationEvent, stoppingToken);
                 _consumer.Commit();
             }
+            catch (OperationCanceledException)
+            {
+                _consumer.Close();
+                _consumer.Dispose();
+                break;
+            }
+            catch (ConsumeException ex)
+            {
+                if (_logger.IsEnabled(LogLevel.Error))
+                    _logger.LogError(ex, "Notification consumer is not consuming events");
+            }
             catch (Exception) { }
         }
     }

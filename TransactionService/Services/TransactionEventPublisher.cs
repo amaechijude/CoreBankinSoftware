@@ -154,6 +154,10 @@ public class TransactionEventPublisher(
             TransactionFee = message.TransactionFee,
             Timestamp = message.CreatedAt,
             EventType = MapTransactionType(message.TransactionType),
+
+            SendersAccountName = "",
+            SendersAccountNumber = "",
+            DestinationAccountName = "",
         };
     }
 

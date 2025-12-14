@@ -3,6 +3,9 @@ namespace KafkaMessages.AccountMessages;
 public record TransactionAccountEvent
 {
     public required Guid CustomerId { get; init; }
+    public required string SendersAccountName { get; init; }
+    public required string SendersAccountNumber { get; init; }
+    public required string DestinationAccountName { get; init; }
     public required Guid TransactionId { get; init; }
     public required string TransactionReference { get; init; }
     public required string SessionId { get; init; }
@@ -21,3 +24,5 @@ public enum EventType
     Transfer,
     Utility,
 }
+
+public class Profile { }

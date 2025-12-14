@@ -4,7 +4,7 @@ using TransactionService.Entity;
 
 namespace TransactionService.Data.FluentApiConfig;
 
-public class OutBoxMessageConfig : IEntityTypeConfiguration<OutboxMessage>
+public sealed class OutBoxMessageConfig : IEntityTypeConfiguration<OutboxMessage>
 {
     public void Configure(EntityTypeBuilder<OutboxMessage> builder)
     {

@@ -2,7 +2,7 @@ using TransactionService.Entity.Enums;
 
 namespace TransactionService.Entity;
 
-public class TransactionStatusLog
+public sealed class TransactionStatusLog
 {
     public Guid Id { get; init; }
     public Guid TransactionId { get; init; }
@@ -16,7 +16,7 @@ public class TransactionStatusLog
         TransactionData transactionData,
         TransactionStatus currentStatus,
         string description
-        )
+    )
     {
         return new TransactionStatusLog
         {

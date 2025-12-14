@@ -3,7 +3,7 @@ using TransactionService.Entity.Enums;
 
 namespace TransactionService.Entity;
 
-public class TransactionData
+public sealed class TransactionData
 {
     public Guid Id { get; private init; }
     public string TransactionReference { get; private init; } = string.Empty;
@@ -37,13 +37,14 @@ public class TransactionData
 
     public ICollection<TransactionStatusLog> TransactionStatusLogs { get; set; } = [];
 
-
     // static method to create
     public static TransactionData Create(
         FundCreditTransferRequest request,
-        TransactionType transactionType, string reference,
-        TransactionCategory category, string sessionId
-        )
+        TransactionType transactionType,
+        string reference,
+        TransactionCategory category,
+        string sessionId
+    )
     {
         var txn = new TransactionData
         {
@@ -65,7 +66,7 @@ public class TransactionData
             IpAddress = request.IpAddress,
             Longitude = request.Longitude,
             Latitude = request.Latitude,
-            TransactionStatusLogs = []
+            TransactionStatusLogs = [],
         };
         var log = TransactionStatusLog.Create(txn, TransactionStatus.Initiated, "Initiated");
         txn.TransactionStatusLogs.Add(log);
