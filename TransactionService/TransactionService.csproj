@@ -12,6 +12,7 @@
     <PackageReference Include="Confluent.Kafka" />
     <PackageReference Include="DotNetEnv" />
 	  <PackageReference Include="FluentValidation" />
+	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Grpc.Net.Client" />
     <PackageReference Include="Hangfire.AspNetCore" />
@@ -27,7 +28,7 @@
   </ItemGroup>
   
  <ItemGroup>
-    <Protobuf Include="..\GrpcContracts\Protos\*.proto" GrpcServices="client" />
+    <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="client" />
     <Protobuf Include="..\GrpcContracts\Protos\Accounts\*.proto" GrpcServices="client" />
   </ItemGroup>
   

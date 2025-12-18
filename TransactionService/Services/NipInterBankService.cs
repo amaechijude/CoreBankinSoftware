@@ -1,3 +1,4 @@
+using FluentValidation;
 using TransactionService.Data;
 using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
@@ -8,26 +9,32 @@ using TransactionService.Utils;
 
 namespace TransactionService.Services;
 
-public class NipInterBankService(NibssService nibssService, TransactionDbContext dbContext)
+public class NipInterBankService(
+    TransactionDbContext dbContext,
+    NibssService nibssService,
+    IValidator<NameEnquiryRequest> nameEnquiryValidator,
+    IValidator<FundCreditTransferRequest> fundCreditTransferValidator
+)
 {
     private readonly NibssService _nibssService = nibssService;
     private readonly TransactionDbContext _dbContext = dbContext;
+    private readonly IValidator<NameEnquiryRequest> _nameEnquiryValidator = nameEnquiryValidator;
+    private readonly IValidator<FundCreditTransferRequest> _fundCreditTransferValidator =
+        fundCreditTransferValidator;
 
     public async Task<ApiResultResponse<NameEnquiryResponse>> GetBeneficiaryAccountDetails(
         NameEnquiryRequest request,
         CancellationToken ct
     )
     {
-        // Validate Request
-        var validator = new NameEnquiryValidator();
-        var validationResult = await validator.ValidateAsync(request, ct);
+        var validationResult = await _nameEnquiryValidator.ValidateAsync(request, ct);
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();
             return ApiResultResponse<NameEnquiryResponse>.Error(string.Join("; ", errors));
         }
         // Get Bank Code
-        string? bankCode = !string.IsNullOrWhiteSpace(request.DestinationBankNubanCode)
+        var bankCode = !string.IsNullOrWhiteSpace(request.DestinationBankNubanCode)
             ? request.DestinationBankNubanCode
             : BankCodes.GetBankCode(request.DestinationBankName);
         if (bankCode == null)
@@ -72,8 +79,10 @@ public class NipInterBankService(NibssService nibssService, TransactionDbContext
     )
     {
         // Validate Request
-        var validator = new FundCreditTransferValidator();
-        var validationResult = await validator.ValidateAsync(request, cancellationToken);
+        var validationResult = await _fundCreditTransferValidator.ValidateAsync(
+            request,
+            cancellationToken
+        );
         if (!validationResult.IsValid)
         {
             var errors = validationResult.Errors.Select(e => e.ErrorMessage).ToList();

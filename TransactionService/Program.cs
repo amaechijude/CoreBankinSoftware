@@ -1,13 +1,14 @@
 using Confluent.Kafka;
+using FluentValidation;
 using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.ExceptionSummarization;
 using Microsoft.Extensions.Options;
 using Polly;
-using Polly.Fallback;
 using Scalar.AspNetCore;
 using SharedGrpcContracts.Protos.Account.Operations.V1;
+using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;
+using TransactionService.DTOs.NipInterBank;
 using TransactionService.NIBBS;
 using TransactionService.Services;
 
@@ -17,6 +18,11 @@ builder.AddServiceDefaults();
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// fluent validations
+builder.Services.AddValidatorsFromAssemblyContaining<NameEnquiryValidator>(
+    ServiceLifetime.Singleton
+);
 
 // Add and validate connectionString option on startup
 var connectionString =
@@ -86,12 +92,30 @@ builder.Services.AddResiliencePipeline(
 var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
 if (string.IsNullOrEmpty(accountGrpcUrl))
     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
-builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
-    options =>
-    {
-        options.Address = new Uri(accountGrpcUrl);
-    }
-);
+
+builder
+    .Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
+        options =>
+        {
+            options.Address = new Uri(accountGrpcUrl);
+        }
+    )
+    .AddStandardResilienceHandler();
+
+var profileGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
+if (string.IsNullOrEmpty(profileGrpcUrl))
+    throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
+
+builder
+    .Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(
+        options =>
+        {
+            options.Address = new Uri(profileGrpcUrl);
+        }
+    )
+    .AddStandardResilienceHandler();
+
+builder.Services.AddScoped<UserPreferenceService>();
 
 builder.Services.AddScoped<NipInterBankService>();
 
@@ -116,7 +140,8 @@ builder.Services.AddSingleton<IProducer<string, string>>(kp =>
 });
 
 // Background producer
-builder.Services.AddHostedService<TransactionEventPublisher>();
+builder.Services.AddScoped<UserPreferenceService>();
+builder.Services.AddHostedService<TransactionNotificationPublisher>();
 
 var app = builder.Build();
 

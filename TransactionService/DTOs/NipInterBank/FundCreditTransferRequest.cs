@@ -1,26 +1,21 @@
 using FluentValidation;
+
 namespace TransactionService.DTOs.NipInterBank;
 
-public record FundCreditTransferRequest
-(
+public record FundCreditTransferRequest(
     bool IsIntraBank,
     string IdempotencyKey,
     Guid CustomerId,
-
     string SenderAccountNumber,
     string SenderBankName,
     string SenderBankNubanCode,
     string SenderAccountName,
-
-
     string DestinationAccountNumber,
     string DestinationBankName,
     string DestinationBankNubanCode,
     string DestinationAccountName,
-
     decimal Amount,
     string? Narration,
-
     string DeviceInfo,
     string IpAddress,
     string? Longitude,
@@ -28,20 +23,16 @@ public record FundCreditTransferRequest
     string? TransactionChannel
 );
 
-public record FundCreditTransferResponse
-(
+public record FundCreditTransferResponse(
     decimal Amount,
     string Status,
     DateTime TransactionDateTime,
-
     string SenderAccountNumber,
     string SenderBankName,
     string SenderAccountName,
-
     string BeneficiaryAccountNumber,
     string BeneficiaryBankName,
     string BeneficiaryAccountName,
-
     string Narration,
     string SessionID,
     string TransactionReference
@@ -52,19 +43,27 @@ public class FundCreditTransferValidator : AbstractValidator<FundCreditTransferR
     public FundCreditTransferValidator()
     {
         RuleFor(x => x.DestinationAccountNumber)
-            .NotEmpty().WithMessage("DestinationAccountNumber is required.")
-            .Length(10).WithMessage("DestinationAccountNumber must be 10 characters long.")
-            .Must(IsAllDigit).WithMessage("DestinationAccountNumber must contain only digits.");
+            .NotEmpty()
+            .WithMessage("DestinationAccountNumber is required.")
+            .Length(10)
+            .WithMessage("DestinationAccountNumber must be 10 characters long.")
+            .Must(IsAllDigit)
+            .WithMessage("DestinationAccountNumber must contain only digits.");
         RuleFor(x => x.DestinationBankName)
-            .NotEmpty().WithMessage("DestinationBankName is required.")
-            .MinimumLength(3).WithMessage("DestinationBankName must be at least 3 characters long.");
+            .NotEmpty()
+            .WithMessage("DestinationBankName is required.")
+            .MinimumLength(3)
+            .WithMessage("DestinationBankName must be at least 3 characters long.");
         RuleFor(x => x.DestinationBankNubanCode)
-            .NotEmpty().WithMessage("DestinationBankNubanCode is required.")
-            .Must(IsAllDigit).WithMessage("DestinationBankNubanCode must contain only digits.");
-        RuleFor(x => x.Amount)
-            .GreaterThan(0).WithMessage("Amount must be greater than zero.");
+            .NotEmpty()
+            .WithMessage("DestinationBankNubanCode is required.")
+            .Must(IsAllDigit)
+            .WithMessage("DestinationBankNubanCode must contain only digits.");
+        RuleFor(x => x.Amount).GreaterThan(0).WithMessage("Amount must be greater than zero.");
         RuleFor(x => x.Narration)
-            .MaximumLength(100).WithMessage("Narration cannot exceed 100 characters.");
+            .MaximumLength(100)
+            .WithMessage("Narration cannot exceed 100 characters.");
     }
+
     private bool IsAllDigit(string accountNumber) => accountNumber.All(char.IsDigit);
 }

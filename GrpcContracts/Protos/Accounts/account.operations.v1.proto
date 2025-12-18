@@ -2,16 +2,36 @@ syntax = "proto3";
 
 option csharp_namespace = 'SharedGrpcContracts.Protos.Account.Operations.V1';
 
-package grpc.contracts;
+package Accounts;
 
+// AccountOperationsGrpcService defines operations related to account management.
 service AccountOperationsGrpcService {
+  
+  // CreateAccount creates a new account.
+  // Request: CreateAccountRequest containing initial account data.
+  // Response: CreateAccountResponse with the created account ID and metadata.
   rpc CreateAccount(CreateAccountRequest) returns (AccountOperationResponse);
+  // Deposit adds funds to an account.
+  // Request: DepositRequest containing account number and amount.
+  // Response: AccountOperationResponse indicating success or failure.
   rpc Deposit(DepositRequest) returns (AccountOperationResponse);
+  // Withdraw removes funds from an account.
+  // Request: WithdrawRequest containing account number and withdrawal amount.
+  // Response: AccountOperationResponse indicating success or failure and optional error details.
   rpc Withdraw(WithdrawRequest) returns (AccountOperationResponse);
+
+  // Transfer moves funds from one account to another.
+  // Request: TransferRequest containing source customer id, destination account number, amount and session id.
+  // Response: AccountOperationResponse indicating success or failure.
   rpc Transfer(TransferRequest) returns (AccountOperationResponse);
+
+  // IntraBankNameEnquiry looks up account holder details within the same bank.
+  // Request: IntraBankNameEnquiryRequest with the target account number.
+  // Response: IntraBankNameEnquiryResponse with account holder name and bank metadata.
   rpc IntraBankNameEnquiry (IntraBankNameEnquiryRequest) returns (IntraBankNameEnquiryResponse);
 }
 
+// AccountTypeRequest defines types of accounts that can be created.
 enum AccountTypeRequest {
   ACCOUNT_TYPE_UNSPECIFIED = 0;
   PERSONAL = 1;
@@ -19,6 +39,7 @@ enum AccountTypeRequest {
 }
 
 
+// CreateAccountRequest contains information needed to create a new account.
 message CreateAccountRequest {
     string customer_id = 1;
     string phone_number = 2;
@@ -58,5 +79,5 @@ message IntraBankNameEnquiryResponse {
     string account_number = 2;
     string account_name = 3;
     string bank_name = 4;
-    string error = 6;
+    string error = 5;
 }

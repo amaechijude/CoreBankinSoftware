@@ -8,6 +8,9 @@
   <Folder Name="/CustomerProfile/">
     <Project Path="CustomerProfile/CustomerProfile.csproj" />
   </Folder>
+  <Folder Name="/GrpcContracts/">
+    <File Path="GrpcContracts/Protos/Profiles/customer.v1.proto" />
+  </Folder>
   <Folder Name="/KafkaMessages/">
     <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
   </Folder>

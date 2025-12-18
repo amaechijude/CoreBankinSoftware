@@ -7,10 +7,9 @@ public sealed class UserNotificationPreference
     public string AccountNumber { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
     public string PhoneNumber { get; private set; } = string.Empty;
-    public string FirstName { get; private set; } = string.Empty;
-    public string LastName { get; private set; } = string.Empty;
+    public string FirstName { get; private init; } = string.Empty;
+    public string LastName { get; private init; } = string.Empty;
     public DateTimeOffset CreatedAt { get; private init; }
-    public DateTimeOffset? UpdateAt { get; private set; }
     public string FullName => $"{FirstName} {LastName}";
 
     public static UserNotificationPreference Create(PreferenceRequest request)

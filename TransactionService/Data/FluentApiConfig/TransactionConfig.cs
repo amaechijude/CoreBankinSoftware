@@ -10,17 +10,18 @@ public sealed class TransactionConfig : IEntityTypeConfiguration<TransactionData
     {
         builder.ToTable("transactions");
         builder.HasKey(t => t.Id);
-        builder.Property(t => t.RowVersion).IsRowVersion();
 
+        // strings
         builder.Property(t => t.TransactionReference).IsRequired().HasMaxLength(150);
         builder.HasIndex(t => t.TransactionReference).IsUnique();
 
         builder.Property(t => t.IdempotencyKey).IsRequired().HasMaxLength(100);
         builder.HasIndex(t => t.IdempotencyKey).IsUnique();
 
-        builder.Property(t => t.Amount).IsRequired().HasPrecision(19, 2);
-        builder.Property(t => t.TransactionFee).IsRequired().HasPrecision(19, 2);
-        builder.Property(t => t.ValueAddedTax).IsRequired().HasPrecision(19, 2);
+        // monies
+        builder.Property(t => t.Amount).IsRequired().HasPrecision(19, 4);
+        builder.Property(t => t.TransactionFee).IsRequired().HasPrecision(19, 4);
+        builder.Property(t => t.ValueAddedTax).IsRequired().HasPrecision(19, 4);
 
         // Enums as strings
         builder.Property(t => t.TransactionType).HasConversion<string>().IsRequired();

@@ -1,4 +1,5 @@
-﻿using TransactionService.DTOs.NipInterBank;
+﻿using TransactionService.DTOs.IntraBank;
+using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity.Enums;
 
 namespace TransactionService.Entity;
@@ -9,12 +10,11 @@ public sealed class TransactionData
     public string TransactionReference { get; private init; } = string.Empty;
     public string IdempotencyKey { get; private init; } = string.Empty;
     public Guid CustomerId { get; private init; }
-    public string? DestinationAccountNumber { get; private init; }
-    public string? DestinationBankName { get; private init; }
-    public uint RowVersion { get; set; }
+    public string DestinationAccountNumber { get; private init; } = string.Empty;
+    public string DestinationBankName { get; private init; } = string.Empty;
 
     public decimal Amount { get; private init; }
-    public string? Narration { get; private init; } = string.Empty;
+    public string? Narration { get; private init; }
 
     public TransactionType TransactionType { get; private init; }
     public string? TransactionChannel { get; private init; }
@@ -35,7 +35,7 @@ public sealed class TransactionData
     public string? Longitude { get; private init; }
     public string? Latitude { get; private init; }
 
-    public ICollection<TransactionStatusLog> TransactionStatusLogs { get; set; } = [];
+    public ICollection<TransactionStatusLog> TransactionStatusLogs { get; private init; } = [];
 
     // static method to create
     public static TransactionData Create(
@@ -73,10 +73,48 @@ public sealed class TransactionData
         return txn;
     }
 
+    // static method to create
+    public static TransactionData Create(
+        TransferRequestIntra request,
+        TransactionType transactionType,
+        string reference,
+        TransactionCategory category,
+        string sessionId
+    )
+    {
+        var txn = new TransactionData
+        {
+            Id = Guid.CreateVersion7(),
+            TransactionReference = reference,
+            CustomerId = request.CustomerId,
+            IdempotencyKey = request.IdempotencyKey,
+            DestinationAccountNumber = request.DestinationAccountNumber,
+            DestinationBankName = request.DestinationAccountName,
+            Amount = request.Amount,
+            Narration = request.Narration,
+            TransactionType = transactionType,
+            TransactionStatus = TransactionStatus.Initiated,
+            TransactionCategory = category,
+            TransactionChannel = request.TransactionChannel,
+
+            SessionId = sessionId,
+            DeviceInfo = request.DeviceInfo,
+            IpAddress = request.IpAddress,
+            Longitude = request.Longitude,
+            Latitude = request.Latitude,
+            TransactionStatusLogs = [],
+        };
+        var log = TransactionStatusLog.Create(txn, TransactionStatus.Initiated, "Initiated");
+        txn.TransactionStatusLogs.Add(log);
+        return txn;
+    }
+
+
     public void UpdateStatus(TransactionStatus status, string description)
     {
         var log = TransactionStatusLog.Create(this, status, description);
         TransactionStatusLogs.Add(log);
         TransactionStatus = status;
+        UpdatedAt = DateTimeOffset.UtcNow;
     }
 }

@@ -1,16 +1,36 @@
 syntax = "proto3";
 option csharp_namespace =  'SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1';
 
-package grpc.contracts;
+package Profiles;
 
+// Customer Notification Preference Service
 service CustomerNotificationGrpcPrefrenceService {
-    rpc GetCustmonerPrefrence (GetCustomerPrefrenceRequest) returns (GetCustomerPrefrenceResponse);
+    // Get Customer Notification Preference
+    rpc GetCustmonerPrefrence (GetCustomerPrefrenceRequestById) returns (GetCustomerPrefrenceResponse);
+
+    // Get Notifications for Transfer
+    rpc GetNotificatiosForTransfer (GetNotificatiosForTransferRequest) returns (GetNotificationForTransferResponse);
 }
 
-message GetCustomerPrefrenceRequest {
+// Request message for getting customer notification preference
+message GetCustomerPrefrenceRequestById {
     string customer_id = 1;
 }
 
+// Request message for getting notifications for transfer
+message GetNotificatiosForTransferRequest {
+    string customer_id = 1;
+    string beneficiary_account_number = 2;  
+}
+
+// Response message for getting notifications for transfer
+message GetNotificationForTransferResponse {
+  bool success = 1;
+  string error = 2;
+  repeated GetCustomerPrefrenceResponse customer_prefrences = 3;
+}
+
+// Notification channels enumeration
 enum NotificationChannel {
     NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
     EMAIL = 1;
@@ -18,11 +38,15 @@ enum NotificationChannel {
     PUSH_NOTIFICATION = 3;
 }
 
+// Response message for getting customer notification preference
 message GetCustomerPrefrenceResponse {
     bool success = 1;
-    string error = 2;
-    string full_name = 3;
-    string email = 4;
-    string phone_number = 5;
-    repeated NotificationChannel notification_channels = 6;
+    string customer_id = 2;
+    string first_name = 3;
+    string last_name = 4;
+    string email = 5;
+    string phone_number = 6;
+    bool is_email_enabled = 7;
+    bool is_sms_enabled = 8;
+    string beneficiary_account_number = 9;
 }

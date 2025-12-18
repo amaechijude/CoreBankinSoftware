@@ -39,7 +39,7 @@ internal static class TransactionIdGenerator
         var random = new Random();
         var sb = new StringBuilder(length);
 
-        for (int i = 0; i < length; i++)
+        for (var i = 0; i < length; i++)
         {
             sb.Append(random.Next(0, 10));
         }
@@ -64,7 +64,7 @@ internal static class TransactionIdGenerator
         sb.Append(destinationBankCode[..3].ToUpper());
 
         // Char 7-18: Date and time (yymmddHHmmss)
-        DateTime now = GetLagosTimeStamp();
+        var now = GetLagosTimeStamp();
         sb.Append(now.ToString("yyMMddHHmmss"));
 
         // Char 19-30: 12-character unique number (random)
@@ -79,7 +79,7 @@ internal static class TransactionIdGenerator
     /// <returns>Current DateTime in Lagos timezone</returns>
     private static DateTime GetLagosTimeStamp()
     {
-        TimeZoneInfo lagosTimeZone = TimeZoneInfo
+        var lagosTimeZone = TimeZoneInfo
             .FindSystemTimeZoneById(TimezoneIdsStatic.W_Central_Africa_Standard_Time);
         return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, lagosTimeZone);
     }
