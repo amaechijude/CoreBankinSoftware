@@ -140,11 +140,19 @@ public sealed class UserPreferenceService(
         Dictionary<string, UserNotificationPreference> result = new(
             response.CustomerPrefrences.Count
         );
-        // foreach (var item in response.CustomerPrefrences)
-        // {
-        //     result.TryAdd(item.CustomerId, item);
-        //     result.TryAdd(item, item);
-        // }
+        foreach (var item in response.CustomerPrefrences)
+        {
+            var req = new PreferenceRequest(
+                CustomerId: Guid.Parse(item.CustomerId),
+                Email: item.Email,
+                PhoneNumber: item.PhoneNumber,
+                AccountNumber: accountNumber,
+                FirstName: item.FirstName,
+                LastName: item.LastName
+            );
+            var preference = UserNotificationPreference.Create(req);
+            result.TryAdd(preference.CustomerId.ToString(), preference);
+        }
 
         return result;
     }
