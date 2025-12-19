@@ -12,7 +12,7 @@ public sealed class UserNotificationPreference
     public DateTimeOffset CreatedAt { get; private init; }
     public string FullName => $"{FirstName} {LastName}";
 
-    public static UserNotificationPreference Create(PreferenceRequest request)
+    public static UserNotificationPreference Create(PreferenceRequestResponseBody request)
     {
         return new UserNotificationPreference
         {
@@ -28,7 +28,7 @@ public sealed class UserNotificationPreference
     }
 }
 
-public record PreferenceRequest(
+public record PreferenceRequestResponseBody(
     Guid CustomerId,
     string Email,
     string PhoneNumber,

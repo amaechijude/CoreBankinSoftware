@@ -6,10 +6,10 @@ package Profiles;
 // Customer Notification Preference Service
 service CustomerNotificationGrpcPrefrenceService {
     // Get Customer Notification Preference
-    rpc GetCustmonerPrefrence (GetCustomerPrefrenceRequestById) returns (GetCustomerPrefrenceResponse);
+    rpc GetCustmonerPrefrenceById (GetCustomerPrefrenceRequestById) returns (GetCustomerPrefrenceResponse);
 
     // Get Notifications for Transfer
-    rpc GetNotificatiosForTransfer (GetNotificatiosForTransferRequest) returns (GetNotificationForTransferResponse);
+    rpc GetNotificatiosPrefrencesByAccountNumber (GetCustomerPrefrenceRequestByAccountNumber) returns (GetCustomerPrefrenceResponse);
 }
 
 // Request message for getting customer notification preference
@@ -17,18 +17,12 @@ message GetCustomerPrefrenceRequestById {
     string customer_id = 1;
 }
 
-// Request message for getting notifications for transfer
-message GetNotificatiosForTransferRequest {
-    string customer_id = 1;
-    string beneficiary_account_number = 2;  
+// Request message for getting customer notification preference
+message GetCustomerPrefrenceRequestByAccountNumber {
+    string account_number = 1;
 }
 
-// Response message for getting notifications for transfer
-message GetNotificationForTransferResponse {
-  bool success = 1;
-  string error = 2;
-  repeated GetCustomerPrefrenceResponse customer_prefrences = 3;
-}
+
 
 // Notification channels enumeration
 enum NotificationChannel {
