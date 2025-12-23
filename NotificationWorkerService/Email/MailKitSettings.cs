@@ -1,9 +1,9 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.Extensions.Options;
 
-namespace Notification.IOptions;
+namespace NotificationWorkerService.Email;
 
-public class EmailOptions
+public sealed class MailKitSettings
 {
     [CustomMinLengthValidator(7)]
     public string SmtpHost { get; set; } = string.Empty;
@@ -26,6 +26,7 @@ public class EmailOptions
     public int TimeoutSeconds { get; set; } = 30;
 
     public const string Section = "MailKitSettings";
+    public const string ResiliencePipelineKey = "MailKitResiliencePipeline";
 }
 
 public sealed class CustomMinLengthValidator(int minLength) : ValidationAttribute
@@ -49,6 +50,6 @@ public sealed class CustomMinLengthValidator(int minLength) : ValidationAttribut
 }
 
 [OptionsValidator]
-public partial class EmailOptionsValidator : IValidateOptions<EmailOptions> { };
+public partial class EmailOptionsValidator : IValidateOptions<MailKitSettings> { };
 
 internal sealed class EmailOptionsException(string message) : Exception(message);

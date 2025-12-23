@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -6,14 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <InvariantGlobalization>true</InvariantGlobalization>
     <PublishAot>true</PublishAot>
+    <UserSecretsId>dotnet-NotificationWorkerService-b27682c0-e60d-414a-824e-4f92d4a0a2ff</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-	  <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
   </PropertyGroup>
 
   <ItemGroup>
 	  <PackageReference Include="Confluent.Kafka" />
 	  <PackageReference Include="MailKit" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
     <PackageReference Include="Polly" />
@@ -21,11 +21,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="SMS\" />
+  </ItemGroup>
+   <ItemGroup>
     <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
     <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="both" />
   </ItemGroup>
-  
 </Project>

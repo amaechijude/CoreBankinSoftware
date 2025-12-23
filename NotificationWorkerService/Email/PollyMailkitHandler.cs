@@ -3,7 +3,7 @@ using MailKit.Net.Smtp;
 using Polly;
 using Polly.Retry;
 
-namespace Notification.Workers;
+namespace NotificationWorkerService.Email;
 
 public static class PollyMailkitHandler
 {

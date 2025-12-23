@@ -5,6 +5,10 @@
   <Folder Name="/APIGateWay/">
     <Project Path="YarpApiGateWay/YarpApiGateWay.csproj" Id="0c66585a-d4a7-4371-8b82-4cbf14847748" />
   </Folder>
+  <Folder Name="/Aspire/">
+    <Project Path="CoreBankingSoftware.AppHost/CoreBankingSoftware.AppHost.csproj" Id="6220ac52-21c0-4ad9-a24e-08892ce6eed2" />
+    <Project Path="CoreBankingSoftware.ServiceDefaults/CoreBankingSoftware.ServiceDefaults.csproj" />
+  </Folder>
   <Folder Name="/CustomerProfile/">
     <Project Path="CustomerProfile/CustomerProfile.csproj" />
   </Folder>
@@ -16,7 +20,7 @@
     <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
   </Folder>
   <Folder Name="/Notification/">
-    <Project Path="Notification/Notification.csproj" />
+    <Project Path="NotificationWorkerService/NotificationWorkerService.csproj" Id="177a5f3c-df0d-42d4-8fd8-69674a46647b" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />
@@ -24,6 +28,4 @@
   <Folder Name="/TransactionService/">
     <Project Path="TransactionService/TransactionService.csproj" Id="dd51a1a0-eac7-43e2-8425-898aa08afafe" />
   </Folder>
-  <Project Path="CoreBankingSoftware.AppHost/CoreBankingSoftware.AppHost.csproj" Id="6220ac52-21c0-4ad9-a24e-08892ce6eed2" />
-  <Project Path="CoreBankingSoftware.ServiceDefaults/CoreBankingSoftware.ServiceDefaults.csproj" />
 </Solution>

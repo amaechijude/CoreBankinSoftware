@@ -16,19 +16,19 @@
     <!-- Google.Protobuf and gRPC -->
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageVersion Include="Google.Protobuf" Version="3.32.1" />
-    <PackageVersion Include="Grpc.AspNetCore" Version="2.71.0" />
-    <PackageVersion Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageVersion Include="Grpc.AspNetCore" Version="2.76.0" />
+    <PackageVersion Include="Grpc.Net.Client" Version="2.76.0" />
     <PackageVersion Include="Grpc.Tools" Version="2.72.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
     <!-- Microsoft.AspNetCore.Authentication.JwtBearer -->
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.22" />
     <PackageVersion Include="Hangfire.Core" Version="1.8.22" />
-    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.12" />
-    <PackageVersion Include="MailKit" Version="2.7.0" />
+    <PackageVersion Include="Hangfire.PostgreSql" Version="1.20.13" />
+    <PackageVersion Include="MailKit" Version="4.14.1" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
     <!-- Microsoft.AspNetCore.OpenApi -->
-    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.1" />
     <!-- Microsoft.EntityFrameworkCore -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
@@ -40,8 +40,9 @@
     </PackageVersion>
     <!-- Microsoft.ML.OnnxRuntime -->
     <PackageVersion Include="Microsoft.Extensions.Caching.Hybrid" Version="10.1.0" />
+	  <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.1" />
     <PackageVersion Include="Microsoft.ML.OnnxRuntime" Version="1.23.0" />
     <!-- Microsoft.VisualStudio.Azure.Containers.Tools.Targets -->
     <PackageVersion Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.23.0" />
@@ -54,7 +55,7 @@
     <PackageVersion Include="Quartz" Version="3.15.1" />
     <PackageVersion Include="Quartz.Extensions.Hosting" Version="3.15.1" />
     <PackageVersion Include="Quartz.Serialization.Json" Version="3.15.1" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.0" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.11.9" />
     <!-- Serilog -->
     <PackageVersion Include="Serilog" Version="4.3.0" />
     <PackageVersion Include="Serilog.AspNetCore" Version="9.0.0" />
@@ -76,8 +77,8 @@
     <PackageVersion Include="xunit" Version="2.9.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
     <!-- Services defaults -->
-    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Http.Resilience" Version="10.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.ServiceDiscovery" Version="10.1.0" />
     <PackageVersion Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Extensions.Hosting" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.14.0" />

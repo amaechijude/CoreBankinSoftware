@@ -2,22 +2,21 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using Notification.IOptions;
 using Polly;
 using Polly.Registry;
 
-namespace Notification.Workers;
+namespace NotificationWorkerService.Email;
 
 internal sealed class EmailService(
     ILogger<EmailService> logger,
-    IOptions<EmailOptions> options,
+    IOptions<MailKitSettings> options,
     ResiliencePipelineProvider<string> pipelineProvider
 )
 {
     private readonly ILogger<EmailService> _logger = logger;
-    private readonly EmailOptions _options = options.Value;
+    private readonly MailKitSettings _options = options.Value;
     private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline(
-        PollyMailkitHandler.Pkey
+        MailKitSettings.ResiliencePipelineKey
     );
 
     public async Task<bool> SendEmailAsync(EmailRequest request, CancellationToken ct)

@@ -1,21 +1,17 @@
 using Confluent.Kafka;
 using KafkaMessages;
 using KafkaMessages.AccountMessages;
-using KafkaMessages.NotificationMessages;
-using Notification.Workers;
+using NotificationWorkerService.Email;
 
-namespace Notification.Services;
+namespace NotificationWorkerService;
 
-public sealed class NotificationBackgroundProcessor : BackgroundService
+public sealed class Worker : BackgroundService
 {
-    private readonly ILogger<NotificationBackgroundProcessor> _logger;
+    private readonly ILogger<Worker> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IConsumer<string, string> _consumer;
 
-    public NotificationBackgroundProcessor(
-        ILogger<NotificationBackgroundProcessor> logger,
-        IServiceScopeFactory scopeFactory
-    )
+    public Worker(ILogger<Worker> logger, IServiceScopeFactory scopeFactory)
     {
         _logger = logger;
         _scopeFactory = scopeFactory;
@@ -25,6 +21,7 @@ public sealed class NotificationBackgroundProcessor : BackgroundService
             BootstrapServers = KafkaGlobalConfig.BootstrapServers,
             GroupId = KafkaGlobalConfig.NotificationGroupId,
             AutoOffsetReset = AutoOffsetReset.Earliest,
+            EnableAutoCommit = false,
         };
 
         _consumer = new ConsumerBuilder<string, string>(config).Build();
@@ -38,9 +35,10 @@ public sealed class NotificationBackgroundProcessor : BackgroundService
             try
             {
                 var consumeResult = _consumer.Consume(stoppingToken);
-                var notificationEvent = CustomMessageSerializer.Deserialize<
-                    NotificationEvent<TransactionAccountEvent>
-                >(consumeResult.Message.Value);
+                var notificationEvent =
+                    CustomMessageSerializer.Deserialize<TransactionAccountEvent>(
+                        consumeResult.Message.Value
+                    );
 
                 await ProcessEmail(notificationEvent, stoppingToken);
                 _consumer.Commit();
@@ -60,13 +58,11 @@ public sealed class NotificationBackgroundProcessor : BackgroundService
         }
     }
 
-    private async Task<bool> ProcessEmail(
-        NotificationEvent<TransactionAccountEvent> @event,
-        CancellationToken ct
-    )
+    private async Task<bool> ProcessEmail(TransactionAccountEvent @event, CancellationToken ct)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         var service = scope.ServiceProvider.GetRequiredService<EmailService>();
-        return await service.SendEmailAsync(new EmailRequest("", "", "", ""), ct);
+        var emailRequest = EmailTemplateGenerator.CreateEmailRequests(@event);
+        return await service.SendEmailAsync(emailRequest, ct);
     }
 }
