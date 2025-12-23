@@ -1,4 +1,3 @@
-using Confluent.Kafka;
 using Polly;
 using Polly.Registry;
 using TransactionService.NIBBS.XmlQueryAndResponseBody;

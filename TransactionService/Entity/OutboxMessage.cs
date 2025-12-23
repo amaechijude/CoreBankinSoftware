@@ -18,6 +18,7 @@ public sealed class OutboxMessage
     public OutboxStatus Status { get; set; }
     public DateTimeOffset CreatedAt { get; private init; }
     public DateTimeOffset? PublishedAt { get; set; }
+    public string BankName => "Our Bank";
 
     public static OutboxMessage Create(TransactionData transactionData)
     {

@@ -9,6 +9,7 @@
     <Project Path="CustomerProfile/CustomerProfile.csproj" />
   </Folder>
   <Folder Name="/GrpcContracts/">
+    <File Path="GrpcContracts/Protos/Accounts/account.operations.v1.proto" />
     <File Path="GrpcContracts/Protos/Profiles/customer.v1.proto" />
   </Folder>
   <Folder Name="/KafkaMessages/">

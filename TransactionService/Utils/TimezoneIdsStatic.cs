@@ -13,7 +13,8 @@ public static class TimezoneIdsStatic
     public static readonly string UTC_08 = "UTC-08";
     public static readonly string Pacific_Standard_Time = "Pacific Standard Time";
     public static readonly string US_Mountain_Standard_Time = "US Mountain Standard Time";
-    public static readonly string Mountain_Standard_Time__Mexico_ = "Mountain Standard Time (Mexico)";
+    public static readonly string Mountain_Standard_Time__Mexico_ =
+        "Mountain Standard Time (Mexico)";
     public static readonly string Mountain_Standard_Time = "Mountain Standard Time";
     public static readonly string Yukon_Standard_Time = "Yukon Standard Time";
     public static readonly string Central_America_Standard_Time = "Central America Standard Time";
@@ -30,7 +31,8 @@ public static class TimezoneIdsStatic
     public static readonly string Turks_And_Caicos_Standard_Time = "Turks And Caicos Standard Time";
     public static readonly string Atlantic_Standard_Time = "Atlantic Standard Time";
     public static readonly string Venezuela_Standard_Time = "Venezuela Standard Time";
-    public static readonly string Central_Brazilian_Standard_Time = "Central Brazilian Standard Time";
+    public static readonly string Central_Brazilian_Standard_Time =
+        "Central Brazilian Standard Time";
     public static readonly string SA_Western_Standard_Time = "SA Western Standard Time";
     public static readonly string Pacific_SA_Standard_Time = "Pacific SA Standard Time";
     public static readonly string Newfoundland_Standard_Time = "Newfoundland Standard Time";
@@ -57,7 +59,8 @@ public static class TimezoneIdsStatic
     public static readonly string Central_Europe_Standard_Time = "Central Europe Standard Time";
     public static readonly string Romance_Standard_Time = "Romance Standard Time";
     public static readonly string Central_European_Standard_Time = "Central European Standard Time";
-    public static readonly string W_Central_Africa_Standard_Time = "W. Central Africa Standard Time";
+    public static readonly string W_Central_Africa_Standard_Time =
+        "W. Central Africa Standard Time";
     public static readonly string GTB_Standard_Time = "GTB Standard Time";
     public static readonly string Middle_East_Standard_Time = "Middle East Standard Time";
     public static readonly string Egypt_Standard_Time = "Egypt Standard Time";

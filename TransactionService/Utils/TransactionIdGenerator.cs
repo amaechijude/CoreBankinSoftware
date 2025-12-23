@@ -10,30 +10,18 @@ internal static class TransactionIdGenerator
     /// <summary>
     /// Generates a Session ID for bank transactions
     /// </summary>
-    /// <param name="senderBankCode">3-character sender's bank code</param>
-    /// <param name="destinationBankCode">3-character destination bank code</param>
-    /// <returns>30-character transaction ID</returns>
     public static string GenerateSessionId(string senderBankCode, string destinationBankCode) =>
         GenerateTransactionId(senderBankCode, destinationBankCode);
-
 
     /// <summary>
     /// Generates a RecID for bank transactions
     /// </summary>
-    /// <param name="senderBankCode">3-character sender's bank code</param>
-    /// <param name="destinationBankCode">3-character destination bank code</param>
-    /// <returns>30-character transaction ID</returns>
     public static string GenerateRecId(string senderBankCode, string destinationBankCode) =>
         GenerateTransactionId(senderBankCode, destinationBankCode);
-
-
-
 
     /// <summary>
     /// Generates a random numeric string of specified length.
     /// </summary>
-    /// <param name="length">The length of the numeric string to generate</param>
-    /// <returns>A random numeric string of the specified length</returns>
     private static string GenerateUniqueNumber(int length)
     {
         var random = new Random();
@@ -46,15 +34,12 @@ internal static class TransactionIdGenerator
 
         return sb.ToString();
     }
+
     /// <summary>
     /// Generates a transaction ID using the specified bank codes and current timestamp.
     /// </summary>
-    /// <param name="senderBankCode">3-character sender's bank code</param>
-    /// <param name="destinationBankCode">3-character destination bank code</param>
-    /// <returns>30-character transaction ID in the format: [SenderBank(3)][DestBank(3)][DateTime(12)][Random(12)]</returns>
     private static string GenerateTransactionId(string senderBankCode, string destinationBankCode)
     {
-
         var sb = new StringBuilder(30);
 
         // Char 1-3: Sender's bank code
@@ -79,9 +64,9 @@ internal static class TransactionIdGenerator
     /// <returns>Current DateTime in Lagos timezone</returns>
     private static DateTime GetLagosTimeStamp()
     {
-        var lagosTimeZone = TimeZoneInfo
-            .FindSystemTimeZoneById(TimezoneIdsStatic.W_Central_Africa_Standard_Time);
+        var lagosTimeZone = TimeZoneInfo.FindSystemTimeZoneById(
+            TimezoneIdsStatic.W_Central_Africa_Standard_Time
+        );
         return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, lagosTimeZone);
     }
 }
-

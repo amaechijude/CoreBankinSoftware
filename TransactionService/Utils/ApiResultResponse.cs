@@ -1,6 +1,6 @@
 ﻿namespace TransactionService.Utils;
 
-public class ApiResultResponse<T>
+public sealed class ApiResultResponse<T>
 {
     public bool IsSuccess { get; private set; }
     public string? Message { get; private set; }

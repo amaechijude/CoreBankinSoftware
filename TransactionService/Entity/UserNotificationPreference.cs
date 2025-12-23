@@ -12,27 +12,25 @@ public sealed class UserNotificationPreference
     public DateTimeOffset CreatedAt { get; private init; }
     public string FullName => $"{FirstName} {LastName}";
 
-    public static UserNotificationPreference Create(PreferenceRequestResponseBody request)
+    public static UserNotificationPreference Create(
+        Guid CustomerId,
+        string Email,
+        string PhoneNumber,
+        string AccountNumber,
+        string FirstName,
+        string LastName
+    )
     {
         return new UserNotificationPreference
         {
             Id = Guid.CreateVersion7(),
-            CustomerId = request.CustomerId,
-            AccountNumber = request.AccountNumber,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
+            CustomerId = CustomerId,
+            AccountNumber = AccountNumber,
+            Email = Email,
+            PhoneNumber = PhoneNumber,
+            FirstName = FirstName,
+            LastName = LastName,
             CreatedAt = DateTimeOffset.UtcNow,
         };
     }
 }
-
-public record PreferenceRequestResponseBody(
-    Guid CustomerId,
-    string Email,
-    string PhoneNumber,
-    string AccountNumber,
-    string FirstName,
-    string LastName
-);

@@ -1,7 +1,9 @@
+using System.Threading.Channels;
 using Confluent.Kafka;
 using FluentValidation;
 using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using Polly;
 using Scalar.AspNetCore;
@@ -9,8 +11,10 @@ using SharedGrpcContracts.Protos.Account.Operations.V1;
 using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;
 using TransactionService.DTOs.NipInterBank;
+using TransactionService.Entity;
 using TransactionService.NIBBS;
 using TransactionService.Services;
+using TransactionService.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,16 +48,27 @@ builder.Services.AddDbContext<TransactionDbContext>(options =>
     )
 );
 
-// Mock Nibss Service Http typed client with xml accept header
-builder.Services.Configure<NibssOptions>(options =>
+// Add Redis and Hybrid Cache
+// builder.Services.AddStackExchangeRedisCache(options =>
+// {
+//     options.Configuration =
+//         builder.Configuration.GetConnectionString("RedisConnection")
+//         ?? throw new InvalidOperationException("Redis connection string is not configured.");
+// });
+
+builder.Services.AddHybridCache(options =>
 {
-    options.ApiKey =
-        builder.Configuration["NibssSettings:NibssApiKey"]
-        ?? throw new InvalidOperationException("Nibss API key is not configured.");
-    options.BaseUrl =
-        builder.Configuration["NibssSettings:NibssApiUrl"]
-        ?? throw new InvalidOperationException("Nibss Base URL is not configured.");
+    options.MaximumKeyLength = 200;
+    options.MaximumPayloadBytes = 1024 * 1024 * 5; // 5MB
+    options.DefaultEntryOptions = new HybridCacheEntryOptions
+    {
+        Expiration = TimeSpan.FromMinutes(20),
+        LocalCacheExpiration = TimeSpan.FromMinutes(17),
+    };
 });
+
+// Mock Nibss Service Http typed client with xml accept header
+builder.Services.Configure<NibssOptions>(builder.Configuration.GetSection("NibbsSettings"));
 builder.Services.AddOptions<NibssOptions>().ValidateDataAnnotations().ValidateOnStart();
 
 builder.Services.AddHttpClient<NibssService>(
@@ -90,7 +105,7 @@ builder.Services.AddResiliencePipeline(
 
 // Add gRPC client for Account service
 var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
-if (string.IsNullOrEmpty(accountGrpcUrl))
+if (string.IsNullOrWhiteSpace(accountGrpcUrl))
     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
 
 builder
@@ -115,9 +130,10 @@ builder
     )
     .AddStandardResilienceHandler();
 
+// Application services
 builder.Services.AddScoped<UserPreferenceService>();
-
 builder.Services.AddScoped<NipInterBankService>();
+builder.Services.AddScoped<IntraBankService>();
 
 // Kafka Singleton Producer
 builder.Services.AddSingleton<IProducer<string, string>>(kp =>
@@ -139,9 +155,15 @@ builder.Services.AddSingleton<IProducer<string, string>>(kp =>
     return producer;
 });
 
-// Background producer
-builder.Services.AddScoped<UserPreferenceService>();
-builder.Services.AddHostedService<TransactionNotificationPublisher>();
+// Background Event producers
+builder.Services.AddSingleton(
+    Channel.CreateBounded<OutboxMessage>(
+        new BoundedChannelOptions(1_000) { FullMode = BoundedChannelFullMode.Wait }
+    )
+);
+
+// builder.Services.AddHostedService<NotificationWithChannelsWorker>();
+// builder.Services.AddHostedService<NotificationWithOutboxWorker>();
 
 var app = builder.Build();
 

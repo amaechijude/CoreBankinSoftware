@@ -7,6 +7,5 @@ public enum TransactionType
     Transfer,
     Withdrawal,
     Deposit,
-    BillPayment,
     Utility
 }

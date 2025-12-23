@@ -1,9 +1,8 @@
-using System.Runtime.CompilerServices;
-using System.Runtime.ConstrainedExecution;
 using System.Text.Json;
+using System.Threading.Channels;
 using FluentValidation;
 using Grpc.Core;
-using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Hybrid;
 using SharedGrpcContracts.Protos.Account.Operations.V1;
 using TransactionService.Data;
 using TransactionService.DTOs.IntraBank;
@@ -15,20 +14,22 @@ namespace TransactionService.Services;
 
 public sealed class IntraBankService(
     AccountOperationsGrpcService.AccountOperationsGrpcServiceClient client,
-    IDistributedCache distributedCache,
+    HybridCache hybridCache,
     TransactionDbContext dbContext,
     IValidator<TransferRequestIntra> transferValidator,
     IValidator<NameEnquiryIntraRequest> nameEnquiryValidator,
+    Channel<OutboxMessage> channel,
     ILogger<IntraBankService> logger
 )
 {
     private readonly AccountOperationsGrpcService.AccountOperationsGrpcServiceClient _accountGrpcClient =
         client;
-    private readonly IDistributedCache _distributedCache = distributedCache;
+    private readonly HybridCache _hybridCache = hybridCache;
     private readonly TransactionDbContext _dbContext = dbContext;
     private readonly IValidator<TransferRequestIntra> _transferValidator = transferValidator;
     private readonly IValidator<NameEnquiryIntraRequest> _nameEnquiryValidator =
         nameEnquiryValidator;
+    private readonly Channel<OutboxMessage> _channel = channel;
     private readonly ILogger<IntraBankService> _logger = logger;
 
     public async Task<ApiResultResponse<NameEnquiryIntraResponse>> NameEnquiry(
@@ -46,17 +47,13 @@ public sealed class IntraBankService(
                 errors
             );
         }
-        // check cache
-        var cacheKey = $"account_{request.AccountNumber}";
-        var dataBytes = await _distributedCache.GetAsync(cacheKey, ct);
+        var cacheKey = $"IntraBankNameEnquiry-{request.AccountNumber}";
 
-        if (dataBytes is not null)
-        {
-            var responseData = JsonSerializer.Deserialize<NameEnquiryIntraResponse>(dataBytes);
-            return ApiResultResponse<NameEnquiryIntraResponse>.Success(responseData!);
-        }
-        // fallback to grpc call
-        var response = await CallGrpcService(request, ct);
+        IntraBankNameEnquiryResponse? response = await _hybridCache.GetOrCreateAsync(
+            key: cacheKey,
+            factory: async token => await CallGrpcService(request, token),
+            cancellationToken: ct
+        );
         if (response is null)
             return ApiResultResponse<NameEnquiryIntraResponse>.Error("Account not found");
 
@@ -72,8 +69,6 @@ public sealed class IntraBankService(
             BankCode: "BankCode", // hardcoded for now
             BankName: response.BankName
         );
-        var value = JsonSerializer.SerializeToUtf8Bytes(data);
-        await CacheResult(cacheKey, value, ct);
         return ApiResultResponse<NameEnquiryIntraResponse>.Success(data);
     }
 
@@ -142,22 +137,13 @@ public sealed class IntraBankService(
             TransactionReference: transactionData.TransactionReference
         );
 
+        await _channel.Writer.WriteAsync(outbox, ct);
+
         return ApiResultResponse<TransferResponseIntra>.Success(data);
     }
 
-    private async Task CacheResult(string key, byte[] value, CancellationToken ct)
-    {
-        var cacheOptions = new DistributedCacheEntryOptions
-        {
-            AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(20),
-            SlidingExpiration = TimeSpan.FromMinutes(15),
-        };
-
-        await _distributedCache.SetAsync(key: key, value: value, options: cacheOptions, token: ct);
-    }
-
     private static CallOptions GetCallOptions(CancellationToken ct) =>
-        new(deadline: DateTime.UtcNow.AddSeconds(30), cancellationToken: ct);
+        new(deadline: DateTime.UtcNow.AddSeconds(20), cancellationToken: ct);
 
     private async Task<IntraBankNameEnquiryResponse?> CallGrpcService(
         NameEnquiryIntraRequest request,
@@ -174,7 +160,7 @@ public sealed class IntraBankService(
                 request: grpcRequest,
                 options: GetCallOptions(ct)
             );
-            return response is null ? null : response;
+            return response;
         }
         catch (RpcException ex)
         {
@@ -208,7 +194,7 @@ public sealed class IntraBankService(
                 request: grpcRequest,
                 options: GetCallOptions(ct)
             );
-            return response is null ? null : response;
+            return response;
         }
         catch (RpcException ex)
         {

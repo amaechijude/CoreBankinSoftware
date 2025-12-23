@@ -10,6 +10,11 @@ service CustomerNotificationGrpcPrefrenceService {
 
     // Get Notifications for Transfer
     rpc GetNotificatiosPrefrencesByAccountNumber (GetCustomerPrefrenceRequestByAccountNumber) returns (GetCustomerPrefrenceResponse);
+
+    // Batch Get Customer Notification Preference
+    rpc BatchGetCustmonerPrefrenceByIds (BatchGetCustomerPrefrenceRequestByIds) returns (BatchGetCustomerPrefrenceResponse);
+    // Batch Get Notifications for Transfer
+    rpc BatchGetNotificatiosPrefrencesByAccountNumber (BatchGetCustomerPrefrenceRequestByAccountNumbers) returns (BatchGetCustomerPrefrenceResponse);
 }
 
 // Request message for getting customer notification preference
@@ -17,11 +22,20 @@ message GetCustomerPrefrenceRequestById {
     string customer_id = 1;
 }
 
+// Request message for getting Batch customer notification preference
+message BatchGetCustomerPrefrenceRequestByIds {
+    repeated string customer_id = 1;
+}
+
 // Request message for getting customer notification preference
 message GetCustomerPrefrenceRequestByAccountNumber {
     string account_number = 1;
 }
 
+// Request message for getting customer notification preference
+message BatchGetCustomerPrefrenceRequestByAccountNumbers {
+    repeated string account_number = 1;
+}
 
 
 // Notification channels enumeration
@@ -35,12 +49,20 @@ enum NotificationChannel {
 // Response message for getting customer notification preference
 message GetCustomerPrefrenceResponse {
     bool success = 1;
-    string customer_id = 2;
+    string account_number = 2;
     string first_name = 3;
     string last_name = 4;
     string email = 5;
     string phone_number = 6;
     bool is_email_enabled = 7;
     bool is_sms_enabled = 8;
-    string beneficiary_account_number = 9;
+    string bank_name = 9;
+    string customer_id = 10;
+}
+
+// Response message for getting customer notification preference
+message BatchGetCustomerPrefrenceResponse {
+    bool success = 1;
+    string error = 2;
+   repeated GetCustomerPrefrenceResponse customer_preferences = 3;
 }

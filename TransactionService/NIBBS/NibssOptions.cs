@@ -3,7 +3,7 @@
 namespace TransactionService.NIBBS;
 
 // nibss Options
-public sealed class NibssOptions
+public sealed record NibssOptions
 {
     [Required, MinLength(10)]
     public string ApiKey { get; set; } = string.Empty;
