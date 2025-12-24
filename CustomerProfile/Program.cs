@@ -1,8 +1,9 @@
-using CustomerAPI;
-using CustomerAPI.Global;
-using CustomerAPI.JwtTokenService;
-using CustomerAPI.Messaging;
-using CustomerAPI.Services.AccountAPI;
+using CoreBankingSoftware.ServiceDefaults;
+using CustomerProfile;
+using CustomerProfile.Global;
+using CustomerProfile.JwtTokenService;
+using CustomerProfile.Messaging;
+using CustomerProfile.Services.AccountAPI;
 using Scalar.AspNetCore;
 using Serilog;
 

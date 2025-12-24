@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace CustomerAPI.DTO
+namespace CustomerProfile.DTO
 {
     public record LoginRequest(string UsernameOrPhone, string Password);
     public record ForgotPasswordRequest(string PhoneNumber);

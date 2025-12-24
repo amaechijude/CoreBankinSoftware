@@ -1,13 +1,13 @@
-﻿using CustomerAPI.Data;
-using CustomerAPI.DTO;
-using CustomerAPI.DTO.BvnNinVerification;
-using CustomerAPI.Entities;
-using CustomerAPI.External;
-using CustomerAPI.JwtTokenService;
+﻿using CustomerProfile.Data;
+using CustomerProfile.DTO;
+using CustomerProfile.DTO.BvnNinVerification;
+using CustomerProfile.Entities;
+using CustomerProfile.External;
+using CustomerProfile.JwtTokenService;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace CustomerAPI.Services;
+namespace CustomerProfile.Services;
 
 public class NinBvnService(
     UserProfileDbContext _context,

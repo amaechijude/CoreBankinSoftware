@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace CustomerAPI.Entities;
+namespace CustomerProfile.Entities;
 
 public abstract class BaseEntity
 {

@@ -1,9 +1,8 @@
-﻿using CustomerAPI.Data;
-using CustomerAPI.Entities;
+﻿using CustomerProfile.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CustomerAPI.Infrastructure.Data.Configurations;
+namespace CustomerProfile.Data.Configurations;
 
 public sealed class UserConfig : IEntityTypeConfiguration<UserProfile>
 {

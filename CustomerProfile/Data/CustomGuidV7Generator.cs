@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.ValueGeneration;
 
-namespace CustomerAPI.Data
+namespace CustomerProfile.Data
 {
     public class CustomGuidV7Generator : ValueGenerator<Guid>
     {

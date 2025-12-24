@@ -1,8 +1,8 @@
-﻿using CustomerAPI.DTO.BvnNinVerification;
-using CustomerAPI.Entities.Enums;
-using CustomerAPI.Entities.ValueObjects;
+﻿using CustomerProfile.DTO.BvnNinVerification;
+using CustomerProfile.Entities.Enums;
+using CustomerProfile.Entities.ValueObjects;
 
-namespace CustomerAPI.Entities;
+namespace CustomerProfile.Entities;
 
 public sealed class UserProfile
 {

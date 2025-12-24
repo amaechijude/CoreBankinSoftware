@@ -1,6 +1,6 @@
-using AccountServices.Domain.Enums;
+using AccountServices.Entities.Enums;
 
-namespace AccountServices.Domain.Entities;
+namespace AccountServices.Entities;
 
 public sealed class Account
 {

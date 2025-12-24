@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using Confluent.Kafka;
+using CoreBankingSoftware.ServiceDefaults;
 using FluentValidation;
 using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +15,6 @@ using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
 using TransactionService.NIBBS;
 using TransactionService.Services;
-using TransactionService.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 

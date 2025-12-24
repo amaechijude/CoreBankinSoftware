@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using CustomerAPI.Global;
+using CustomerProfile.Global;
 
-namespace CustomerAPI.Entities;
+namespace CustomerProfile.Entities;
 
 public sealed class VerificationCode
 {

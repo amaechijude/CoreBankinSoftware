@@ -1,15 +1,14 @@
 using System.Threading.Channels;
-using CustomerAPI.Data;
-using CustomerAPI.DTO;
-using CustomerAPI.Entities;
-using CustomerAPI.JwtTokenService;
-using CustomerAPI.Messaging.SMS;
+using CustomerProfile.Data;
+using CustomerProfile.DTO;
+using CustomerProfile.Entities;
+using CustomerProfile.JwtTokenService;
 using CustomerProfile.Messaging.SMS;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
-namespace CustomerAPI.Services
+namespace CustomerProfile.Services
 {
     public class AuthService(
         UserProfileDbContext context,

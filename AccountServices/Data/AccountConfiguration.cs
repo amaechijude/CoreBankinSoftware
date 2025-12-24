@@ -1,4 +1,4 @@
-using AccountServices.Domain.Entities;
+using AccountServices.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

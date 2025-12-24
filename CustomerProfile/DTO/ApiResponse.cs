@@ -1,4 +1,4 @@
-﻿namespace CustomerAPI.DTO
+﻿namespace CustomerProfile.DTO
 {
     public class ApiResponse<T>
     {

@@ -2,6 +2,7 @@ using AccountServices;
 using AccountServices.Data;
 using AccountServices.Validators;
 using Confluent.Kafka;
+using CoreBankingSoftware.ServiceDefaults;
 using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;

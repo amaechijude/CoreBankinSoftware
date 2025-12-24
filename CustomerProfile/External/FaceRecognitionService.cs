@@ -3,7 +3,7 @@ using FaceAiSharp.Extensions;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 
-namespace CustomerAPI.External
+namespace CustomerProfile.External
 {
     public class FaceRecognitionService(
         ILogger<FaceRecognitionService> logger,

@@ -2,9 +2,9 @@ using System.Net;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using FluentValidation;
-using CustomerAPI.Messaging;
+using CustomerProfile.Messaging;
 
-namespace CustomerAPI.Global
+namespace CustomerProfile.Global
 {
     public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
     {

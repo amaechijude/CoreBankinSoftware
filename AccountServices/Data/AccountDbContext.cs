@@ -1,4 +1,4 @@
-using AccountServices.Domain.Entities;
+using AccountServices.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountServices.Data;

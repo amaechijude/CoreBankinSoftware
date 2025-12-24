@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using FluentValidation;
 
-namespace CustomerAPI.DTO
+namespace CustomerProfile.DTO
 {
     public record OnboardingRequest(string PhoneNumber, string Email);
     public record OnboardingResponse(string Token, DateTime? ExpiresIn);

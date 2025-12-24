@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using FluentValidation;
 
-namespace CustomerAPI.DTO
+namespace CustomerProfile.DTO
 {
     public record Jwt(string Token, DateTime? ExpiresIn);
     public sealed record UserProfileResponse(

@@ -1,6 +1,6 @@
-using CustomerAPI.DTO.BvnNinVerification;
+using CustomerProfile.DTO.BvnNinVerification;
 
-namespace CustomerAPI.Entities.ValueObjects
+namespace CustomerProfile.Entities.ValueObjects
 {
     public class NIN(string? value)
     {

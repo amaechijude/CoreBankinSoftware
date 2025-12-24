@@ -1,7 +1,7 @@
-﻿using CustomerAPI.Entities;
+﻿using CustomerProfile.Entities;
 using Microsoft.EntityFrameworkCore;
 
-namespace CustomerAPI.Data;
+namespace CustomerProfile.Data;
 
 public sealed class UserProfileDbContext(DbContextOptions<UserProfileDbContext> options)
     : DbContext(options)

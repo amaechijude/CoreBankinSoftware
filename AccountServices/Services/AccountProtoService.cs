@@ -1,6 +1,6 @@
 using AccountServices.Data;
-using AccountServices.Domain.Entities;
-using AccountServices.Domain.Enums;
+using AccountServices.Entities;
+using AccountServices.Entities.Enums;
 using AccountServices.Validators;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;

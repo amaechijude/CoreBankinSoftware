@@ -1,11 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using CustomerAPI.Global;
+using CustomerProfile.Global;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace CustomerAPI.JwtTokenService
+namespace CustomerProfile.JwtTokenService
 {
     public class JwtOptions
     {

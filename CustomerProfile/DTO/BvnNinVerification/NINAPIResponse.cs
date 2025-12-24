@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace CustomerAPI.DTO.BvnNinVerification
+namespace CustomerProfile.DTO.BvnNinVerification
 {
     public sealed class NINAPIResponse
     {

@@ -1,4 +1,4 @@
-namespace CustomerAPI.Entities.Enums;
+namespace CustomerProfile.Entities.Enums;
 
 public enum MaritalStatus
 {

@@ -1,6 +1,4 @@
-using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Hybrid;
 using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;

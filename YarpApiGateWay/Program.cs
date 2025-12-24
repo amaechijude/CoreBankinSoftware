@@ -1,3 +1,4 @@
+using CoreBankingSoftware.ServiceDefaults;
 using YarpApiGateWay;
 
 var builder = WebApplication.CreateBuilder(args);

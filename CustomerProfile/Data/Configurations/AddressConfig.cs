@@ -1,8 +1,8 @@
-﻿using CustomerAPI.Entities;
+﻿using CustomerProfile.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace CustomerAPI.Data.Configurations
+namespace CustomerProfile.Data.Configurations
 {
     public class AddressConfig : IEntityTypeConfiguration<Address>
     {

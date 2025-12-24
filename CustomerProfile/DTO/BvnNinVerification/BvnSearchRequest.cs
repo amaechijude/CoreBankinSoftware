@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace CustomerAPI.DTO.BvnNinVerification
+namespace CustomerProfile.DTO.BvnNinVerification
 {
     public sealed record BvnSearchRequest(string Bvn); // exactly 11 digits
 

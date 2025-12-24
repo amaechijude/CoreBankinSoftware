@@ -1,4 +1,4 @@
-﻿namespace CustomerAPI.JwtTokenService
+﻿namespace CustomerProfile.JwtTokenService
 {
     public static class RolesUtils
     {

@@ -1,12 +1,12 @@
 ﻿using System.Security.Claims;
-using CustomerAPI.DTO;
-using CustomerAPI.DTO.BvnNinVerification;
-using CustomerAPI.JwtTokenService;
-using CustomerAPI.Services;
+using CustomerProfile.DTO;
+using CustomerProfile.DTO.BvnNinVerification;
+using CustomerProfile.JwtTokenService;
+using CustomerProfile.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace CustomerAPI.Controlllers
+namespace CustomerProfile.Controlllers
 {
     [Route("api/[controller]")]
     [ApiController]

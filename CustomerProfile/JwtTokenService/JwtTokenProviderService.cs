@@ -1,11 +1,11 @@
 ﻿using System.Security.Claims;
 using System.Text;
-using CustomerAPI.Entities;
+using CustomerProfile.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace CustomerAPI.JwtTokenService
+namespace CustomerProfile.JwtTokenService
 {
     public class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
     {

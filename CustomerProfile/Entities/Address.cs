@@ -1,6 +1,6 @@
-﻿using CustomerAPI.Entities.Enums;
+﻿using CustomerProfile.Entities.Enums;
 
-namespace CustomerAPI.Entities;
+namespace CustomerProfile.Entities;
 
 public sealed class Address : BaseEntity
 {

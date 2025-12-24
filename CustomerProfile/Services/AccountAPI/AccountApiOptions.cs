@@ -1,7 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using CustomerAPI.Global;
 
-namespace CustomerAPI.Services.AccountAPI;
+namespace CustomerProfile.Services.AccountAPI;
 
 public class AccountApiOptions
 {

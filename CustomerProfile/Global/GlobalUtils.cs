@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 
-namespace CustomerAPI.Global
+namespace CustomerProfile.Global
 {
     public static class GlobalUtils
     {

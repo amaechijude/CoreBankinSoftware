@@ -1,49 +1,48 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using CustomerAPI.DTO.BvnNinVerification;
+using CustomerProfile.DTO.BvnNinVerification;
 
-namespace CustomerAPI.External
+namespace CustomerProfile.External;
+
+public sealed class QuickVerifyBvnNinService(HttpClient client)
 {
-    public class QuickVerifyBvnNinService(HttpClient client)
+    private readonly HttpClient _client = client;
+    public async Task<NINAPIResponse?> NINSearchRequest(string nin)
     {
-        private readonly HttpClient _client = client;
-        public async Task<NINAPIResponse?> NINSearchRequest(string nin)
+        var body = new { nin = nin.Trim() };
+        try
         {
-            var body = new { nin = nin.Trim() };
-            try
-            {
-                using HttpResponseMessage response = await _client.PostAsJsonAsync("nin-search", body);
-                if (!response.IsSuccessStatusCode) return null;
+            using HttpResponseMessage response = await _client.PostAsJsonAsync("nin-search", body);
+            if (!response.IsSuccessStatusCode) return null;
 
-                return await response.Content.ReadFromJsonAsync<NINAPIResponse>();
-            }
-            catch { return null; }
+            return await response.Content.ReadFromJsonAsync<NINAPIResponse>();
         }
-
-        public async Task<BvnApiResponse?> BvnSearchRequest(string bvn)
-        {
-            var body = new { bvn = bvn.Trim() };
-            try
-            {
-                using HttpResponseMessage httpResponse = await _client
-                    .PostAsJsonAsync("bvn-search", body);
-
-                if (!httpResponse.IsSuccessStatusCode) return null;
-
-                return await httpResponse.Content.ReadFromJsonAsync<BvnApiResponse>();
-            }
-            catch { return null; }
-        }
-
+        catch { return null; }
     }
 
-    // Quick verify secretes
-    public sealed class QuickVerifySettings
+    public async Task<BvnApiResponse?> BvnSearchRequest(string bvn)
     {
-        [Required, Url, MinLength(10)]
-        public string BaseUrl { get; set; } = string.Empty;
-        [Required, MinLength(10)]
-        public string ApiKey { get; set; } = string.Empty;
-        [Required, MinLength(5)]
-        public string AuthPrefix { get; set; } = string.Empty;
+        var body = new { bvn = bvn.Trim() };
+        try
+        {
+            using HttpResponseMessage httpResponse = await _client
+                .PostAsJsonAsync("bvn-search", body);
+
+            if (!httpResponse.IsSuccessStatusCode) return null;
+
+            return await httpResponse.Content.ReadFromJsonAsync<BvnApiResponse>();
+        }
+        catch { return null; }
     }
+
+}
+
+// Quick verify secretes
+public sealed record QuickVerifySettings
+{
+    [Required, Url, MinLength(10)]
+    public string BaseUrl { get; set; } = string.Empty;
+    [Required, MinLength(10)]
+    public string ApiKey { get; set; } = string.Empty;
+    [Required, MinLength(5)]
+    public string AuthPrefix { get; set; } = string.Empty;
 }
