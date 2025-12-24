@@ -4,11 +4,12 @@ using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
 using NotificationWorkerService;
 using NotificationWorkerService.Email;
+using NotificationWorkerService.SMS;
 using Polly;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// email options
+// email
 builder.Services.Configure<MailKitSettings>(
     builder.Configuration.GetSection(MailKitSettings.Section)
 );
@@ -16,8 +17,7 @@ builder.Services.AddSingleton<IValidateOptions<MailKitSettings>, EmailOptionsVal
 builder.Services.AddOptions<MailKitSettings>().ValidateOnStart();
 builder.Services.AddTransient<EmailService>();
 
-// resilience pipeline
-// Resilience Pipeline
+// Email Resilience Pipeline
 builder.Services.AddResiliencePipeline(
     MailKitSettings.ResiliencePipelineKey,
     pipelineBuilder =>
@@ -43,6 +43,13 @@ builder.Services.AddResiliencePipeline(
             .AddTimeout(TimeSpan.FromSeconds(30));
     }
 );
+
+// Add Twilio SMS settings
+builder.Services.Configure<TwilioSettings>(
+    builder.Configuration.GetSection(TwilioSettings.Section)
+);
+builder.Services.AddSingleton<IValidateOptions<TwilioSettings>, TwilioOptionsValidator>();
+builder.Services.AddOptions<TwilioSettings>().ValidateOnStart();
 
 builder.Services.AddHostedService<Worker>();
 

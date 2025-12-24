@@ -4,6 +4,7 @@ using CustomerAPI.DTO;
 using CustomerAPI.Entities;
 using CustomerAPI.JwtTokenService;
 using CustomerAPI.Messaging.SMS;
+using CustomerProfile.Messaging.SMS;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;

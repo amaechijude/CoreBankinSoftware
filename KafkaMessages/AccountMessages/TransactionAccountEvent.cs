@@ -30,4 +30,3 @@ public enum EventType
     TransferDebit,
     Utility,
 }
-

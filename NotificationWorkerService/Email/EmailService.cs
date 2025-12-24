@@ -21,14 +21,14 @@ internal sealed class EmailService(
 
     public async Task<bool> SendEmailAsync(EmailRequest request, CancellationToken ct)
     {
-        var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
-        message.To.Add(new MailboxAddress(request.FullName, request.TargetEmailAddress));
-        message.Subject = request.Subject;
-        message.Body = new TextPart("html") { Text = request.Body };
-
         try
         {
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress(_options.FromName, _options.FromEmail));
+            message.To.Add(new MailboxAddress(request.FullName, request.TargetEmailAddress));
+            message.Subject = request.Subject;
+            message.Body = new TextPart("html") { Text = request.Body };
+
             await SendMimeMessage(message, ct);
             return true;
         }
@@ -41,32 +41,37 @@ internal sealed class EmailService(
 
     private async Task SendMimeMessage(MimeMessage mimeMessage, CancellationToken cancellationToken)
     {
-        await _pipeline.ExecuteAsync(
+        await MailkitHandler.pipeline.ExecuteAsync(
             async ct =>
             {
                 using var client = new SmtpClient();
-                client.Timeout = _options.TimeoutSeconds * 1000;
+                try
+                {
+                    client.Timeout = _options.TimeoutSeconds * 1000;
 
-                var secureSocketOptions = _options.UseSsl
-                    ? SecureSocketOptions.StartTls
-                    : SecureSocketOptions.Auto;
+                    var secureSocketOptions = _options.UseSsl
+                        ? SecureSocketOptions.StartTls
+                        : SecureSocketOptions.None;
 
-                await client.ConnectAsync(
-                    host: _options.SmtpHost,
-                    port: _options.SmtpPort,
-                    options: secureSocketOptions,
-                    cancellationToken: ct
-                );
+                    await client.ConnectAsync(
+                        host: _options.SmtpHost,
+                        port: _options.SmtpPort,
+                        options: secureSocketOptions,
+                        cancellationToken: ct
+                    );
 
-                await client.AuthenticateAsync(
-                    userName: _options.Username,
-                    password: _options.Password,
-                    cancellationToken: ct
-                );
+                    await client.AuthenticateAsync(
+                        userName: _options.Username,
+                        password: _options.Password,
+                        cancellationToken: ct
+                    );
 
-                await client.SendAsync(message: mimeMessage, cancellationToken: ct);
-
-                await client.DisconnectAsync(quit: true, cancellationToken: ct);
+                    await client.SendAsync(message: mimeMessage, cancellationToken: ct);
+                }
+                finally
+                {
+                    await client.DisconnectAsync(quit: true, cancellationToken: ct);
+                }
             },
             cancellationToken
         );

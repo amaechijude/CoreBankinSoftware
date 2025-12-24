@@ -5,7 +5,7 @@ using Polly.Retry;
 
 namespace NotificationWorkerService.Email;
 
-public static class PollyMailkitHandler
+public static class MailkitHandler
 {
     public static readonly ResiliencePipeline pipeline = new ResiliencePipelineBuilder()
         .AddRetry(
@@ -24,6 +24,4 @@ public static class PollyMailkitHandler
             }
         )
         .Build();
-
-    public const string Pkey = "pipeline";
 }

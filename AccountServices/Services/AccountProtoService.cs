@@ -47,9 +47,7 @@ public sealed class AccountProtoService(
         }
         catch (Exception)
         {
-            var error = "Account not created";
-            // log and/or retry;
-            return ApiResponseFactory.Error(error);
+            return ApiResponseFactory.Error("Account creation failed");
         }
     }
 

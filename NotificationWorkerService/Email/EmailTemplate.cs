@@ -6,17 +6,18 @@ internal static class EmailTemplateGenerator
 {
     internal static EmailRequest CreateEmailRequests(TransactionAccountEvent transactionEvent)
     {
+#pragma warning disable CS8524 // The switch expression does not handle some values of its input type (it is not exhaustive) involving an unnamed enum value.
         return transactionEvent.EventType switch
         {
-            EventType.TransferCredit => CreateCreditEmailRequest(transactionEvent),
-            EventType.TransferDebit => CreateDebitEmailRequest(transactionEvent),
-            EventType.Withdrawal => CreateDebitEmailRequest(transactionEvent),
             EventType.Deposit => CreateCreditEmailRequest(transactionEvent),
+            EventType.Withdrawal => CreateDebitEmailRequest(transactionEvent),
             EventType.Debit => CreateDebitEmailRequest(transactionEvent),
             EventType.Credit => CreateCreditEmailRequest(transactionEvent),
+            EventType.TransferCredit => CreateCreditEmailRequest(transactionEvent),
+            EventType.TransferDebit => CreateDebitEmailRequest(transactionEvent),
             EventType.Utility => CreateDebitEmailRequest(transactionEvent),
-            _ => throw new EmailOptionsException("Unsupported transaction event type"),
         };
+#pragma warning restore CS8524 // The switch expression does not handle some values of its input type (it is not exhaustive) involving an unnamed enum value.
     }
 
     private static EmailRequest CreateDebitEmailRequest(TransactionAccountEvent transactionEvent)

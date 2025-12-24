@@ -16,7 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CustomerProfile\CustomerProfile.csproj" />
-    <ProjectReference Include="..\Notification\Notification.csproj" />
   </ItemGroup>
 
 </Project>

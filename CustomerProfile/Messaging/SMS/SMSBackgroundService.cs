@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Threading.Channels;
+using CustomerProfile.Messaging.SMS;
 
 namespace CustomerAPI.Messaging.SMS
 {

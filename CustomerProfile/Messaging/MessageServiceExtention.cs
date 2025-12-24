@@ -1,5 +1,6 @@
 using System.Threading.Channels;
 using CustomerAPI.Messaging.SMS;
+using CustomerProfile.Messaging.SMS;
 
 namespace CustomerAPI.Messaging;
 
