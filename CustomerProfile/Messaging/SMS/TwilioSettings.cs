@@ -2,7 +2,7 @@
 
 namespace CustomerProfile.Messaging.SMS
 {
-    public sealed class TwilioSettings
+    public sealed record TwilioSettings
     {
         [Required(ErrorMessage = "Account SID is required.")]
         [MinLength(20, ErrorMessage = "Account SID must be at least 20 characters long.")]
@@ -15,5 +15,7 @@ namespace CustomerProfile.Messaging.SMS
         [Required(ErrorMessage = "From Phone Number is required.")]
         [MinLength(10, ErrorMessage = "From Phone Number must be at least 10 characters long.")]
         public string FromPhoneNumber { get; set; } = string.Empty;
+
+        public const string SectionName = "TwilioSettings";
     }
 }

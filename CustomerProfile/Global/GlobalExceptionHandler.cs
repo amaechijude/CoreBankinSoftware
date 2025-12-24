@@ -1,8 +1,8 @@
 using System.Net;
+using CustomerProfile.Messaging;
+using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using FluentValidation;
-using CustomerProfile.Messaging;
 
 namespace CustomerProfile.Global
 {
@@ -13,7 +13,8 @@ namespace CustomerProfile.Global
         public async ValueTask<bool> TryHandleAsync(
             HttpContext httpContext,
             Exception exception,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken
+        )
         {
             ProblemDetails details = CreateProblemDetails(httpContext, exception);
             httpContext.Response.StatusCode = details.Status ?? 500;
@@ -34,7 +35,7 @@ namespace CustomerProfile.Global
                     Title = "Bad Request",
                     Status = (int)HttpStatusCode.BadRequest,
                     Detail = args.Message,
-                    Instance = httpContext.Request.Path
+                    Instance = httpContext.Request.Path,
                 },
                 ValidationException validation => new ProblemDetails
                 {
@@ -42,7 +43,7 @@ namespace CustomerProfile.Global
                     Title = "Validation Error",
                     Status = (int)HttpStatusCode.BadRequest,
                     Detail = string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)),
-                    Instance = httpContext.Request.Path
+                    Instance = httpContext.Request.Path,
                 },
                 NotSupportedException args => new ProblemDetails
                 {
@@ -50,7 +51,7 @@ namespace CustomerProfile.Global
                     Title = "Bad Request",
                     Status = (int)HttpStatusCode.BadRequest,
                     Detail = args.Message,
-                    Instance = httpContext.Request.Path
+                    Instance = httpContext.Request.Path,
                 },
                 ServiceException service => new ProblemDetails
                 {
@@ -58,15 +59,7 @@ namespace CustomerProfile.Global
                     Title = "Service Error",
                     Status = (int)HttpStatusCode.BadRequest,
                     Detail = service.Message,
-                    Instance = httpContext.Request.Path
-                },
-                CustomTwilloException twilio => new ProblemDetails
-                {
-                    Type = "https://tools.ietf.org/html/rfc7231#section-6.6.1",
-                    Title = "Twilio Service Error",
-                    Status = (int)HttpStatusCode.ServiceUnavailable,
-                    Detail = twilio.Message,
-                    Instance = httpContext.Request.Path
+                    Instance = httpContext.Request.Path,
                 },
                 UnauthorizedAccessException => new ProblemDetails
                 {
@@ -74,7 +67,7 @@ namespace CustomerProfile.Global
                     Title = "Unauthorized",
                     Status = (int)HttpStatusCode.Unauthorized,
                     Detail = "You are not authorized to access this resource",
-                    Instance = httpContext.Request.Path
+                    Instance = httpContext.Request.Path,
                 },
                 _ => new ProblemDetails
                 {
@@ -82,7 +75,7 @@ namespace CustomerProfile.Global
                     Title = "Internal Server Error",
                     Status = (int)HttpStatusCode.InternalServerError,
                     Detail = "An unexpected error occurred",
-                    Instance = httpContext.Request.Path
+                    Instance = httpContext.Request.Path,
                 },
             };
 

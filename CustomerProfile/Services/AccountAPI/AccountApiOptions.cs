@@ -16,13 +16,12 @@ public static class AccountApiOptionsExtensions
 
         services.Configure<AccountApiOptions>(options =>
         {
-            options.AccountApiUrl = Environment.GetEnvironmentVariable("ACCOUNT_API_URL")
-                ?? throw new ServiceException("ACCOUNT_API_URL environment variable is not set.");
+            options.AccountApiUrl =
+                Environment.GetEnvironmentVariable("ACCOUNT_API_URL")
+                ?? throw new ArgumentException("ACCOUNT_API_URL environment variable is not set.");
         });
 
-        services.AddOptions<AccountApiOptions>()
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
+        services.AddOptions<AccountApiOptions>().ValidateDataAnnotations().ValidateOnStart();
 
         return services;
     }

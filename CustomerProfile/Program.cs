@@ -1,9 +1,17 @@
+using System.Threading.Channels;
 using CoreBankingSoftware.ServiceDefaults;
 using CustomerProfile;
+using CustomerProfile.Data;
+using CustomerProfile.External;
 using CustomerProfile.Global;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Messaging;
+using CustomerProfile.Messaging.SMS;
+using CustomerProfile.Services;
 using CustomerProfile.Services.AccountAPI;
+using FaceAiSharp;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
 
@@ -28,13 +36,89 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger();
 builder.Services.AddSerilog(); // <-- serilog
 
+// Add DbContext
+builder
+    .Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("DatabaseOptions"))
+    .AddOptions<DatabaseOptions>()
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+// configure db context
+builder.Services.AddDbContext<UserProfileDbContext>(
+    (provider, options) =>
+    {
+        var ds = provider.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+        string connString =
+            $"Host={ds.Host};Database={ds.Name};Username={ds.User};Password={ds.Password};Port={ds.Port}";
+
+        options.UseNpgsql(
+            connString,
+            npgSqlOptions =>
+            {
+                npgSqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorCodesToAdd: null
+                );
+            }
+        );
+    }
+);
+
+// QuickVerify for Nin and Bvn verification
+builder.Services.AddScoped<NinBvnService>();
+builder
+    .Services.Configure<QuickVerifySettings>(
+        builder.Configuration.GetSection("QuickVerifySettings")
+    )
+    .AddOptions<QuickVerifySettings>()
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+builder.Services.AddHttpClient<QuickVerifyBvnNinService>(
+    (provider, client) =>
+    {
+        var quick = provider.GetRequiredService<IOptions<QuickVerifySettings>>().Value;
+        client.BaseAddress = new Uri(quick.BaseUrl);
+        client.DefaultRequestHeaders.Add(quick.AuthPrefix, quick.ApiKey);
+        client.DefaultRequestHeaders.Add("Accept", "application/json");
+    }
+);
+
+// Face Recognition
+builder.Services.AddSingleton<IFaceDetector>(_ =>
+    FaceAiSharpBundleFactory.CreateFaceDetectorWithLandmarks()
+);
+builder.Services.AddSingleton(_ => FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator());
+builder.Services.AddSingleton<FaceRecognitionService>();
+
 // Add Service Extensions
-builder.Services.AddCustomServiceExtentions();
-builder.Services.AddSMSMessageServices(); // Messaging Service
+// Messaging Service
+builder
+    .Services.Configure<TwilioSettings>(
+        builder.Configuration.GetSection(TwilioSettings.SectionName)
+    )
+    .AddOptions<TwilioSettings>()
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<TwilioSmsSender>();
+
+builder.Services.AddSingleton(
+    Channel.CreateBounded<SendSMSCommand>(
+        new BoundedChannelOptions(100)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,
+            SingleWriter = true,
+        }
+    )
+);
+builder.Services.AddHostedService<SMSBackgroundService>();
 
 builder.Services.AddAccountApiOptions(); // Account API Options
 
-// Add Jwt Authentication
+// Add Jwt Authentication and Services
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddJwtAuthDependencyInjection();
 builder.Services.AddAuthorization(); // Authorization Service
 
