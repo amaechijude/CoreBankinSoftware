@@ -7,7 +7,7 @@ using TransactionService.Entity;
 namespace TransactionService.Services;
 
 public sealed class UserPreferenceService(
-    TransactionDbContext dbContext,
+    IDbContextFactory<TransactionDbContext> dbContextFactory,
     HybridCache hybridCache,
     CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient grpcClient
 )
@@ -21,6 +21,8 @@ public sealed class UserPreferenceService(
     {
         if (transactionIds.Count == 0)
             return;
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
         await dbContext
             .OutboxMessages.Where(o => transactionIds.Contains(o.TransactionId))
@@ -92,6 +94,7 @@ public sealed class UserPreferenceService(
         CancellationToken ct
     )
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
         var preferences = await dbContext
             .UserNotificationPreferences.AsNoTracking()
             .FirstOrDefaultAsync(p => p.AccountNumber == accountNumber, ct);
@@ -138,6 +141,7 @@ public sealed class UserPreferenceService(
         CancellationToken ct
     )
     {
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
         var preferences = await dbContext
             .UserNotificationPreferences.AsNoTracking()
             .FirstOrDefaultAsync(p => p.CustomerId == customerId, ct);
@@ -182,6 +186,8 @@ public sealed class UserPreferenceService(
         var count = accountNumbers.Count;
         if (count == 0)
             return [];
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
         var preferences = await dbContext
             .UserNotificationPreferences.AsNoTracking()
@@ -241,6 +247,8 @@ public sealed class UserPreferenceService(
 
         if (idCount == 0)
             return [];
+
+        await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
         var preferences = await dbContext
             .UserNotificationPreferences.AsNoTracking()

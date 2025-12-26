@@ -8,8 +8,6 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using Polly;
 using Scalar.AspNetCore;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
-using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;
 using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
@@ -34,7 +32,7 @@ var connectionString =
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Add dbContext with postgresql
-builder.Services.AddDbContext<TransactionDbContext>(options =>
+builder.Services.AddDbContextFactory<TransactionDbContext>(options =>
     options.UseNpgsql(
         connectionString,
         npgsqlOptions =>
@@ -56,6 +54,7 @@ builder.Services.AddDbContext<TransactionDbContext>(options =>
 //         ?? throw new InvalidOperationException("Redis connection string is not configured.");
 // });
 
+builder.AddRedisClient("redis"); // uses Aspire.StackExchange.Redis
 builder.Services.AddHybridCache(options =>
 {
     options.MaximumKeyLength = 200;
@@ -103,32 +102,14 @@ builder.Services.AddResiliencePipeline(
     }
 );
 
-// Add gRPC client for Account service
-var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
-if (string.IsNullOrWhiteSpace(accountGrpcUrl))
-    throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
+// // Add gRPC client for Account service
+// var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
+// if (string.IsNullOrWhiteSpace(accountGrpcUrl))
+//     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
 
-builder
-    .Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
-        options =>
-        {
-            options.Address = new Uri(accountGrpcUrl);
-        }
-    )
-    .AddStandardResilienceHandler();
-
-var profileGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
-if (string.IsNullOrEmpty(profileGrpcUrl))
-    throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
-
-builder
-    .Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(
-        options =>
-        {
-            options.Address = new Uri(profileGrpcUrl);
-        }
-    )
-    .AddStandardResilienceHandler();
+// var profileGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
+// if (string.IsNullOrEmpty(profileGrpcUrl))
+//     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
 
 // Application services
 builder.Services.AddScoped<UserPreferenceService>();

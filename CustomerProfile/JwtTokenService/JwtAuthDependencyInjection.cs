@@ -5,51 +5,54 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace CustomerProfile.JwtTokenService
+namespace CustomerProfile.JwtTokenService;
+
+public sealed record JwtOptions
 {
-    public class JwtOptions
+    [Required, MinLength(150)]
+    public string SecretKey { get; set; } = string.Empty;
+
+    [Required, MinLength(5)]
+    public string Issuer { get; set; } = string.Empty;
+
+    [Required, MinLength(5)]
+    public string Audience { get; set; } = string.Empty;
+
+    public const string SectionName = "JwtOptions";
+}
+
+public static class JwtAuthDependencyInjection
+{
+    private static IServiceCollection AddJwtOptions(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
-        [Required, MinLength(64)]
-        public required string SecretKey { get; set; }
-        [Required, MinLength(5)]
-        public required string Issuer { get; set; }
-        [Required, MinLength(5)]
-        public required string Audience { get; set; }
+        services
+            .Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName))
+            .AddOptions<JwtOptions>()
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        return services;
     }
 
-    public static class JwtAuthDependencyInjection
+    private static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
     {
-        private static IServiceCollection JwtOptions(this IServiceCollection services)
-        {
-            services.Configure<JwtOptions>(options =>
-            {
-                DotNetEnv.Env.TraversePath();
-                options.Issuer = Environment.GetEnvironmentVariable("JWT_ISSUER")
-                    ?? throw new ServiceException("JWT_ISSUER environment variable is not set.");
-                options.SecretKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY")
-                    ?? throw new ServiceException("JWT_SECRET_KEY environment variable is not set.");
-                options.Audience = Environment.GetEnvironmentVariable("JWT_AUDIENCE")
-                    ?? throw new ServiceException("JWT_AUDIENCE environment variable is not set.");
-            });
-
-            services.AddOptions<JwtOptions>()
-                .ValidateDataAnnotations()
-                .ValidateOnStart();
-
-            return services;
-        }
-
-        private static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
-        {
-            services.AddAuthentication(options =>
+        services
+            .AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-                .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, beareOptions =>
+            .AddJwtBearer(
+                JwtBearerDefaults.AuthenticationScheme,
+                beareOptions =>
                 {
                     var serviceProvider = services.BuildServiceProvider();
-                    var jwtOptions = serviceProvider.GetRequiredService<IOptions<JwtOptions>>().Value;
+                    var jwtOptions = serviceProvider
+                        .GetRequiredService<IOptions<JwtOptions>>()
+                        .Value;
                     var environment = serviceProvider.GetRequiredService<IHostEnvironment>();
 
                     // configure bearer options
@@ -67,25 +70,28 @@ namespace CustomerProfile.JwtTokenService
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero,
 
-                        IssuerSigningKey = new
-                            SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey)),
+                        IssuerSigningKey = new SymmetricSecurityKey(
+                            Encoding.UTF8.GetBytes(jwtOptions.SecretKey)
+                        ),
                         ValidateIssuerSigningKey = true,
 
                         RequireSignedTokens = true,
-                        RequireExpirationTime = true
+                        RequireExpirationTime = true,
                     };
 
                     beareOptions.Events = new JwtBearerEvents
                     {
                         OnAuthenticationFailed = context =>
                         {
-                            if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                            if (
+                                context.Exception.GetType() == typeof(SecurityTokenExpiredException)
+                            )
                             {
-                                context.Response.Headers.Append("Token-Expired", "true");
+                                context.Response.Headers.Append("token-expired", "true");
                             }
                             else
                             {
-                                context.Response.Headers.Append("Authentication-Failed", "true");
+                                context.Response.Headers.Append("authentication-failed", "true");
                             }
                             return Task.CompletedTask;
                         },
@@ -93,20 +99,21 @@ namespace CustomerProfile.JwtTokenService
                         {
                             context.Token = context.Request.Headers[GlobalUtils.TokenHeaderName];
                             return Task.CompletedTask;
-                        }
-
+                        },
                     };
+                }
+            );
+        return services;
+    }
 
-                });
-            return services;
-        }
-
-        public static IServiceCollection AddJwtAuthDependencyInjection(this IServiceCollection services)
-        {
-            return services
-                .JwtOptions()
-                .AddScoped<JwtTokenProviderService>()
-                .AddJwtAuthentication();
-        }
+    public static IServiceCollection AddJwtAuthDependencyInjection(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
+    {
+        return services
+            .AddJwtOptions(configuration)
+            .AddScoped<JwtTokenProviderService>()
+            .AddJwtAuthentication();
     }
 }

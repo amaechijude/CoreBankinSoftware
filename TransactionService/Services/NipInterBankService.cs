@@ -9,7 +9,7 @@ using TransactionService.Utils;
 
 namespace TransactionService.Services;
 
-public class NipInterBankService(
+public sealed class NipInterBankService(
     TransactionDbContext dbContext,
     NibssService nibssService,
     IValidator<NameEnquiryRequest> nameEnquiryValidator,

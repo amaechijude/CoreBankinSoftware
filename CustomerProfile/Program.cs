@@ -1,14 +1,11 @@
 using System.Threading.Channels;
 using CoreBankingSoftware.ServiceDefaults;
-using CustomerProfile;
 using CustomerProfile.Data;
 using CustomerProfile.External;
 using CustomerProfile.Global;
 using CustomerProfile.JwtTokenService;
-using CustomerProfile.Messaging;
 using CustomerProfile.Messaging.SMS;
 using CustomerProfile.Services;
-using CustomerProfile.Services.AccountAPI;
 using FaceAiSharp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -74,6 +71,8 @@ builder
     .AddOptions<QuickVerifySettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+// Http client
 builder.Services.AddHttpClient<QuickVerifyBvnNinService>(
     (provider, client) =>
     {
@@ -91,7 +90,6 @@ builder.Services.AddSingleton<IFaceDetector>(_ =>
 builder.Services.AddSingleton(_ => FaceAiSharpBundleFactory.CreateFaceEmbeddingsGenerator());
 builder.Services.AddSingleton<FaceRecognitionService>();
 
-// Add Service Extensions
 // Messaging Service
 builder
     .Services.Configure<TwilioSettings>(
@@ -109,17 +107,15 @@ builder.Services.AddSingleton(
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = true,
-            SingleWriter = true,
+            SingleWriter = false,
         }
     )
 );
 builder.Services.AddHostedService<SMSBackgroundService>();
 
-builder.Services.AddAccountApiOptions(); // Account API Options
-
 // Add Jwt Authentication and Services
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddJwtAuthDependencyInjection();
+builder.Services.AddJwtAuthDependencyInjection(builder.Configuration);
 builder.Services.AddAuthorization(); // Authorization Service
 
 builder.Services.AddControllers();

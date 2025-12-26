@@ -9,6 +9,8 @@ using Polly;
 
 var builder = Host.CreateApplicationBuilder(args);
 
+//builder.AddServiceDefaults();
+
 // email
 builder.Services.Configure<MailKitSettings>(
     builder.Configuration.GetSection(MailKitSettings.Section)

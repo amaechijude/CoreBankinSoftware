@@ -34,7 +34,6 @@ public sealed class NotificationWithOutboxWorker(
             }
             catch (OperationCanceledException)
             {
-                logger.LogInformation("NotificationWithOutbox worker stopping");
                 break;
             }
             catch (Exception ex)

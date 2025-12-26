@@ -9,6 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.StackExchange.Redis" />
+    <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" />
     <PackageReference Include="Confluent.Kafka" />
     <PackageReference Include="DotNetEnv" />
 	  <PackageReference Include="FluentValidation" />
@@ -22,6 +24,9 @@
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
 	  <PackageReference Include="Quartz" />
 	  <PackageReference Include="Quartz.Extensions.Hosting" />
 	  <PackageReference Include="Quartz.Serialization.Json" />
