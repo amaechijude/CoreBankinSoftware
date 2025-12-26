@@ -32,6 +32,7 @@ Log.Logger = new LoggerConfiguration()
     )
     .CreateLogger();
 builder.Services.AddSerilog(); // <-- serilog
+builder.Services.AddGrpc();
 
 // Add DbContext
 builder
@@ -93,7 +94,7 @@ builder.Services.AddSingleton<FaceRecognitionService>();
 // Messaging Service
 builder
     .Services.Configure<TwilioSettings>(
-        builder.Configuration.GetSection(TwilioSettings.SectionName)
+        builder.Configuration.GetSection("TwilioSettings")
     )
     .AddOptions<TwilioSettings>()
     .ValidateDataAnnotations()
@@ -135,11 +136,15 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
+
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+app.MapGrpcService<UserPrefernceProtoServices>();
+
 app.MapControllers();
+app.MapGet("/", () => new { Success = true, Date = DateTimeOffset.UtcNow });
 
 app.Run();

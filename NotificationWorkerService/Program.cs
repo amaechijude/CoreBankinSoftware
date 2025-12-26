@@ -16,7 +16,7 @@ builder.Services.Configure<MailKitSettings>(
     builder.Configuration.GetSection(MailKitSettings.Section)
 );
 builder.Services.AddSingleton<IValidateOptions<MailKitSettings>, EmailOptionsValidator>();
-builder.Services.AddOptions<MailKitSettings>().ValidateOnStart();
+builder.Services.AddOptions<MailKitSettings>();
 builder.Services.AddTransient<EmailService>();
 
 // Email Resilience Pipeline
@@ -51,7 +51,7 @@ builder.Services.Configure<TwilioSettings>(
     builder.Configuration.GetSection(TwilioSettings.Section)
 );
 builder.Services.AddSingleton<IValidateOptions<TwilioSettings>, TwilioOptionsValidator>();
-builder.Services.AddOptions<TwilioSettings>().ValidateOnStart();
+builder.Services.AddOptions<TwilioSettings>();
 
 builder.Services.AddHostedService<Worker>();
 

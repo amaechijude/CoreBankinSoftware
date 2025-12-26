@@ -47,7 +47,7 @@ internal sealed class EmailService(
                 using var client = new SmtpClient();
                 try
                 {
-                    client.Timeout = _options.TimeoutSeconds * 1000;
+                    client.Timeout = _options.TimeoutMilliSeconds * 1000;
 
                     var secureSocketOptions = _options.UseSsl
                         ? SecureSocketOptions.StartTls

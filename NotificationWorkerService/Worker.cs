@@ -30,6 +30,7 @@ public sealed class Worker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await Broker.WaitForKafkaAsync(KafkaGlobalConfig.BootstrapServers, _logger, stoppingToken);
         while (!stoppingToken.IsCancellationRequested)
         {
             try
@@ -53,6 +54,7 @@ public sealed class Worker : BackgroundService
             {
                 if (_logger.IsEnabled(LogLevel.Error))
                     _logger.LogError(ex, "Notification consumer is not consuming events");
+                await Task.Delay(1000, stoppingToken);
             }
             catch (Exception) { }
         }

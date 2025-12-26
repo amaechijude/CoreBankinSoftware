@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CustomerProfile.Services;
 
-public class NinBvnService(
+public sealed class NinBvnService(
     UserProfileDbContext _context,
     QuickVerifyBvnNinService quickVerifyBvnNinService,
     FaceRecognitionService faceRecognitionService,

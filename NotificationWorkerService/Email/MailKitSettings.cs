@@ -23,7 +23,7 @@ public sealed record MailKitSettings
     [CustomMinLengthValidator(7)]
     public string FromName { get; set; } = string.Empty;
     public bool UseSsl { get; set; }
-    public int TimeoutSeconds { get; set; } = 30;
+    public int TimeoutMilliSeconds { get; set; } = 30;
 
     public const string Section = "MailKitSettings";
     public const string ResiliencePipelineKey = "MailKitResiliencePipeline";

@@ -1,9 +1,8 @@
 using AccountServices;
 using AccountServices.Data;
+using AccountServices.Services;
 using AccountServices.Validators;
-using Confluent.Kafka;
 using CoreBankingSoftware.ServiceDefaults;
-using KafkaMessages;
 using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 
@@ -34,14 +33,6 @@ builder.Services.AddDbContext<AccountDbContext>(options =>
     )
 );
 
-// kafka producer
-builder.Services.AddSingleton(kp =>
-{
-    var config = new ProducerConfig { BootstrapServers = KafkaGlobalConfig.BootstrapServers };
-    var producer = new ProducerBuilder<string, string>(config).Build();
-    return producer;
-});
-
 // Fluent validator
 builder.Services.AddSingleton<CreateAccountRequestValidator>();
 
@@ -59,6 +50,6 @@ if (app.Environment.IsDevelopment())
 
 // app.MapGrpcService<AccountProtoService>();
 app.MapGet("/", () => "Account Service is running...");
-
+app.MapGrpcService<AccountProtoService>();
 app.MapControllers();
 app.Run();

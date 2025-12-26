@@ -8,6 +8,8 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using Polly;
 using Scalar.AspNetCore;
+using SharedGrpcContracts.Protos.Account.Operations.V1;
+using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;
 using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
@@ -102,14 +104,20 @@ builder.Services.AddResiliencePipeline(
     }
 );
 
-// // Add gRPC client for Account service
-// var accountGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
-// if (string.IsNullOrWhiteSpace(accountGrpcUrl))
-//     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
+// Grpc clients with aspire
+builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
+    options =>
+    {
+        options.Address = new Uri("https+http://accountservices");
+    }
+);
 
-// var profileGrpcUrl = builder.Configuration["GrpcSettings:AccountServiceUrl"];
-// if (string.IsNullOrEmpty(profileGrpcUrl))
-//     throw new InvalidOperationException("gRPC URL for Account Service is not configured.");
+builder.Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(
+    options =>
+    {
+        options.Address = new Uri("https+http://customerprofile");
+    }
+);
 
 // Application services
 builder.Services.AddScoped<UserPreferenceService>();
@@ -117,7 +125,7 @@ builder.Services.AddScoped<NipInterBankService>();
 builder.Services.AddScoped<IntraBankService>();
 
 // Kafka Singleton Producer
-builder.Services.AddSingleton<IProducer<string, string>>(kp =>
+builder.Services.AddSingleton(kp =>
 {
     var config = new ProducerConfig
     {
