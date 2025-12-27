@@ -6,8 +6,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.AddServiceDefaults();
 
 // Add services to the container.
-builder.Services.AddYarpConfiguration();
-
+builder
+    .Services.AddReverseProxy()
+    .LoadFromMemory(
+        routes: RouteClusterConfiguration.routes,
+        clusters: RouteClusterConfiguration.clusters
+    )
+    .AddServiceDiscoveryDestinationResolver();
 
 var app = builder.Build();
 
