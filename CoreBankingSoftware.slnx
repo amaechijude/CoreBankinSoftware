@@ -20,7 +20,7 @@
     <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
   </Folder>
   <Folder Name="/Notification/">
-    <Project Path="NotificationWorkerService/NotificationWorkerService.csproj" Id="177a5f3c-df0d-42d4-8fd8-69674a46647b" />
+    <Project Path="Notification/Notification.csproj" Id="11bbda2d-c4e6-483f-80b7-d35444dd56a5" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />

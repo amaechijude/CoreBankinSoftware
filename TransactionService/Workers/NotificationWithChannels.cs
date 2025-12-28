@@ -18,13 +18,21 @@ public sealed class NotificationWithChannelsWorker(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await Broker.WaitForKafkaAsync(KafkaGlobalConfig.BootstrapServers, logger, stoppingToken);
 
         while (!stoppingToken.IsCancellationRequested)
         {
             await foreach (var message in channel.Reader.ReadAllAsync(stoppingToken))
             {
-                await ProcessMessagesAsync(message, stoppingToken);
+                try
+                {
+                    await ProcessMessagesAsync(message, stoppingToken);
+                }
+                catch (Exception ex) {
+                    if (logger.IsEnabled(LogLevel.Error))
+                    {
+                        logger.LogError(ex, "publishement faled");
+                    }
+                }
             }
         }
     }

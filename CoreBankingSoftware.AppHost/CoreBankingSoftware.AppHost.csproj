@@ -20,7 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\AccountServices\AccountServices.csproj" />
     <ProjectReference Include="..\CustomerProfile\CustomerProfile.csproj" />
-    <ProjectReference Include="..\NotificationWorkerService\NotificationWorkerService.csproj" />
+    <ProjectReference Include="..\Notification\Notification.csproj" />
     <ProjectReference Include="..\TransactionService\TransactionService.csproj" />
     <ProjectReference Include="..\YarpApiGateWay\YarpApiGateWay.csproj" />
   </ItemGroup>

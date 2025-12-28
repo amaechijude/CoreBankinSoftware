@@ -1,5 +1,4 @@
 using System.Net;
-using CustomerProfile.Messaging;
 using FluentValidation;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;

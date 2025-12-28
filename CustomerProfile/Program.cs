@@ -93,9 +93,7 @@ builder.Services.AddSingleton<FaceRecognitionService>();
 
 // Messaging Service
 builder
-    .Services.Configure<TwilioSettings>(
-        builder.Configuration.GetSection("TwilioSettings")
-    )
+    .Services.Configure<TwilioSettings>(builder.Configuration.GetSection("TwilioSettings"))
     .AddOptions<TwilioSettings>()
     .ValidateDataAnnotations()
     .ValidateOnStart();

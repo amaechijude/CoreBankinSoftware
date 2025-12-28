@@ -1,9 +1,9 @@
 using Confluent.Kafka;
 using KafkaMessages;
 using KafkaMessages.AccountMessages;
-using NotificationWorkerService.Email;
+using Notification.Email;
 
-namespace NotificationWorkerService;
+namespace Notification;
 
 public sealed class Worker : BackgroundService
 {

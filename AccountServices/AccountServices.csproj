@@ -10,7 +10,7 @@
 
   <ItemGroup>
 	  <PackageReference Include="Aspire.Confluent.Kafka" />
-	  <PackageReference Include="Confluent.Kafka" />
+	  <!-- <PackageReference Include="Confluent.Kafka" /> -->
     <PackageReference Include="FluentValidation" />
     <PackageReference Include="Grpc.AspNetCore" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />

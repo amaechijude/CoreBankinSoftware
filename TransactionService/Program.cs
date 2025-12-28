@@ -3,6 +3,7 @@ using Confluent.Kafka;
 using CoreBankingSoftware.ServiceDefaults;
 using FluentValidation;
 using KafkaMessages;
+using KafkaMessages.AccountMessages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
@@ -13,8 +14,10 @@ using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;
 using TransactionService.DTOs.NipInterBank;
 using TransactionService.Entity;
+using TransactionService.Entity.Enums;
 using TransactionService.NIBBS;
 using TransactionService.Services;
+using TransactionService.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,8 +72,11 @@ builder.Services.AddHybridCache(options =>
 });
 
 // Mock Nibss Service Http typed client with xml accept header
-builder.Services.Configure<NibssOptions>(builder.Configuration.GetSection("NibbsSettings"));
-builder.Services.AddOptions<NibssOptions>().ValidateDataAnnotations().ValidateOnStart();
+builder
+    .Services.Configure<NibssOptions>(builder.Configuration.GetSection("NibbsSettings"))
+    .AddOptions<NibssOptions>()
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
 
 builder.Services.AddHttpClient<NibssService>(
     (provider, client) =>
@@ -108,14 +114,14 @@ builder.Services.AddResiliencePipeline(
 builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
     options =>
     {
-        options.Address = new Uri("https+http://accountservices");
+        options.Address = new Uri("https://accountservices");
     }
 );
 
 builder.Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(
     options =>
     {
-        options.Address = new Uri("https+http://customerprofile");
+        options.Address = new Uri("https://customerprofile");
     }
 );
 
@@ -124,25 +130,36 @@ builder.Services.AddScoped<UserPreferenceService>();
 builder.Services.AddScoped<NipInterBankService>();
 builder.Services.AddScoped<IntraBankService>();
 
-// Kafka Singleton Producer
-builder.Services.AddSingleton(kp =>
-{
-    var config = new ProducerConfig
+//// Kafka Singleton Producer
+//builder.Services.AddSingleton(kp =>
+//{
+//    var config = new ProducerConfig
+//    {
+//        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
+//        Acks = Acks.All, // Leader and replica acknowledges writes
+//        EnableIdempotence = true, // prevents duplicates
+//        SocketKeepaliveEnable = true,
+//        AllowAutoCreateTopics = true,
+//    };
+
+//    var producer = new ProducerBuilder<string, string>(config).Build();
+
+//    // dispose on application stopping
+//    var lifeTime = kp.GetRequiredService<IHostApplicationLifetime>();
+//    lifeTime.ApplicationStopping.Register(() => producer.Dispose());
+
+//    return producer;
+//});
+
+builder.AddKafkaProducer<string, string>(
+    "kafka",
+    producer =>
     {
-        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
-        Acks = Acks.All, // Leader and replica acknowledges writes
-        EnableIdempotence = true, // prevents duplicates
-        SocketKeepaliveEnable = true,
-    };
-
-    var producer = new ProducerBuilder<string, string>(config).Build();
-
-    // dispose on application stopping
-    var lifeTime = kp.GetRequiredService<IHostApplicationLifetime>();
-    lifeTime.ApplicationStopping.Register(() => producer.Dispose());
-
-    return producer;
-});
+        producer.Config.Acks = Acks.All;
+        producer.Config.EnableIdempotence = true; // prevents duplicates
+        producer.Config.AllowAutoCreateTopics = true;
+    }
+); // kafka with aspire
 
 // Background Event producers
 builder.Services.AddSingleton(
@@ -151,8 +168,14 @@ builder.Services.AddSingleton(
     )
 );
 
-// builder.Services.AddHostedService<NotificationWithChannelsWorker>();
-// builder.Services.AddHostedService<NotificationWithOutboxWorker>();
+builder.Services.AddHostedService<NotificationWithChannelsWorker>();
+builder.Services.AddHostedService<NotificationWithOutboxWorker>();
+
+// test
+builder.Services.AddScoped<TestProduce>();
+
+// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -161,6 +184,7 @@ app.MapDefaultEndpoints();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.MapOpenApi();
     app.MapScalarApiReference();
 }
 app.UseHttpsRedirection();
@@ -168,5 +192,117 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapGet("/", () => "Hello World!");
+app.MapPost(
+    "/test",
+    async (TestProduce produce, CancellationToken ct) =>
+    {
+        try
+        {
+            var request = new FundCreditTransferRequest(
+                IsIntraBank: false,
+                IdempotencyKey: Guid.NewGuid().ToString(),
+                CustomerId: Guid.NewGuid(),
+                SenderAccountNumber: "0123456789",
+                SenderBankName: "Our Bank",
+                SenderBankNubanCode: "000001",
+                SenderAccountName: "Test Sender",
+                DestinationAccountNumber: "9876543210",
+                DestinationBankName: "Beneficiary Bank",
+                DestinationBankNubanCode: "000002",
+                DestinationAccountName: "Beneficiary Name",
+                Amount: 1000.50m,
+                Narration: "Mock transfer for testing",
+                DeviceInfo: "UnitTestDevice",
+                IpAddress: "127.0.0.1",
+                Longitude: null,
+                Latitude: null,
+                TransactionChannel: "UnitTest"
+            );
+
+            var tr = TransactionData.Create(
+                request: request,
+                transactionType: TransactionType.Credit,
+                reference: "sdxhhujoioiui87754311160908886656fcjkllllgdsssaaa",
+                category: TransactionCategory.INTRA_BANK_TRANSFER,
+                sessionId: "serrionidggdfssyulljjllpo0987543224899999"
+            );
+
+            var message = OutboxMessage.Create(tr);
+
+            var @event = new TransactionAccountEvent
+            {
+                Email = "preference.Email",
+                PhoneNumber = "preference.PhoneNumber",
+                TransactionId = message.TransactionId,
+                TransactionReference = message.TransactionReference,
+                SessionId = message.SessionId,
+                DestinationAccountNumber = message.DestinationAccountNumber ?? string.Empty,
+                DestinationBankName = message.DestinationBankName ?? string.Empty,
+                DestinationAccountName = "preference.FullName",
+                Amount = message.Amount,
+                TransactionFee = message.TransactionFee,
+                Timestamp = message.CreatedAt,
+                EventType = EventType.Deposit,
+                SendersAccountName = "preference.FullName",
+                SendersBankName = message.BankName,
+                SendersAccountNumber = "preference.AccountNumber",
+            };
+
+            var p = await produce.ProduceMessageAsync(@event, ct);
+
+            return Results.Ok(
+                new
+                {
+                    Success = p,
+                    Date = DateTimeOffset.UtcNow,
+                    Message = "Message Published",
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            return Results.Problem(detail: ex.Message);
+        }
+    }
+);
 
 app.Run();
+
+public class TestProduce(IProducer<string, string> kafkaProducer, ILogger<TestProduce> logger)
+{
+    public async Task<bool> ProduceMessageAsync(
+        TransactionAccountEvent accountEvent,
+        CancellationToken ct
+    )
+    {
+        var messageValue = CustomMessageSerializer.Serialize(accountEvent);
+        var kafkaMessage = new Message<string, string>
+        {
+            Key = accountEvent.TransactionId.ToString(),
+            Value = messageValue,
+        };
+
+        try
+        {
+            var deliveryResult = await kafkaProducer.ProduceAsync(
+                KafkaGlobalConfig.NotificationTopic,
+                kafkaMessage,
+                ct
+            );
+
+            return deliveryResult.Status == PersistenceStatus.Persisted;
+        }
+        catch (ProduceException<string, string> ex)
+        {
+            if (logger.IsEnabled(LogLevel.Error))
+                logger.LogError(ex, "Failed to deliver message: {Reason}", ex.Error.Reason);
+            return false;
+        }
+        catch (Exception ex)
+        {
+            if (logger.IsEnabled(LogLevel.Error))
+                logger.LogError(ex, "An error occurred while producing message to Kafka.");
+            return false;
+        }
+    }
+}

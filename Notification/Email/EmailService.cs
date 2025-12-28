@@ -4,9 +4,8 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using Polly;
 using Polly.Registry;
-using System.Xml.Linq;
 
-namespace NotificationWorkerService.Email;
+namespace Notification.Email;
 
 internal sealed class EmailService(
 

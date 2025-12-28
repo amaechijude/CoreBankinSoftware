@@ -1,4 +1,6 @@
 using System.Net.Sockets;
+using Confluent.Kafka;
+using KafkaMessages;
 using MailKit;
 using MailKit.Net.Smtp;
 using Microsoft.Extensions.Options;
@@ -46,6 +48,35 @@ builder.Services.AddResiliencePipeline(
     }
 );
 
+// Add Kafka consumer via Aspire
+builder.AddKafkaConsumer<string, string>(
+    "kafka",
+    consumer =>
+    {
+        consumer.Config.GroupId = KafkaGlobalConfig.NotificationGroupId;
+        consumer.Config.AutoOffsetReset = AutoOffsetReset.Earliest;
+        consumer.Config.EnableAutoCommit = false;
+    }
+);
+
+//builder.Services.AddSingleton<IConsumer<string, string>>(c =>
+//{
+//    var config = new ConsumerConfig {
+//        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
+//        GroupId = KafkaGlobalConfig.NotificationGroupId,
+//        AllowAutoCreateTopics = true,
+//        AutoOffsetReset = AutoOffsetReset.Earliest,
+//        EnableAutoCommit = false, // commit after processeing
+
+//    };
+//    var consumer = new ConsumerBuilder<string, string>(config).Build();
+
+//    var lifetime = c.GetRequiredService<IHostApplicationLifetime>();
+//    lifetime.ApplicationStopping.Register(() => consumer.Dispose());
+
+//    return consumer;
+//});
+
 // Add Twilio SMS settings
 builder.Services.Configure<TwilioSettings>(
     builder.Configuration.GetSection(TwilioSettings.Section)
@@ -55,5 +86,5 @@ builder.Services.AddOptions<TwilioSettings>();
 
 builder.Services.AddHostedService<Worker>();
 
-var host = builder.Build();
-host.Run();
+var app = builder.Build();
+app.Run();

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>bc9a975f-21b9-4f61-bc7e-b9ccbf7b72bb</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" />
+	  <PackageReference Include="Aspire.Confluent.Kafka" />
+	  <!-- <PackageReference Include="Confluent.Kafka" /> -->
+	  <PackageReference Include="MailKit" />
+	  <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+	  <PackageReference Include="Polly" />
+	  <PackageReference Include="Polly.Extensions" />
+	  <PackageReference Include="Twilio.AspNet.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
+  </ItemGroup>
+
+</Project>
