@@ -2,7 +2,6 @@ using System.Threading.Channels;
 using Confluent.Kafka;
 using CoreBankingSoftware.ServiceDefaults;
 using FluentValidation;
-using KafkaMessages;
 using KafkaMessages.AccountMessages;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
@@ -63,7 +62,7 @@ builder.AddRedisClient("redis"); // uses Aspire.StackExchange.Redis
 builder.Services.AddHybridCache(options =>
 {
     options.MaximumKeyLength = 200;
-    options.MaximumPayloadBytes = 1024 * 1024 * 5; // 5MB
+    options.MaximumPayloadBytes = 1024 * 1024 * 300; // 300MB
     options.DefaultEntryOptions = new HybridCacheEntryOptions
     {
         Expiration = TimeSpan.FromMinutes(20),
@@ -78,15 +77,17 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddHttpClient<NibssService>(
-    (provider, client) =>
-    {
-        var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
-        client.BaseAddress = new Uri(nibssOptions.BaseUrl);
-        client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
-        client.DefaultRequestHeaders.Add("Accept", "application/xml");
-    }
-);
+builder
+    .Services.AddHttpClient<NibssService>(
+        (provider, client) =>
+        {
+            var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
+            client.BaseAddress = new Uri(nibssOptions.BaseUrl);
+            client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
+            client.DefaultRequestHeaders.Add("Accept", "application/xml");
+        }
+    )
+    .AddStandardResilienceHandler();
 
 builder.Services.AddResiliencePipeline(
     "key",
@@ -111,45 +112,28 @@ builder.Services.AddResiliencePipeline(
 );
 
 // Grpc clients with aspire
-builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
-    options =>
-    {
-        options.Address = new Uri("https://accountservices");
-    }
-);
+builder
+    .Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
+        options =>
+        {
+            options.Address = new Uri("https://accountservices");
+        }
+    )
+    .AddStandardResilienceHandler();
 
-builder.Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(
-    options =>
-    {
-        options.Address = new Uri("https://customerprofile");
-    }
-);
+builder
+    .Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(
+        options =>
+        {
+            options.Address = new Uri("https://customerprofile");
+        }
+    )
+    .AddStandardResilienceHandler();
 
 // Application services
 builder.Services.AddScoped<UserPreferenceService>();
 builder.Services.AddScoped<NipInterBankService>();
 builder.Services.AddScoped<IntraBankService>();
-
-//// Kafka Singleton Producer
-//builder.Services.AddSingleton(kp =>
-//{
-//    var config = new ProducerConfig
-//    {
-//        BootstrapServers = KafkaGlobalConfig.BootstrapServers,
-//        Acks = Acks.All, // Leader and replica acknowledges writes
-//        EnableIdempotence = true, // prevents duplicates
-//        SocketKeepaliveEnable = true,
-//        AllowAutoCreateTopics = true,
-//    };
-
-//    var producer = new ProducerBuilder<string, string>(config).Build();
-
-//    // dispose on application stopping
-//    var lifeTime = kp.GetRequiredService<IHostApplicationLifetime>();
-//    lifeTime.ApplicationStopping.Register(() => producer.Dispose());
-
-//    return producer;
-//});
 
 builder.AddKafkaProducer<string, string>(
     "kafka",
@@ -231,21 +215,21 @@ app.MapPost(
 
             var @event = new TransactionAccountEvent
             {
-                Email = "preference.Email",
-                PhoneNumber = "preference.PhoneNumber",
+                Email = "preference@gmail.com",
+                PhoneNumber = "09876543210",
                 TransactionId = message.TransactionId,
                 TransactionReference = message.TransactionReference,
                 SessionId = message.SessionId,
                 DestinationAccountNumber = message.DestinationAccountNumber ?? string.Empty,
                 DestinationBankName = message.DestinationBankName ?? string.Empty,
-                DestinationAccountName = "preference.FullName",
+                DestinationAccountName = "Amaechi",
                 Amount = message.Amount,
                 TransactionFee = message.TransactionFee,
                 Timestamp = message.CreatedAt,
                 EventType = EventType.Deposit,
-                SendersAccountName = "preference.FullName",
+                SendersAccountName = "Sender Amaechi",
                 SendersBankName = message.BankName,
-                SendersAccountNumber = "preference.AccountNumber",
+                SendersAccountNumber = "9112708565",
             };
 
             var p = await produce.ProduceMessageAsync(@event, ct);
@@ -267,42 +251,3 @@ app.MapPost(
 );
 
 app.Run();
-
-public class TestProduce(IProducer<string, string> kafkaProducer, ILogger<TestProduce> logger)
-{
-    public async Task<bool> ProduceMessageAsync(
-        TransactionAccountEvent accountEvent,
-        CancellationToken ct
-    )
-    {
-        var messageValue = CustomMessageSerializer.Serialize(accountEvent);
-        var kafkaMessage = new Message<string, string>
-        {
-            Key = accountEvent.TransactionId.ToString(),
-            Value = messageValue,
-        };
-
-        try
-        {
-            var deliveryResult = await kafkaProducer.ProduceAsync(
-                KafkaGlobalConfig.NotificationTopic,
-                kafkaMessage,
-                ct
-            );
-
-            return deliveryResult.Status == PersistenceStatus.Persisted;
-        }
-        catch (ProduceException<string, string> ex)
-        {
-            if (logger.IsEnabled(LogLevel.Error))
-                logger.LogError(ex, "Failed to deliver message: {Reason}", ex.Error.Reason);
-            return false;
-        }
-        catch (Exception ex)
-        {
-            if (logger.IsEnabled(LogLevel.Error))
-                logger.LogError(ex, "An error occurred while producing message to Kafka.");
-            return false;
-        }
-    }
-}

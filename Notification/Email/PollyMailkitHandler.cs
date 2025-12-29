@@ -1,7 +1,7 @@
-using System.Net.Sockets;
 using MailKit.Net.Smtp;
 using Polly;
 using Polly.Retry;
+using System.Net.Sockets;
 
 namespace Notification.Email;
 

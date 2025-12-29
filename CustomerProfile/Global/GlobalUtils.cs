@@ -9,7 +9,10 @@ namespace CustomerProfile.Global
         {
             phoneNumber = phoneNumber.Trim().Replace("-", "").Replace(" ", "");
 
-            if (phoneNumber.StartsWith("+234")) return phoneNumber;
+            if (phoneNumber.StartsWith("+234"))
+            {
+                return phoneNumber;
+            }
 
             return "+234" + phoneNumber[1..];
         }

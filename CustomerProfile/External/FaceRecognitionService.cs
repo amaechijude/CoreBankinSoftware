@@ -23,11 +23,15 @@ namespace CustomerProfile.External
 
             var result1 = task1.Result;
             if (!result1.IsSuccess)
+            {
                 return new FaceComparisonResponse { };
+            }
 
             var result2 = task2.Result;
             if (!result2.IsSuccess)
+            {
                 return new FaceComparisonResponse { };
+            }
 
             var Similarity = result1.Embedding!.Dot(result2.Embedding!);
 
@@ -57,9 +61,14 @@ namespace CustomerProfile.External
                 var faces = _faceDetector.DetectFaces(img);
 
                 if (faces.Count == 0)
+                {
                     return ProcessImageResult.Error("No faces detected in the image.");
+                }
+
                 if (faces.Count > 1)
+                {
                     return ProcessImageResult.Error("More than one face detected in the image.");
+                }
 
                 var face = faces.First();
 
@@ -108,9 +117,14 @@ namespace CustomerProfile.External
                 var faces = _faceDetector.DetectFaces(img);
 
                 if (faces.Count > 1)
+                {
                     return ProcessImageResult.Error("More than one face detected in the image.");
+                }
+
                 if (faces.Count == 0)
+                {
                     return ProcessImageResult.Error("No faces detected in the image.");
+                }
 
                 var face = faces.First();
                 using var alignedImage = img.Clone(); // Clone Image For Alignment

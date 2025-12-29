@@ -103,11 +103,15 @@ public sealed class UserProfile
     public void AddBvn(BvnApiResponse response)
     {
         if (BvnData is not null || !string.IsNullOrWhiteSpace(BvnHash))
+        {
             return; // BVN already added, do nothing
+        }
 
         var bvnData = BvnData.Create(this, response);
         if (bvnData is null)
+        {
             return;
+        }
 
         BvnData = bvnData;
         BvnBase64Image = response.Data?.Base64Image;
@@ -118,7 +122,10 @@ public sealed class UserProfile
     public void RemoveBvn()
     {
         if (BvnData is null && string.IsNullOrWhiteSpace(BvnHash))
+        {
             return; // BVN not set, do nothing
+        }
+
         BvnData = null;
         BvnHash = string.Empty;
         BvnBase64Image = null;

@@ -23,15 +23,21 @@ public class BVN(string value) : IEquatable<BVN>
     private static string ValidatedBVN(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
+        {
             throw new ArgumentException("BVN cannot be null or empty.", nameof(value));
+        }
 
         value = value.Trim();
 
         if (value.Length != 11)
+        {
             throw new ArgumentException("BVN must be exactly 11 digits long.", nameof(value));
+        }
 
         if (value.All(char.IsDigit) == false)
+        {
             throw new ArgumentException("BVN must contain only digits.", nameof(value));
+        }
 
         return value;
     }
@@ -71,7 +77,10 @@ public class BvnData : BaseEntity
     public static BvnData? Create(UserProfile user, BvnApiResponse response)
     {
         if (response?.Data is null)
+        {
             return null;
+        }
+
         ;
 
         return new BvnData

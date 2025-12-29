@@ -10,8 +10,17 @@ public sealed class CustomGuidV7Generator : ValueGenerator<Guid>
     public override Guid Next(EntityEntry entry)
     {
         if (entry is null)
+        {
             throw new ArgumentNullException(nameof(entry), "Entity entry cannot be null.");
+        }
+        try
+        {
 
-        return Guid.CreateVersion7();
+            return Guid.CreateVersion7();
+        }
+        catch (PlatformNotSupportedException)
+        {
+            return Guid.NewGuid();
+        }
     }
 }

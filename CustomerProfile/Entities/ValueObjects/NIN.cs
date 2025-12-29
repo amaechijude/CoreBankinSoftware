@@ -22,15 +22,21 @@ namespace CustomerProfile.Entities.ValueObjects
         private static string ValidatedNIN(string? value)
         {
             if (string.IsNullOrWhiteSpace(value))
+            {
                 throw new ArgumentException("NIN cannot be null or empty.", nameof(value));
+            }
 
             value = value.Trim();
 
             if (value.Length != 11)
+            {
                 throw new ArgumentException("NIN must be exactly 11 characters long.", nameof(value));
+            }
 
             if (value.All(char.IsDigit) == false)
+            {
                 throw new ArgumentException("NIN must contain only digits.", nameof(value));
+            }
 
             return value;
         }

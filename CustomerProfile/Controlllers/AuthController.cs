@@ -1,9 +1,9 @@
-﻿using System.Security.Claims;
-using CustomerProfile.DTO;
+﻿using CustomerProfile.DTO;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CustomerProfile.Controlllers
 {
@@ -16,12 +16,16 @@ namespace CustomerProfile.Controlllers
         public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             var result = await _onboardingCommandHandler.InitiateOnboard(request);
 
             if (result.IsSuccess && result.Data is not null)
+            {
                 return Ok(result.Data);
+            }
 
             return BadRequest(result.ErrorMessage);
         }
@@ -30,14 +34,19 @@ namespace CustomerProfile.Controlllers
         [HttpPost("verify-otp")]
         public async Task<IActionResult> VerifyRegistrationOtpAsync([FromBody] OtpVerifyRequestBody request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             // Get claims from the current user
             var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
             bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
             if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
+            {
                 return BadRequest();
+            }
 
             var result = await _onboardingCommandHandler.VerifyOtpAsync(validId, request);
             return result.IsSuccess
@@ -49,7 +58,10 @@ namespace CustomerProfile.Controlllers
         public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
+
             var result = await _onboardingCommandHandler.HandleLoginAsync(request);
             return result.IsSuccess
                 ? Ok(result.Data)
@@ -60,7 +72,10 @@ namespace CustomerProfile.Controlllers
         public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
+
             var result = await _onboardingCommandHandler.HandleForgotPasswordAsync(request);
             return result.IsSuccess
                 ? Ok(result.Data)
@@ -71,14 +86,19 @@ namespace CustomerProfile.Controlllers
         [HttpPost("reset-password")]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
             // Get claims from the current user
             var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
 
             bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
             if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
+            {
                 return BadRequest();
+            }
 
             var result = await _onboardingCommandHandler.HandleResetPasswordAsync(validId, request);
             return result.IsSuccess

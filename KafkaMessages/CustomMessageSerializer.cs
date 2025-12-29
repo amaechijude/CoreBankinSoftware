@@ -15,14 +15,10 @@ public static class CustomMessageSerializer
     {
         return _serializerOptionsCache.GetOrAdd(
             type,
-            t =>
+            new JsonSerializerOptions
             {
-                var options = new JsonSerializerOptions
-                {
-                    Converters = { new JsonStringEnumConverter() },
-                    PropertyNameCaseInsensitive = true,
-                };
-                return options;
+                Converters = { new JsonStringEnumConverter() },
+                PropertyNameCaseInsensitive = true,
             }
         );
     }

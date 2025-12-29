@@ -48,7 +48,10 @@ public sealed class Account
     public void DebitAccount(decimal amount)
     {
         if (amount > AvailableBalance + 100)
+        {
             throw new InsufficientBalanceException("Insufficient balance");
+        }
+
         Balance -= amount;
         UpdatedAt = DateTimeOffset.UtcNow;
     }

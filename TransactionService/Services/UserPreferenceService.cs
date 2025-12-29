@@ -20,7 +20,9 @@ public sealed class UserPreferenceService(
     public async Task MarkOutboxPublishedBatch(List<Guid> transactionIds, CancellationToken ct)
     {
         if (transactionIds.Count == 0)
+        {
             return;
+        }
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -185,7 +187,9 @@ public sealed class UserPreferenceService(
     {
         var count = accountNumbers.Count;
         if (count == 0)
+        {
             return [];
+        }
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
@@ -246,7 +250,9 @@ public sealed class UserPreferenceService(
         var idCount = customerIds.Count;
 
         if (idCount == 0)
+        {
             return [];
+        }
 
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 

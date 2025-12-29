@@ -1,9 +1,9 @@
-﻿using System.Security.Claims;
-using System.Text;
-using CustomerProfile.Entities;
+﻿using CustomerProfile.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System.Text;
 
 namespace CustomerProfile.JwtTokenService
 {

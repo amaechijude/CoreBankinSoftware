@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.Extensions.Options;
 
 namespace Notification.Email;
 
-public sealed record MailKitSettings
+public sealed class MailKitSettings
 {
     [MinLength(7)]
     public string SmtpHost { get; set; } = string.Empty;

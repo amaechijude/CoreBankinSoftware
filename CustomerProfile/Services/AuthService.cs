@@ -1,4 +1,3 @@
-using System.Threading.Channels;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
 using CustomerProfile.Entities;
@@ -7,6 +6,7 @@ using CustomerProfile.Messaging.SMS;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Channels;
 
 namespace CustomerProfile.Services;
 
@@ -57,10 +57,14 @@ public sealed class AuthService(
             .FirstOrDefaultAsync();
 
         if (verificationCode is null)
+        {
             return ApiResponse<string>.Error("Verification Failed");
+        }
 
         if (verificationCode.IsUsed || verificationCode.IsExpired)
+        {
             return ApiResponse<string>.Error("Verification Expired");
+        }
 
         verificationCode.MarkIsUsedAndCanSetProfile();
         await _context.SaveChangesAsync();
@@ -77,7 +81,9 @@ public sealed class AuthService(
             .FirstOrDefaultAsync();
 
         if (user is null)
+        {
             return ApiResponse<UserProfileResponse>.Error("Invalid credentials");
+        }
 
         var verificationResult = _passwordHasher.VerifyHashedPassword(
             user,
@@ -86,7 +92,9 @@ public sealed class AuthService(
         );
 
         if (verificationResult == PasswordVerificationResult.Failed)
+        {
             return ApiResponse<UserProfileResponse>.Error("Invalid credentials");
+        }
 
         return ApiResponse<UserProfileResponse>.Success(
             GenerateJWtAndMapToUserProfileResponse(user)
@@ -110,7 +118,10 @@ public sealed class AuthService(
         );
 
         if (user is null)
+        {
             return ApiResponse<OnboardingResponse>.Error("User not found");
+        }
+
         return await HandleOtp(user.PhoneNumber, "");
     }
 
@@ -124,16 +135,22 @@ public sealed class AuthService(
             .FirstOrDefaultAsync();
 
         if (verificationCode is null)
+        {
             return ApiResponse<string>.Error("Reset Password Failed");
+        }
 
         if (verificationCode.IsUsed || verificationCode.IsExpired)
+        {
             return ApiResponse<string>.Error("Otp Expired");
+        }
 
         var user = await _context.UserProfiles.FirstOrDefaultAsync(u =>
             u.PhoneNumber == verificationCode.UserPhoneNumber
         );
         if (user is null)
+        {
             return ApiResponse<string>.Error("Password reset failed");
+        }
 
         var passwordHash = _passwordHasher.HashPassword(user, request.NewPassword);
         user.AddPasswordHash(passwordHash);

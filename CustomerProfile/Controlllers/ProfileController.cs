@@ -1,10 +1,10 @@
-﻿using System.Security.Claims;
-using CustomerProfile.DTO;
+﻿using CustomerProfile.DTO;
 using CustomerProfile.DTO.BvnNinVerification;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CustomerProfile.Controlllers
 {
@@ -23,7 +23,9 @@ namespace CustomerProfile.Controlllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             bool IsVAlidGuid = Guid.TryParse(userId, out var validUserId);
             if (!IsVAlidGuid || userRole != RolesUtils.UserRole)
+            {
                 return Unauthorized("Unauthorised: Try Login Again");
+            }
 
             var result = await ninBvnService.SearchBvnAsync(validUserId, request, ct);
             return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
@@ -40,7 +42,9 @@ namespace CustomerProfile.Controlllers
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             bool IsVAlidGuid = Guid.TryParse(userId, out var validUserId);
             if (!IsVAlidGuid || userRole != RolesUtils.UserRole)
+            {
                 return Unauthorized("Unauthorised: Try Login Again");
+            }
 
             var result = await ninBvnService.FaceVerificationAsync(validUserId, request, ct);
             return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
@@ -54,13 +58,17 @@ namespace CustomerProfile.Controlllers
         )
         {
             if (!ModelState.IsValid)
+            {
                 return BadRequest(ModelState);
+            }
 
             var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
             bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
             if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
+            {
                 return BadRequest("Request Timeout");
+            }
 
             var result = await ninBvnService.HandleSetProfileAsync(validId, request, ct);
             return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);

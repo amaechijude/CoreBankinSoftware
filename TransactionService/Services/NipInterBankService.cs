@@ -38,7 +38,9 @@ public sealed class NipInterBankService(
             ? request.DestinationBankNubanCode
             : BankCodes.GetBankCode(request.DestinationBankName);
         if (bankCode == null)
+        {
             return ApiResultResponse<NameEnquiryResponse>.Error("Bank not supported");
+        }
 
         var sessionId = TransactionIdGenerator.GenerateSessionId(
             request.SenderBankNubanCode,
@@ -54,13 +56,18 @@ public sealed class NipInterBankService(
         };
         var (data, error) = await _nibssService.NameEnquiryAsync(nESingleRequest, ct);
         if (data is null)
+        {
             return ApiResultResponse<NameEnquiryResponse>.Error(
                 error ?? "Account name enquiry failed"
             );
+        }
+
         if (data.ResponseCode != "00")
+        {
             return ApiResultResponse<NameEnquiryResponse>.Error(
                 NibssResponseCodesHelper.GetMessageForCode(data.ResponseCode)
             );
+        }
         // Successful response
         return ApiResultResponse<NameEnquiryResponse>.Success(
             new NameEnquiryResponse(

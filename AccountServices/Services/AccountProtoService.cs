@@ -58,7 +58,9 @@ public sealed class AccountProtoService(
     {
         var accountNumber = request.AccountNumber;
         if (string.IsNullOrWhiteSpace(accountNumber) || accountNumber.Length != 10)
+        {
             return ApiResponseFactory.Failed("Invalid Account number");
+        }
 
         var account = await dbContext
             .Accounts.AsNoTracking()
@@ -80,7 +82,9 @@ public sealed class AccountProtoService(
             {
                 var amount = (decimal)request.Amount;
                 if (amount < 50)
+                {
                     return ApiResponseFactory.Error("Minimum deposit is 50");
+                }
 
                 var account = await dbContext.Accounts.FirstOrDefaultAsync(
                     a => a.AccountNumber == request.AccountNumber,
@@ -88,7 +92,9 @@ public sealed class AccountProtoService(
                 );
 
                 if (account is null)
+                {
                     return ApiResponseFactory.Error("Account not found");
+                }
 
                 account.CreditAccount(amount);
 
@@ -125,11 +131,19 @@ public sealed class AccountProtoService(
                 );
 
                 if (account is null)
+                {
                     return ApiResponseFactory.Error("Account not found");
+                }
+
                 if (account.IsInsufficient(amount))
+                {
                     return ApiResponseFactory.Error("Insufficient funds");
+                }
+
                 if (account.IsOnPostNoDebit)
+                {
                     return ApiResponseFactory.Error("Witdhrawal forbidden, Visit your bank");
+                }
 
                 account.DebitAccount(amount);
                 await dbContext.SaveChangesAsync(context.CancellationToken);
@@ -162,10 +176,14 @@ public sealed class AccountProtoService(
             {
                 var amount = (decimal)request.Amount;
                 if (amount < 50)
+                {
                     return ApiResponseFactory.Error("Transfer amount must be 50 and above");
+                }
 
                 if (!Guid.TryParse(request.CustomerId, out var customerId))
+                {
                     return ApiResponseFactory.Error("Invalid customer id");
+                }
 
                 // Fetch and lock the source and destination accounts
                 var fromAccount = await dbContext.Accounts.FirstOrDefaultAsync(
@@ -179,18 +197,31 @@ public sealed class AccountProtoService(
                 );
 
                 if (fromAccount is null)
+                {
                     return ApiResponseFactory.Error("Source account not found.");
+                }
+
                 if (toAccount is null)
+                {
                     return ApiResponseFactory.Error("Destination account not found.");
+                }
 
                 if (fromAccount.IsInsufficient(amount))
+                {
                     return ApiResponseFactory.Error("Insufficient funds.");
+                }
+
                 if (fromAccount.IsOnPostNoDebit)
+                {
                     return ApiResponseFactory.Error(
                         "Withdrawal forbidden on source account. Visit your bank."
                     );
+                }
+
                 if (toAccount.Status != AccountStatus.Active)
+                {
                     return ApiResponseFactory.Error("Destination account is not active.");
+                }
 
                 // Perform the transfer
                 fromAccount.DebitAccount(amount);

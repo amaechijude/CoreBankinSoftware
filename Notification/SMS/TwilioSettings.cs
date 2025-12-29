@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Notification.SMS;
 
-public sealed record TwilioSettings
+public sealed class TwilioSettings
 {
     [MinLength(7)]
     public string AccountSid { get; init; } = string.Empty;

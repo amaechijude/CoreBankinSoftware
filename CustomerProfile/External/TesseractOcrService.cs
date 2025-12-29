@@ -9,7 +9,10 @@ namespace CustomerProfile.External
         public bool AddressOcrValidation(IFormFile image, string address)
         {
             if (image is null || string.IsNullOrEmpty(address))
+            {
                 return false;
+            }
+
             return true;
         }
     }

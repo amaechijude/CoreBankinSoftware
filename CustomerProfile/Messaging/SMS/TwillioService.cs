@@ -17,17 +17,23 @@ public sealed class TwilioSmsSender(
         try
         {
             if (string.IsNullOrWhiteSpace(command.PhoneNumber))
+            {
                 throw new ArgumentException(
                     "Phone number cannot be null or empty.",
                     nameof(command)
                 );
+            }
 
             if (string.IsNullOrWhiteSpace(command.Message))
+            {
                 throw new ArgumentException("Message cannot be null or empty.", nameof(command));
+            }
 
             // Ensure the phone number starts with a '+' sign
             if (command.PhoneNumber[0] != '+')
+            {
                 command = command with { PhoneNumber = "+" + command.PhoneNumber };
+            }
 
             await SendViaTwilioAsync(command);
         }

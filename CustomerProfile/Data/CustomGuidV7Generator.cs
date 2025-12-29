@@ -10,7 +10,9 @@ namespace CustomerProfile.Data
         public override Guid Next(EntityEntry entry)
         {
             if (entry == null)
+            {
                 throw new ArgumentNullException(nameof(entry), "Entity entry cannot be null.");
+            }
 
             return Guid.CreateVersion7();
         }

@@ -18,6 +18,11 @@
 	  <PackageReference Include="Polly" />
 	  <PackageReference Include="Polly.Extensions" />
 	  <PackageReference Include="Twilio.AspNet.Core" />
+	  <PackageReference Include="Serilog" />
+	  <PackageReference Include="Serilog.AspNetCore" />
+	  <PackageReference Include="Serilog.Sinks.Async" />
+	  <PackageReference Include="Serilog.Sinks.Console" />
+	  <PackageReference Include="Serilog.Sinks.File" />
   </ItemGroup>
 
   <ItemGroup>

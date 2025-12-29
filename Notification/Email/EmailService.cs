@@ -32,25 +32,21 @@ internal sealed class EmailService(
 
         try
         {
-            //voi_ = _environment.IsProduction() switch
-            //{
-            //    true => await SendViaMailKitAsync(message, ct),
-            //    false => await SendViaPapercutAsync(message, ct),
-            //};
             if (_environment.IsProduction())
             {
                 await SendViaMailKitAsync(message, ct);
-            } else
-            {
-                await SendViaPapercutAsync(message, ct);
             }
-                return true;
+            else
+            {
+                await SendViaPapercutAsync(message);
+            }
+            return true;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Failed to send email");
             return false;
-        }
+}
     }
 
     private async Task SendViaMailKitAsync(MimeMessage mimeMessage, CancellationToken cancellationToken)
@@ -90,14 +86,14 @@ internal sealed class EmailService(
             cancellationToken
         );
     }
-    private static async Task SendViaPapercutAsync(MimeMessage mimeMessage, CancellationToken ct)
+    private static async Task SendViaPapercutAsync(MimeMessage mimeMessage)
     {
-        using var smtp = new SmtpClient();
+        using var client = new SmtpClient();
+        await client.ConnectAsync("localhost", 25, SecureSocketOptions.None);
 
-        await smtp.ConnectAsync("localhost", 25, MailKit.Security.SecureSocketOptions.None, ct);
+        await client.SendAsync(mimeMessage);
+        await client.DisconnectAsync(true);
 
-        await smtp.SendAsync(mimeMessage);
-        await smtp.DisconnectAsync(true, ct);
     }
 }
 

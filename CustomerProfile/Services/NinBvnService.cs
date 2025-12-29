@@ -36,16 +36,22 @@ public sealed class NinBvnService(
         }
         var user = await _context.UserProfiles.FindAsync([validUserId], cancellationToken: ct);
         if (user is null)
+        {
             return ApiResponse<bool>.Error("User not found, try login again");
+        }
 
         BvnApiResponse? bvnSearchResult = await quickVerifyBvnNinService.BvnSearchRequest(
             request.Bvn
         );
         if (bvnSearchResult is null)
+        {
             return ApiResponse<bool>.Error("BVN service is currently unavailable, try again later");
+        }
 
         if (bvnSearchResult.Status == false)
+        {
             return ApiResponse<bool>.Error(bvnSearchResult.Detail ?? "BVN not found");
+        }
 
         user.AddBvn(bvnSearchResult);
         await _context.SaveChangesAsync(ct);
@@ -69,12 +75,19 @@ public sealed class NinBvnService(
         }
         var user = await _context.UserProfiles.FindAsync([validUserId], cancellationToken: ct);
         if (user is null)
+        {
             return ApiResponse<string>.Error("User not found, try login again");
+        }
 
         if (user.BvnExists == false)
+        {
             return ApiResponse<string>.Error("BVN not found, complete BVN search first");
+        }
+
         if (string.IsNullOrWhiteSpace(user.BvnBase64Image))
+        {
             return ApiResponse<string>.Error("BVN image not found, complete BVN search first");
+        }
 
         var result = await faceRecognitionService.CompareFaces(
             request.ImageFile,
@@ -82,9 +95,11 @@ public sealed class NinBvnService(
         );
 
         if (!result.IsSimilar)
+        {
             return ApiResponse<string>.Error(
                 "Face verification failed; Try again in a better light condition"
             );
+        }
 
         await _context.SaveChangesAsync(ct);
         return ApiResponse<string>.Success("Face verification successful");
@@ -107,7 +122,9 @@ public sealed class NinBvnService(
 
         var vCode = await _context.VerificationCodes.FindAsync([validId], cancellationToken: ct);
         if (vCode is null || !vCode.CanSetProfile)
+        {
             return ApiResponse<UserProfileResponse>.Error("Request Timeout");
+        }
 
         if (
             await _context.UserProfiles.AnyAsync(
@@ -115,7 +132,9 @@ public sealed class NinBvnService(
                 cancellationToken: ct
             )
         )
+        {
             return ApiResponse<UserProfileResponse>.Error("Possible duplicate request, Try Login");
+        }
 
         var user = UserProfile.CreateNewUser(
             vCode.UserPhoneNumber,

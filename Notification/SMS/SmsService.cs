@@ -35,10 +35,12 @@ public sealed class SmsService(IOptions<TwilioSettings> twilioSettings, ILogger<
     private static string NormalizePhoneNumber(string phoneNumber)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
+        {
             throw new ArgumentException(
                 "Phone number cannot be null or empty.",
                 nameof(phoneNumber)
             );
+        }
         // normalize phone number to E.164 format
         return phoneNumber;
     }

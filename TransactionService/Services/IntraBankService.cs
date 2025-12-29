@@ -1,8 +1,8 @@
-using System.Threading.Channels;
 using FluentValidation;
 using Grpc.Core;
 using Microsoft.Extensions.Caching.Hybrid;
 using SharedGrpcContracts.Protos.Account.Operations.V1;
+using System.Threading.Channels;
 using TransactionService.Data;
 using TransactionService.DTOs.IntraBank;
 using TransactionService.Entity;
@@ -54,7 +54,9 @@ public sealed class IntraBankService(
             cancellationToken: ct
         );
         if (response is null)
+        {
             return ApiResultResponse<NameEnquiryIntraResponse>.Error("Account not found");
+        }
 
         if (!response.Success)
         {

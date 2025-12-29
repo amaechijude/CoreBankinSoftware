@@ -14,7 +14,7 @@ public sealed class NotificationWithOutboxWorker(
     IProducer<string, string> kafkaProducer
 ) : BackgroundService
 {
-    private static readonly string _topic = KafkaGlobalConfig.NotificationTopic;
+    private static readonly string _topic = KafkaGlobalConfig.TransactionNotificationTopic;
     private const int MaxBatchSize = 100;
     private const int MaxParallelism = 10;
     private static readonly TimeSpan EmptyQueueDelay = TimeSpan.FromSeconds(30);
@@ -58,7 +58,9 @@ public sealed class NotificationWithOutboxWorker(
             .ToListAsync(ct);
 
         if (pendingMessages.Count == 0)
+        {
             return 0;
+        }
 
         // OPTIMIZATION 2: Pre-fetch all required preferences in batch
         var allPreferences = await PreFetchAllPreferences(pendingMessages, userPreference, ct);
@@ -151,7 +153,9 @@ public sealed class NotificationWithOutboxWorker(
     )
     {
         if (string.IsNullOrEmpty(message.DestinationAccountNumber))
+        {
             return null;
+        }
 
         cache.ByAccountNumber.TryGetValue(message.DestinationAccountNumber, out var preference);
         return preference;
@@ -257,22 +261,28 @@ public sealed class NotificationWithOutboxWorker(
         catch (ProduceException<string, string> ex)
         {
             if (logger.IsEnabled(LogLevel.Error))
+            {
                 logger.LogError(
                     ex,
                     "Failed to deliver Kafka message for TransactionId: {TransactionId}, Reason: {Reason}",
                     accountEvent.TransactionId,
                     ex.Error.Reason
                 );
+            }
+
             return false;
         }
         catch (Exception ex)
         {
             if (logger.IsEnabled(LogLevel.Error))
+            {
                 logger.LogError(
                     ex,
                     "Unexpected error producing Kafka message for TransactionId: {TransactionId}",
                     accountEvent.TransactionId
                 );
+            }
+
             return false;
         }
     }

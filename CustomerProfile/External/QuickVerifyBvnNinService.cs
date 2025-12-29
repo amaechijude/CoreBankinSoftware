@@ -1,5 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
-using CustomerProfile.DTO.BvnNinVerification;
+﻿using CustomerProfile.DTO.BvnNinVerification;
+using System.ComponentModel.DataAnnotations;
 
 namespace CustomerProfile.External;
 
@@ -12,7 +12,10 @@ public sealed class QuickVerifyBvnNinService(HttpClient client)
         try
         {
             using HttpResponseMessage response = await _client.PostAsJsonAsync("nin-search", body);
-            if (!response.IsSuccessStatusCode) return null;
+            if (!response.IsSuccessStatusCode)
+            {
+                return null;
+            }
 
             return await response.Content.ReadFromJsonAsync<NINAPIResponse>();
         }
@@ -27,7 +30,10 @@ public sealed class QuickVerifyBvnNinService(HttpClient client)
             using HttpResponseMessage httpResponse = await _client
                 .PostAsJsonAsync("bvn-search", body);
 
-            if (!httpResponse.IsSuccessStatusCode) return null;
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                return null;
+            }
 
             return await httpResponse.Content.ReadFromJsonAsync<BvnApiResponse>();
         }

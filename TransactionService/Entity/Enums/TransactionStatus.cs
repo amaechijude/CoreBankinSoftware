@@ -1,4 +1,5 @@
 namespace TransactionService.Entity.Enums;
+
 public enum TransactionStatus
 {
     Initiated,

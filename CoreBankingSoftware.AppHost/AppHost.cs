@@ -11,12 +11,6 @@ var customerprofile = builder
     .WithReference(kafka)
     .WaitFor(accountservices);
 
-
-
-builder.AddProject<Projects.Notification>("notification")
-    .WithReference(kafka)
-    .WaitFor(kafka);
-
 var transactionservice = builder
     .AddProject<Projects.TransactionService>("transactionservice")
     .WithReference(accountservices)
@@ -36,5 +30,7 @@ builder
     // Ensure the gateway waits for backend services to be ready before starting
     // This avoids 502s and proxying to unavailable targets.
     .WaitFor(transactionservice);
+
+builder.AddProject<Projects.Notification>("notification").WithReference(kafka).WaitFor(kafka);
 
 builder.Build().Run();

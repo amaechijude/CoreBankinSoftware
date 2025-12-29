@@ -50,10 +50,13 @@ namespace CustomerProfile.Messaging.SMS
                     if (attempt >= _maxRetryAttempts)
                     {
                         if (_logger.IsEnabled(LogLevel.Critical))
+                        {
                             _logger.LogCritical(
                                 "Failed to send SMS to after {MaxAttempts} attempts.",
                                 _maxRetryAttempts
                             );
+                        }
+
                         return; // Exit after max attempts
                     }
                     attempt++;
