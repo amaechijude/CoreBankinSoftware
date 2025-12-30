@@ -12,7 +12,6 @@ public sealed class Account
     public AccountStatus Status { get; private set; }
     public decimal Balance { get; private set; }
     public decimal ReservedAmount { get; private set; }
-    public decimal AvailableBalance => Balance - ReservedAmount;
     public uint RowVersion { get; set; }
     public bool IsOnPostNoDebit { get; private set; } = false;
     public DateTimeOffset CreatedAt { get; private init; }
@@ -47,7 +46,7 @@ public sealed class Account
 
     public void DebitAccount(decimal amount)
     {
-        if (amount > AvailableBalance + 100)
+        if ((Balance - ReservedAmount) < amount)
         {
             throw new InsufficientBalanceException("Insufficient balance");
         }
@@ -62,7 +61,7 @@ public sealed class Account
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    internal bool IsInsufficient(decimal amount) => amount > AvailableBalance + 101;
+    internal bool IsInsufficient(decimal amount) => (Balance - ReservedAmount) < amount;
 }
 
 internal sealed class InsufficientBalanceException(string message) : Exception(message);

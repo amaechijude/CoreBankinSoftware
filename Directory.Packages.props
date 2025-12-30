@@ -40,7 +40,8 @@
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="9.0.10" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageVersion>
@@ -73,6 +74,7 @@
     <PackageVersion Include="SixLabors.ImageSharp" Version="3.1.12" />
     <PackageVersion Include="Tesseract" Version="5.2.0" />
     <!-- Twilio.AspNet.Core -->
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="4.9.0" />
     <PackageVersion Include="Twilio.AspNet.Core" Version="8.1.2" />
     <!-- Swashbuckle.AspNetCore -->
     <PackageVersion Include="Swashbuckle.AspNetCore" Version="9.0.4" />
@@ -87,11 +89,10 @@
     <PackageVersion Include="OpenTelemetry.Instrumentation.Http" Version="1.14.0" />
     <PackageVersion Include="OpenTelemetry.Instrumentation.Runtime" Version="1.14.0" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="13.1.0" />
-	  
-	  <!-- X Unit -->
-	  <PackageVersion Include="coverlet.collector" Version="6.0.4" />
-	  <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-	  <PackageVersion Include="xunit" Version="2.9.3" />
-	  <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <!-- X Unit -->
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
 </Project>
