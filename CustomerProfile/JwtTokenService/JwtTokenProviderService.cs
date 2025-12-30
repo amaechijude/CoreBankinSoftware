@@ -1,71 +1,72 @@
-﻿using CustomerProfile.Entities;
+﻿using System.Security.Claims;
+using System.Text;
+using CustomerProfile.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
-using System.Text;
 
-namespace CustomerProfile.JwtTokenService
+namespace CustomerProfile.JwtTokenService;
+
+public class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
 {
-    public class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+
+    public (string token, DateTime? expiresIn) GenerateVerificationResponseJwtToken(
+        VerificationCode code
+    )
     {
-        private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
 
-        public (string token, DateTime? expiresIn) GenerateVerificationResponseJwtToken(VerificationCode code)
+        SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+
+        SecurityTokenDescriptor tokenDescriptor = new()
         {
-            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
-
-            SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-
-            SecurityTokenDescriptor tokenDescriptor = new()
-            {
-                Subject = new System.Security.Claims.ClaimsIdentity([
+            Subject = new ClaimsIdentity(
+                [
                     new Claim(ClaimTypes.Sid, code.Id.ToString()),
                     new Claim(ClaimTypes.Role, RolesUtils.VerificationRole),
-                    new Claim(ClaimTypes.Email, code.UserEmail)
-                    ]),
+                    new Claim(ClaimTypes.Email, code.UserEmail),
+                ]
+            ),
 
-                Issuer = _jwtOptions.Issuer,
-                Audience = _jwtOptions.Audience,
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = signingCredentials,
+            Issuer = _jwtOptions.Issuer,
+            Audience = _jwtOptions.Audience,
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = signingCredentials,
+        };
 
-            };
+        JsonWebTokenHandler jsonWebTokenHandler = new();
 
-            JsonWebTokenHandler jsonWebTokenHandler = new();
+        string token = jsonWebTokenHandler.CreateToken(tokenDescriptor);
 
-            string token = jsonWebTokenHandler.CreateToken(tokenDescriptor);
-
-            return (token, tokenDescriptor.Expires);
-        }
-
-        public (string token, DateTime? expiresIn) GenerateUserJwtToken(UserProfile user)
-        {
-            SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
-
-            SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
-
-            SecurityTokenDescriptor tokenDescriptor = new()
-            {
-                Subject = new System.Security.Claims.ClaimsIdentity([
-                    new Claim(ClaimTypes.Sid, user.Id.ToString()),
-                    new Claim(ClaimTypes.Role, RolesUtils.UserRole),
-                    ]),
-
-                Issuer = _jwtOptions.Issuer,
-                Audience = _jwtOptions.Audience,
-                Expires = DateTime.UtcNow.AddHours(1),
-                SigningCredentials = signingCredentials,
-
-            };
-
-            JsonWebTokenHandler jsonWebTokenHandler = new();
-
-            string token = jsonWebTokenHandler.CreateToken(tokenDescriptor);
-
-            return (token, tokenDescriptor.Expires);
-        }
+        return (token, tokenDescriptor.Expires);
     }
 
-    internal sealed class JwtGenException(string message) : Exception(message);
+    public (string token, DateTime? expiresIn) GenerateUserJwtToken(UserProfile user)
+    {
+        SymmetricSecurityKey securityKey = new(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
+
+        SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256);
+
+        SecurityTokenDescriptor tokenDescriptor = new()
+        {
+            Subject = new ClaimsIdentity(
+                [
+                    new Claim(ClaimTypes.Sid, user.Id.ToString()),
+                    new Claim(ClaimTypes.Role, RolesUtils.UserRole),
+                ]
+            ),
+
+            Issuer = _jwtOptions.Issuer,
+            Audience = _jwtOptions.Audience,
+            Expires = DateTime.UtcNow.AddHours(1),
+            SigningCredentials = signingCredentials,
+        };
+
+        JsonWebTokenHandler jsonWebTokenHandler = new();
+
+        string token = jsonWebTokenHandler.CreateToken(tokenDescriptor);
+
+        return (token, tokenDescriptor.Expires);
+    }
 }

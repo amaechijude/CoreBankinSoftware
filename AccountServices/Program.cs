@@ -10,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddGrpc();
 
@@ -51,5 +50,4 @@ if (app.Environment.IsDevelopment())
 // app.MapGrpcService<AccountProtoService>();
 app.MapGet("/", () => "Account Service is running...");
 app.MapGrpcService<AccountProtoService>();
-app.MapControllers();
 app.Run();

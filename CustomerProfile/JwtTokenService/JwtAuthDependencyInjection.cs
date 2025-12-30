@@ -1,9 +1,9 @@
+using System.ComponentModel.DataAnnotations;
+using System.Text;
 using CustomerProfile.Global;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace CustomerProfile.JwtTokenService;
 
@@ -23,19 +23,7 @@ public sealed record JwtOptions
 
 public static class JwtAuthDependencyInjection
 {
-    private static IServiceCollection AddJwtOptions(
-        this IServiceCollection services,
-        IConfiguration configuration
-    )
-    {
-        services
-            .Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName))
-            .AddOptions<JwtOptions>()
-            .ValidateDataAnnotations()
-            .ValidateOnStart();
-
-        return services;
-    }
+    private const string TOKEN_HEADER_NAME = "X-Auth-Token";
 
     private static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
     {
@@ -97,7 +85,7 @@ public static class JwtAuthDependencyInjection
                         },
                         OnMessageReceived = context =>
                         {
-                            context.Token = context.Request.Headers[GlobalUtils.TokenHeaderName];
+                            context.Token = context.Request.Headers[TOKEN_HEADER_NAME];
                             return Task.CompletedTask;
                         },
                     };
@@ -111,9 +99,15 @@ public static class JwtAuthDependencyInjection
         IConfiguration configuration
     )
     {
-        return services
-            .AddJwtOptions(configuration)
-            .AddScoped<JwtTokenProviderService>()
-            .AddJwtAuthentication();
+        services
+            .Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName))
+            .AddOptions<JwtOptions>()
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services.AddSingleton<JwtTokenProviderService>();
+        services.AddJwtAuthentication();
+
+        return services;
     }
 }
