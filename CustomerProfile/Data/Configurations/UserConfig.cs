@@ -56,38 +56,6 @@ public sealed class UserConfig : IEntityTypeConfiguration<UserProfile>
 
         // Configure Owned Collections
 
-        // Nin Data
-        builder.OwnsOne(
-            c => c.NinData,
-            nin =>
-            {
-                nin.ToTable("NinData");
-                nin.WithOwner(n => n.Customer).HasForeignKey(c => c.CustomerId);
-
-                nin.Property<Guid>(nk => nk.Id)
-                    .ValueGeneratedOnAdd()
-                    .HasValueGenerator<CustomGuidV7Generator>();
-                nin.HasKey(k => k.Id);
-                nin.HasIndex(k => k.Id).IsUnique();
-            }
-        );
-
-        // Bvn Data
-        builder.OwnsOne(
-            c => c.BvnData,
-            bvn =>
-            {
-                bvn.ToTable("BvnData");
-                bvn.WithOwner(n => n.UserProfile).HasForeignKey(c => c.UserProfileId);
-
-                bvn.Property<Guid>(nk => nk.Id)
-                    .ValueGeneratedOnAdd()
-                    .HasValueGenerator<CustomGuidV7Generator>();
-                bvn.HasKey(k => k.Id);
-                bvn.HasIndex(k => k.Id).IsUnique();
-            }
-        );
-
         // Next of Kin
         builder.OwnsMany(
             c => c.NextOfKins,
@@ -96,11 +64,24 @@ public sealed class UserConfig : IEntityTypeConfiguration<UserProfile>
                 n.ToTable("NextOfKins");
                 n.WithOwner(k => k.Customer).HasForeignKey(k => k.CustomerId);
 
-                n.Property<Guid>(nk => nk.Id)
+                n.Property(nk => nk.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
                 n.HasKey(k => k.Id);
 
+                // strings
+                n.Property(p => p.FirstName).IsRequired().HasMaxLength(100);
+                n.Property(p => p.LastName).IsRequired().HasMaxLength(100);
+                n.Property(p => p.MiddleName).HasMaxLength(100);
+                n.Property(p => p.Nationality).IsRequired().HasMaxLength(100);
+                n.Property(p => p.Occupation).IsRequired().HasMaxLength(100);
+                // contacts
+                n.Property(p => p.Email).HasMaxLength(100);
+                n.Property(p => p.PhoneNumber).IsRequired().HasMaxLength(100);
+                n.Property(p => p.AlternatePhoneNumber).HasMaxLength(100);
+                n.Property(p => p.Address).IsRequired().HasMaxLength(1000);
+
+                // enums
                 n.Property(n => n.Gender).HasConversion<string>().HasMaxLength(20);
                 n.Property(n => n.Relationship).HasConversion<string>().HasMaxLength(50);
                 n.Property(n => n.Category).HasConversion<string>().HasMaxLength(20);
@@ -115,10 +96,17 @@ public sealed class UserConfig : IEntityTypeConfiguration<UserProfile>
                 k.ToTable("KYCDocuments");
                 k.WithOwner(ky => ky.Customer).HasForeignKey(ky => ky.CustomerId);
 
-                k.Property<Guid>(ky => ky.Id)
+                k.Property(ky => ky.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
                 k.HasKey(ky => ky.Id);
+
+                // string
+                k.Property(d => d.DocumentNumber).HasMaxLength(50);
+                k.Property(d => d.VerifiedBy).HasMaxLength(500);
+                k.Property(d => d.VerificationReference).HasMaxLength(500);
+
+                // enums
                 k.Property(d => d.DocumentType).HasConversion<string>().HasMaxLength(50);
                 k.Property(d => d.DocumentMimeType).HasConversion<string>().HasMaxLength(50);
             }
@@ -132,10 +120,16 @@ public sealed class UserConfig : IEntityTypeConfiguration<UserProfile>
                 r.ToTable("RiskAssessments");
                 r.WithOwner(r => r.Customer).HasForeignKey(r => r.CustomerId);
 
-                r.Property<Guid>(r => r.Id)
+                r.Property(r => r.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
                 r.HasKey(r => r.Id);
+
+                // strings
+                r.Property(a => a.Assessor).HasMaxLength(500);
+                r.Property(a => a.Notes).HasMaxLength(2000);
+
+                // enums
                 r.Property(r => r.RiskAssessmentType).HasConversion<string>().HasMaxLength(50);
                 r.Property(r => r.RiskAssessmentSummary).HasConversion<string>().HasMaxLength(50);
                 r.Property(r => r.RiskLevel).HasConversion<string>().HasMaxLength(50);
@@ -150,11 +144,18 @@ public sealed class UserConfig : IEntityTypeConfiguration<UserProfile>
                 cc.ToTable("ComplianceChecks");
                 cc.WithOwner(c => c.UserProfile).HasForeignKey(c => c.UserProfileId);
 
-                cc.Property<Guid>(c => c.Id)
+                cc.Property(c => c.Id)
                     .ValueGeneratedOnAdd()
                     .HasValueGenerator<CustomGuidV7Generator>();
 
                 cc.HasKey(c => c.Id);
+                cc.HasIndex(c => c.UserProfileId);
+
+                // strings
+                cc.Property(c => c.CheckedBy).HasMaxLength(200);
+                cc.Property(c => c.VerificationReference).HasMaxLength(200);
+
+                // enums
                 cc.Property(c => c.CheckType).HasConversion<string>().HasMaxLength(50);
                 cc.Property(c => c.Status).HasConversion<string>().HasMaxLength(50);
             }

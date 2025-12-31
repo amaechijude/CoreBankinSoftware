@@ -2,7 +2,7 @@
 
 namespace CustomerProfile.Entities.ValueObjects;
 
-public class BVN(string value) : IEquatable<BVN>
+public sealed class BVN(string value) : IEquatable<BVN>
 {
     public string Value { get; } = ValidatedBVN(value);
 
@@ -43,7 +43,7 @@ public class BVN(string value) : IEquatable<BVN>
     }
 }
 
-public class BvnData : BaseEntity
+public sealed class BvnData : BaseEntity
 {
     public Guid UserProfileId { get; private init; }
     public UserProfile UserProfile { get; private set; } = null!;
@@ -80,7 +80,6 @@ public class BvnData : BaseEntity
         {
             return null;
         }
-
         ;
 
         return new BvnData

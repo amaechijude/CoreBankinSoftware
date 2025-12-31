@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/Account/">
-    <Project Path="AccountServices.Tests/AccountServices.Tests.csproj" Id="549a045f-7446-4c34-81e3-d37eda3bcbeb" />
     <Project Path="AccountServices/AccountServices.csproj" Id="2d3d8f6a-32fe-47ab-a331-ea817d4d9841" />
   </Folder>
   <Folder Name="/APIGateWay/">
@@ -11,7 +10,6 @@
     <Project Path="CoreBankingSoftware.ServiceDefaults/CoreBankingSoftware.ServiceDefaults.csproj" />
   </Folder>
   <Folder Name="/CustomerProfile/">
-    <Project Path="CustomerProfile.Tests/CustomerProfile.Tests.csproj" Id="439fdd52-08dd-4c58-be59-440eebfccdc2" />
     <Project Path="CustomerProfile/CustomerProfile.csproj" />
   </Folder>
   <Folder Name="/GrpcContracts/">
@@ -21,16 +19,17 @@
   <Folder Name="/KafkaMessages/">
     <Project Path="KafkaMessages/KafkaMessages.csproj" Id="44fd5f97-71ce-4550-8fa7-14d641d156b1" />
   </Folder>
-  <Folder Name="/NewFolder1/" />
   <Folder Name="/Notification/">
     <Project Path="Notification/Notification.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="Directory.Packages.props" />
   </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/CoreBankingSoftwareIntegrationTests/CoreBankingSoftwareIntegrationTests.csproj" Id="95e4f206-901e-41c1-9e0d-ed6aa592088a" />
+    <Project Path="Tests/CoreBankingSoftwareUnitTests/CoreBankingSoftwareUnitTests.csproj" />
+  </Folder>
   <Folder Name="/TransactionService/">
     <Project Path="TransactionService/TransactionService.csproj" Id="dd51a1a0-eac7-43e2-8425-898aa08afafe" />
-    <Project Path="TransactionServices.Tests/TransactionServices.Tests.csproj" Id="3d6d6129-c946-4763-a680-d3fefd8b88e4" />
   </Folder>
-  <Project Path="CoreBankingSoftwareIntegrationTests/CoreBankingSoftwareIntegrationTests.csproj" Id="95e4f206-901e-41c1-9e0d-ed6aa592088a" />
 </Solution>

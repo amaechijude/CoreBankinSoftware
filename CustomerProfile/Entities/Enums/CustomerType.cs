@@ -1,107 +1,109 @@
-namespace CustomerProfile.Entities.Enums
+namespace CustomerProfile.Entities.Enums;
+
+public enum CustomerType
 {
-    public enum CustomerType
-    {
-        Individual,
-        SME,
-        Corporate,
-        NonProfit,
-        Government,
-    }
-    public enum Gender
-    {
-        Male,
-        Female,
-        Other,
-    }
-    public enum CustomerStatus
-    {
-        Active,
-        Inactive,
-        Dormant,
-        Suspended,
-        Terminated,
-        PendingActivation,
-        PendingClosure,
+    Individual,
+    SME,
+    Corporate,
+    NonProfit,
+    Government,
+}
 
-        Closed,
-    }
+public enum Gender
+{
+    Male,
+    Female,
+    Other,
+}
 
-    public enum AccountTier
-    {
-        Tier1,
-        Tier2,
-        Tier3
-    }
-    public enum CustomerSource
-    {
-        Referral,
-        Online,
-        WalkIn,
-        Event,
-        Other,
-    }
+public enum CustomerStatus
+{
+    Active,
+    Inactive,
+    Dormant,
+    Suspended,
+    Terminated,
+    PendingActivation,
+    PendingClosure,
 
-    public enum KYCStatus
-    {
-        NotStarted,
-        InProgress,
-        Completed,
-        Rejected,
-        Expired,
-        UnderReview,
-    }
+    Closed,
+}
 
-    public enum KycDocumentType
-    {
-        Passport,
-        NationalID,
-        DriverLicense,
-        UtilityBill,
-        BankStatement,
-        EmploymentLetter,
-        TaxCertificate,
-        BirthCertificate,
-        MarriageCertificate,
-        DivorceCertificate,
-        Other,
-    }
+public enum AccountTier
+{
+    Tier1,
+    Tier2,
+    Tier3,
+}
 
-    public enum DocumentMimeType
-    {
-        PDF,
-        Image
-    }
+public enum CustomerSource
+{
+    Referral,
+    Online,
+    WalkIn,
+    Event,
+    Other,
+}
 
-    public enum DocumentStatus
-    {
-        Pending,
-        Uploaded,
-        UnderReview,
-        Verified,
-        Rejected,
-        Expired,
-    }
+public enum KYCStatus
+{
+    NotStarted,
+    InProgress,
+    Completed,
+    Rejected,
+    Expired,
+    UnderReview,
+}
 
-    public enum AddressType
-    {
-        Residential,
-        Business,
-        Mailing,
-        Permanent
-    }
+public enum KycDocumentType
+{
+    Passport,
+    NationalID,
+    DriverLicense,
+    UtilityBill,
+    BankStatement,
+    EmploymentLetter,
+    TaxCertificate,
+    BirthCertificate,
+    MarriageCertificate,
+    DivorceCertificate,
+    Other,
+}
 
-    public enum VerificationMethod
-    {
-        Manual,
-        Automated,
-        ThirdParty,
-        SelfService,
-    }
-    public enum ContactMethod
-    {
-        Email,
-        SMS,
-    }
+public enum DocumentMimeType
+{
+    PDF,
+    Image,
+}
 
+public enum DocumentStatus
+{
+    Pending,
+    Uploaded,
+    UnderReview,
+    Verified,
+    Rejected,
+    Expired,
+}
+
+public enum AddressType
+{
+    Residential,
+    Business,
+    Mailing,
+    Permanent,
+}
+
+public enum VerificationMethod
+{
+    Manual,
+    Automated,
+    ThirdParty,
+    SelfService,
+}
+
+public enum ContactMethod
+{
+    Email,
+    SMS,
 }

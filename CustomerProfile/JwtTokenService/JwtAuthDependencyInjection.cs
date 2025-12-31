@@ -6,7 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace CustomerProfile.JwtTokenService;
 
-public sealed record JwtOptions
+public sealed class JwtOptions
 {
     [Required, MinLength(150)]
     public string SecretKey { get; set; } = string.Empty;

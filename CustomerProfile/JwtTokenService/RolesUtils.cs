@@ -1,9 +1,8 @@
-﻿namespace CustomerProfile.JwtTokenService
+﻿namespace CustomerProfile.JwtTokenService;
+
+public static class RolesUtils
 {
-    public static class RolesUtils
-    {
-        public static readonly string VerificationRole = "Verification";
-        public static readonly string UserRole = "UserProfile";
-        public static readonly string AdminRole = "Admin";
-    }
+    public const string VerificationRole = "Verification";
+    public const string UserRole = "UserProfile";
+    public const string AdminRole = "Admin";
 }

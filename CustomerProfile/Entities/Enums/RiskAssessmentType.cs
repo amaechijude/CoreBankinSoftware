@@ -1,25 +1,25 @@
-﻿namespace CustomerProfile.Entities.Enums
-{
-    public enum RiskAssessmentType
-    {
-        MoneyLaundering,
-        Fraud,
-        TerroristFinancing,
-        ProliferationFinancing,
-    }
+﻿namespace CustomerProfile.Entities.Enums;
 
-    public enum RiskAssessmentSummary
-    {
-        Low,
-        Moderate,
-        AboveAverage,
-        High
-    }
-    public enum RiskLevel
-    {
-        Low,
-        Medium,
-        High,
-        Critical,
-    }
+public enum RiskAssessmentType
+{
+    MoneyLaundering,
+    Fraud,
+    TerroristFinancing,
+    ProliferationFinancing,
+}
+
+public enum RiskAssessmentSummary
+{
+    Low,
+    Moderate,
+    AboveAverage,
+    High,
+}
+
+public enum RiskLevel
+{
+    Low,
+    Medium,
+    High,
+    Critical,
 }

@@ -55,7 +55,7 @@ public sealed class Account
         UpdatedAt = DateTimeOffset.UtcNow;
     }
 
-    internal void CreditAccount(decimal amount)
+    public void CreditAccount(decimal amount)
     {
         Balance += amount;
         UpdatedAt = DateTimeOffset.UtcNow;

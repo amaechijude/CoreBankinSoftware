@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace CustomerProfile.JwtTokenService;
 
-public class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
+public sealed class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 

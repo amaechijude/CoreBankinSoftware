@@ -1,9 +1,8 @@
-namespace AccountServices.Entities.Enums
+namespace AccountServices.Entities.Enums;
+
+public enum AccountStatus
 {
-    public enum AccountStatus
-    {
-        Active,
-        Closed,
-        Suspended
-    }
+    Active,
+    Closed,
+    Suspended,
 }

@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<IsPackable>false</IsPackable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" />
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+		<PackageReference Include="Testcontainers.PostgreSql" />
+		<PackageReference Include="xunit" />
+		<PackageReference Include="xunit.runner.visualstudio" />
+		<PackageReference Include="NSubstitute" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\AccountServices\AccountServices.csproj" />
+		<ProjectReference Include="..\..\CustomerProfile\CustomerProfile.csproj" />
+		<ProjectReference Include="..\..\KafkaMessages\KafkaMessages.csproj" />
+		<ProjectReference Include="..\..\Notification\Notification.csproj" />
+		<ProjectReference Include="..\..\TransactionService\TransactionService.csproj" />
+		<ProjectReference Include="..\..\YarpApiGateWay\YarpApiGateWay.csproj" />
+	</ItemGroup>
+
+</Project>

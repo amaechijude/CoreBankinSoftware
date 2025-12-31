@@ -1,11 +1,10 @@
-﻿using CustomerProfile.Global;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using CustomerProfile.Global;
 
 namespace CustomerProfile.Entities;
 
 public sealed class VerificationCode
 {
-    [Key]
     public Guid Id { get; private set; }
     public string Code { get; private set; } = string.Empty;
     public string UserPhoneNumber { get; private set; } = string.Empty;
@@ -15,8 +14,8 @@ public sealed class VerificationCode
     public bool CanSetProfile { get; private set; } = false;
     public bool IsExpired => DateTimeOffset.UtcNow > ExpiresAt;
 
-    private static readonly int _expiryDurationInMinutes = 10;
-    public string ExpiryDuration => $"{_expiryDurationInMinutes} minutes";
+    private const int _expiryDurationInMinutes = 10;
+    public readonly string ExpiryDuration = $"{_expiryDurationInMinutes} minutes";
 
     // Factory method to create
     public static VerificationCode CreateNew(string phoneNumber, string? email)
