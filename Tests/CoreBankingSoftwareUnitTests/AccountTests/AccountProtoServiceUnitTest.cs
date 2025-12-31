@@ -1,4 +1,4 @@
-using System.Reflection;
+using AccountServices;
 using AccountServices.Data;
 using AccountServices.Entities;
 using AccountServices.Entities.Enums;
@@ -12,20 +12,10 @@ using NSubstitute;
 using SharedGrpcContracts.Protos.Account.Operations.V1;
 using Testcontainers.PostgreSql;
 
-namespace AccountServices.Tests;
+namespace CoreBankingSoftwareUnitTests.AccountTests;
 
-public sealed class AccountDatabaseFixture : IAsyncLifetime
-{
-    public PostgreSqlContainer Postgres { get; } =
-        new PostgreSqlBuilder().WithImage("postgres:15-alpine").Build();
-
-    public async Task InitializeAsync() => await Postgres.StartAsync();
-
-    public async Task DisposeAsync() => await Postgres.DisposeAsync();
-}
-
-public sealed class AccountProtoServiceUnitTest(AccountDatabaseFixture fixture)
-    : IClassFixture<AccountDatabaseFixture>,
+public sealed class AccountProtoServiceUnitTest(PostgresqlDatabaseFixture fixture)
+    : IClassFixture<PostgresqlDatabaseFixture>,
         IAsyncLifetime
 {
     // 1. Container Reference
@@ -43,7 +33,7 @@ public sealed class AccountProtoServiceUnitTest(AccountDatabaseFixture fixture)
 
     public async Task InitializeAsync()
     {
-        // B. Setup Database Context (Only AFTER container starts)
+        // Setup Database Context (Only AFTER container starts)
         var options = new DbContextOptionsBuilder<AccountDbContext>()
             .UseNpgsql(_postgres.GetConnectionString())
             .Options;

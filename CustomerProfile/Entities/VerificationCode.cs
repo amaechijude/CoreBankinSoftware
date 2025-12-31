@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using CustomerProfile.Global;
+﻿using CustomerProfile.Global;
 
 namespace CustomerProfile.Entities;
 

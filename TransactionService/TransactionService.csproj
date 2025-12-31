@@ -17,10 +17,6 @@
 	  <PackageReference Include="FluentValidation" />
 	  <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
     <PackageReference Include="Grpc.AspNetCore" />
-    <PackageReference Include="Grpc.Net.Client" />
-    <PackageReference Include="Hangfire.AspNetCore" />
-    <PackageReference Include="Hangfire.Core" />
-    <PackageReference Include="Hangfire.PostgreSql" />
     <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
@@ -29,15 +25,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-	  <PackageReference Include="Quartz" />
-	  <PackageReference Include="Quartz.Extensions.Hosting" />
-	  <PackageReference Include="Quartz.Serialization.Json" />
 	  <PackageReference Include="Scalar.AspNetCore" />
-  </ItemGroup>
-  
- <ItemGroup>
-    <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="client" />
-    <Protobuf Include="..\GrpcContracts\Protos\Accounts\*.proto" GrpcServices="client" />
   </ItemGroup>
   
   <ItemGroup>
@@ -47,6 +35,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
     <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
+    <ProjectReference Include="..\ProtoContracts\ProtoContracts.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,8 @@
+using System.Threading.Channels;
 using FluentValidation;
 using Grpc.Core;
 using Microsoft.Extensions.Caching.Hybrid;
 using SharedGrpcContracts.Protos.Account.Operations.V1;
-using System.Threading.Channels;
 using TransactionService.Data;
 using TransactionService.DTOs.IntraBank;
 using TransactionService.Entity;

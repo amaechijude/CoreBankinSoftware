@@ -3,7 +3,7 @@ using SharedGrpcContracts.Protos.Account.Operations.V1;
 
 namespace AccountServices.Validators;
 
-public sealed class CreateAccountRequestValidator : AbstractValidator<CreateAccountRequest>
+public class CreateAccountRequestValidator : AbstractValidator<CreateAccountRequest>
 {
     public CreateAccountRequestValidator()
     {

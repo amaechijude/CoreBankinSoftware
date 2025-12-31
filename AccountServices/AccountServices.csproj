@@ -24,13 +24,14 @@
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!-- <ItemGroup>
     <Protobuf Include="..\GrpcContracts\Protos\Accounts\*.proto" GrpcServices="server" />
-  </ItemGroup>
+  </ItemGroup> -->
 
   <ItemGroup>
     <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
     <ProjectReference Include="..\KafkaMessages\KafkaMessages.csproj" />
+    <ProjectReference Include="..\ProtoContracts\ProtoContracts.csproj" />
   </ItemGroup>
 
 </Project>

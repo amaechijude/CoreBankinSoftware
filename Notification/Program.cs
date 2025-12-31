@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using Confluent.Kafka;
 using CoreBankingSoftware.ServiceDefaults;
 using KafkaMessages;
@@ -9,6 +8,7 @@ using Notification.Email;
 using Notification.SMS;
 using Polly;
 using Serilog;
+using System.Net.Sockets;
 
 var builder = WebApplication.CreateBuilder(args);
 

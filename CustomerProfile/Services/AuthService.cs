@@ -1,4 +1,3 @@
-using System.Threading.Channels;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
 using CustomerProfile.Entities;
@@ -7,6 +6,7 @@ using CustomerProfile.Messaging.SMS;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Channels;
 
 namespace CustomerProfile.Services;
 

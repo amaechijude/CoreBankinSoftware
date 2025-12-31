@@ -46,7 +46,7 @@ internal sealed class EmailService(
         {
             _logger.LogError(ex, "Failed to send email");
             return false;
-}
+        }
     }
 
     private async Task SendViaMailKitAsync(MimeMessage mimeMessage, CancellationToken cancellationToken)

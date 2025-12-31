@@ -77,17 +77,15 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder
-    .Services.AddHttpClient<NibssService>(
-        (provider, client) =>
-        {
-            var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
-            client.BaseAddress = new Uri(nibssOptions.BaseUrl);
-            client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
-            client.DefaultRequestHeaders.Add("Accept", "application/xml");
-        }
-    )
-    .AddStandardResilienceHandler();
+builder.Services.AddHttpClient<NibssService>(
+    (provider, client) =>
+    {
+        var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;
+        client.BaseAddress = new Uri(nibssOptions.BaseUrl);
+        client.DefaultRequestHeaders.Add("api_key", nibssOptions.ApiKey);
+        client.DefaultRequestHeaders.Add("Accept", "application/xml");
+    }
+);
 
 builder.Services.AddResiliencePipeline(
     "key",
@@ -112,14 +110,12 @@ builder.Services.AddResiliencePipeline(
 );
 
 // Grpc clients with aspire
-builder
-    .Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
-        options =>
-        {
-            options.Address = new Uri("https://accountservices");
-        }
-    )
-    .AddStandardResilienceHandler();
+builder.Services.AddGrpcClient<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>(
+    options =>
+    {
+        options.Address = new Uri("https://accountservices");
+    }
+);
 
 builder
     .Services.AddGrpcClient<CustomerNotificationGrpcPrefrenceService.CustomerNotificationGrpcPrefrenceServiceClient>(

@@ -28,9 +28,9 @@ public record TransferResponseIntra(
     string TransactionReference
 );
 
-public sealed class TransferValidator : AbstractValidator<TransferRequestIntra>
+public class TransferRequestValidator : AbstractValidator<TransferRequestIntra>
 {
-    public TransferValidator()
+    public TransferRequestValidator()
     {
         RuleFor(x => x.DestinationAccountNumber)
             .NotEmpty()

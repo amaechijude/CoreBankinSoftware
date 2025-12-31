@@ -1,9 +1,9 @@
-﻿using System.Security.Claims;
-using CustomerProfile.DTO;
+﻿using CustomerProfile.DTO;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CustomerProfile.Controlllers;
 
