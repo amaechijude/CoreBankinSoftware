@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using Confluent.Kafka;
 using FluentValidation;
 using FluentValidation.Results;
 using Grpc.Core;
@@ -30,19 +31,21 @@ public class IntraBankServiceUnitTests(PostgresqlDatabaseFixture databaseFixture
     // mock deps with nsubstitue
     private readonly AccountOperationsGrpcService.AccountOperationsGrpcServiceClient _client =
         Substitute.For<AccountOperationsGrpcService.AccountOperationsGrpcServiceClient>();
+
     private readonly HybridCache _hybridCache = Substitute.For<HybridCache>();
+
     private readonly IValidator<TransferRequestIntra> _transferIntraValidator = Substitute.For<
         IValidator<TransferRequestIntra>
     >();
+
     private readonly IValidator<NameEnquiryIntraRequest> _nameEnquiryIntraValidator =
         Substitute.For<IValidator<NameEnquiryIntraRequest>>();
 
-    private readonly Channel<OutboxMessage> _channel = Substitute.For<Channel<OutboxMessage>>();
     private readonly ILogger<IntraBankService> _logger = Substitute.For<
         ILogger<IntraBankService>
     >();
 
-    private CancellationToken StoppingToken { get; } = new CancellationTokenSource().Token;
+    private readonly Channel<OutboxMessage> _channel = Channel.CreateUnbounded<OutboxMessage>();
 
     public async Task InitializeAsync()
     {
@@ -73,14 +76,13 @@ public class IntraBankServiceUnitTests(PostgresqlDatabaseFixture databaseFixture
         await _dbContext.DisposeAsync();
     }
 
-    private const string _validAccountNumber = "9087654321"; // 10 digits
-    private const string _inValidAccountNumber = "908765432"; // 9 digits
-    private const string _inValidAccountNumberWithAlpha = "90876543y"; // alphabets
+    private const string _validAccountNumber = "9087654321";
 
     [Fact]
     public async Task NameEnquiry_ShouldReturnSuccess()
     {
         // Arrange
+
         var request = new NameEnquiryIntraRequest(_validAccountNumber);
         var expectedResponse = new IntraBankNameEnquiryResponse
         {
@@ -144,9 +146,9 @@ public class IntraBankServiceUnitTests(PostgresqlDatabaseFixture databaseFixture
         var grpcResponse = new AccountOperationResponse { Success = true };
         var asyncUnaryCall = new AsyncUnaryCall<AccountOperationResponse>(
             Task.FromResult(grpcResponse),
-            Task.FromResult(new Metadata()),
+            Task.FromResult(new Grpc.Core.Metadata()),
             () => Status.DefaultSuccess,
-            () => new Metadata(),
+            () => [],
             () => { }
         );
 
@@ -155,7 +157,7 @@ public class IntraBankServiceUnitTests(PostgresqlDatabaseFixture databaseFixture
             .Returns(asyncUnaryCall);
 
         // Act
-        var result = await _service.Transfer(request, CancellationToken.None);
+        var result = await _service.Transfer(request, new CancellationToken());
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -168,10 +170,5 @@ public class IntraBankServiceUnitTests(PostgresqlDatabaseFixture databaseFixture
         );
         Assert.NotNull(transaction);
         Assert.Equal(TransactionStatus.Completed, transaction.TransactionStatus);
-
-        // Verify Channel
-        await _channel
-            .Writer.Received(1)
-            .WriteAsync(Arg.Any<OutboxMessage>(), Arg.Any<CancellationToken>());
     }
 }

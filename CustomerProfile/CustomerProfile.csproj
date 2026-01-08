@@ -47,9 +47,6 @@
     <Folder Include="Logs\" />
   </ItemGroup>
   <ItemGroup>
-    <Protobuf Include="..\GrpcContracts\Protos\Profiles\*.proto" GrpcServices="both" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
   </ItemGroup>
 

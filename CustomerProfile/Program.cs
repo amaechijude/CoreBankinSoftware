@@ -1,3 +1,4 @@
+using System.Threading.Channels;
 using CoreBankingSoftware.ServiceDefaults;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
@@ -12,7 +13,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
-using System.Threading.Channels;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +38,8 @@ builder.Services.AddSerilog(); // <-- serilog
 
 builder.Services.AddGrpc();
 
-// fluent validations
+// validations
+builder.Services.AddValidation();
 builder.Services.AddValidatorsFromAssemblyContaining<OnboardingRequestValidator>(
     ServiceLifetime.Singleton
 );
@@ -122,7 +123,7 @@ builder.Services.AddSingleton(
 builder.Services.AddHostedService<SMSBackgroundService>();
 
 // Add Jwt Authentication and Services
-builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<OnboardService>();
 builder.Services.AddJwtAuthDependencyInjection(builder.Configuration);
 builder.Services.AddAuthorization(); // Authorization Service
 

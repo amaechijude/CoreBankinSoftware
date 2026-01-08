@@ -35,7 +35,7 @@ public sealed class TransactionData
     public string? Longitude { get; private init; }
     public string? Latitude { get; private init; }
 
-    public ICollection<TransactionStatusLog> TransactionStatusLogs { get; private init; } = [];
+    public ICollection<TransactionStatusLog> TransactionStatusLogs { get; set; } = [];
 
     // static method to create
     public static TransactionData Create(
@@ -66,7 +66,6 @@ public sealed class TransactionData
             IpAddress = request.IpAddress,
             Longitude = request.Longitude,
             Latitude = request.Latitude,
-            TransactionStatusLogs = [],
         };
         var log = TransactionStatusLog.Create(txn, TransactionStatus.Initiated, "Initiated");
         txn.TransactionStatusLogs.Add(log);
@@ -102,13 +101,11 @@ public sealed class TransactionData
             IpAddress = request.IpAddress,
             Longitude = request.Longitude,
             Latitude = request.Latitude,
-            TransactionStatusLogs = [],
         };
         var log = TransactionStatusLog.Create(txn, TransactionStatus.Initiated, "Initiated");
         txn.TransactionStatusLogs.Add(log);
         return txn;
     }
-
 
     public void UpdateStatus(TransactionStatus status, string description)
     {

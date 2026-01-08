@@ -35,6 +35,7 @@ public sealed class TransactionConfig : IEntityTypeConfiguration<TransactionData
             t => t.TransactionStatusLogs,
             logs =>
             {
+                logs.ToTable("transaction_status_logs");
                 logs.WithOwner(st => st.TransactionData).HasForeignKey(st => st.TransactionId);
                 logs.HasKey(st => st.Id);
                 logs.Property(st => st.CurrentStatus).HasConversion<string>();

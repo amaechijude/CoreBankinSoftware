@@ -1,33 +1,35 @@
+using System.Threading.Channels;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
 using CustomerProfile.Entities;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Messaging.SMS;
 using FluentValidation;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Channels;
 
 namespace CustomerProfile.Services;
 
-public sealed class AuthService(
+public sealed class OnboardService(
     UserProfileDbContext context,
-    ILogger<AuthService> logger,
+    ILogger<OnboardService> logger,
     JwtTokenProviderService jwtTokenProvider,
-    Channel<SendSMSCommand> smsChannel
+    Channel<SendSMSCommand> smsChannel,
+    IValidator<OnboardingRequest> onboardingValidator
 )
 {
     private readonly UserProfileDbContext _context = context;
-    private readonly ILogger<AuthService> _logger = logger;
+    private readonly ILogger<OnboardService> _logger = logger;
     private readonly JwtTokenProviderService _jwtTokenProvider = jwtTokenProvider;
     private readonly Channel<SendSMSCommand> _smsChannel = smsChannel;
+    private readonly IValidator<OnboardingRequest> _onboardingValidator = onboardingValidator;
 
     private readonly PasswordHasher<UserProfile> _passwordHasher = new();
 
-    public async Task<ApiResponse<OnboardingResponse>> InitiateOnboard(OnboardingRequest command)
+    public async Task<ApiResponse<OnboardingResponse>> InitiateOnboard(OnboardingRequest command, CancellationToken ct)
     {
-        var validator = new OnboardingRequestValidator();
-        var validationResult = await validator.ValidateAsync(command);
+        var validationResult = await _onboardingValidator.ValidateAsync(command, ct);
         if (!validationResult.IsValid)
         {
             return ApiResponse<OnboardingResponse>.Error(
@@ -35,13 +37,13 @@ public sealed class AuthService(
             );
         }
 
-        var user = await _context.UserProfiles.FirstOrDefaultAsync(c =>
+        var user = await _context.UserProfiles.AsNoTracking().FirstOrDefaultAsync(c =>
             c.PhoneNumber == command.PhoneNumber
-        );
+, cancellationToken: ct);
         if (user is not null)
         {
             var message = "Someone tried to sign up with your phone number";
-            await _smsChannel.Writer.WriteAsync(new SendSMSCommand(user.PhoneNumber, message));
+            await _smsChannel.Writer.WriteAsync(new SendSMSCommand(user.PhoneNumber, message), ct);
             return ApiResponse<OnboardingResponse>.Error(
                 "Phone Number already registered, Try Login"
             );
@@ -50,11 +52,12 @@ public sealed class AuthService(
         return await HandleOtp(command.PhoneNumber, command.Email);
     }
 
-    public async Task<ApiResponse<string>> VerifyOtpAsync(Guid vId, OtpVerifyRequestBody request)
+    public async Task<ApiResponse<string>> VerifyOtpAsync(Guid vId, OtpVerifyRequestBody request, CancellationToken ct)
     {
+        await using var transaction = await _context.Database.BeginTransactionAsync(ct);
         var verificationCode = await _context
             .VerificationCodes.Where(v => v.Id == vId && v.Code == request.OtpCode)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken: ct);
 
         if (verificationCode is null)
         {
@@ -67,7 +70,13 @@ public sealed class AuthService(
         }
 
         verificationCode.MarkIsUsedAndCanSetProfile();
-        await _context.SaveChangesAsync();
+        var user = CreateUser(verificationCode);
+        _context.UserProfiles.Add(user);
+
+        //var message = 
+        await _context.SaveChangesAsync(ct);
+        await _context.VerificationCodes.Where(v => v.Id == vId).ExecuteDeleteAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return ApiResponse<string>.Success("Success");
     }
@@ -167,23 +176,23 @@ public sealed class AuthService(
             .VerificationCodes.Where(v => v.UserPhoneNumber == phoneNumber)
             .FirstOrDefaultAsync();
 
-        if (existingCode is not null)
+        if (existingCode is null)
         {
-            existingCode.UpdateCode();
-            await _context.SaveChangesAsync();
-            var (tokn, expireIn) = _jwtTokenProvider.GenerateVerificationResponseJwtToken(
-                existingCode
-            );
-            await EnqueueSms(existingCode.UserPhoneNumber, existingCode.Code);
-            return ApiResponse<OnboardingResponse>.Success(new OnboardingResponse(tokn, expireIn));
-        }
-        var newCode = VerificationCode.CreateNew(phoneNumber, email);
+            var newCode = VerificationCode.CreateNew(phoneNumber, email);
 
-        await _context.VerificationCodes.AddAsync(newCode);
+            await _context.VerificationCodes.AddAsync(newCode);
+            await _context.SaveChangesAsync();
+            var (token, expiresIn) = _jwtTokenProvider.GenerateVerificationResponseJwtToken(newCode);
+            await EnqueueSms(phoneNumber, newCode.Code);
+            return ApiResponse<OnboardingResponse>.Success(new OnboardingResponse(token, expiresIn));
+        }
+        existingCode.UpdateCode();
         await _context.SaveChangesAsync();
-        var (token, expiresIn) = _jwtTokenProvider.GenerateVerificationResponseJwtToken(newCode);
-        await EnqueueSms(phoneNumber, newCode.Code);
-        return ApiResponse<OnboardingResponse>.Success(new OnboardingResponse(token, expiresIn));
+        var (tokn, expireIn) = _jwtTokenProvider.GenerateVerificationResponseJwtToken(
+            existingCode
+        );
+        await EnqueueSms(existingCode.UserPhoneNumber, existingCode.Code);
+        return ApiResponse<OnboardingResponse>.Success(new OnboardingResponse(tokn, expireIn));
     }
 
     private async Task EnqueueSms(string phoneNumber, string code)
@@ -206,5 +215,12 @@ public sealed class AuthService(
             user.ImageUrl,
             jwt
         );
+    }
+
+    private static UserProfile CreateUser(VerificationCode code)
+    {
+        var username = code.UserEmail[0..code.UserEmail.IndexOf('@')];
+
+        return UserProfile.CreateNewUser(code.UserPhoneNumber, code.UserEmail, username);
     }
 }

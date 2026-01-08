@@ -27,6 +27,6 @@ public sealed record VerifyOtpResponse(string Message);
 
 public sealed class OtpVerifyRequestBody
 {
-    [Required, MinLength(6)]
+    [Required, MinLength(6), MaxLength(7)]
     public string OtpCode { get; set; } = string.Empty;
 }

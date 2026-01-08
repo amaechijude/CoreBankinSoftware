@@ -88,42 +88,24 @@ public sealed class IntraBankService(
                 errors
             );
         }
-
         // create transaction in db
-        var sessionId = TransactionIdGenerator.GenerateSessionId(
-            request.SenderAccountNumber,
-            request.DestinationAccountNumber
-        );
-        var transactionData = TransactionData.Create(
-            request: request,
-            transactionType: TransactionType.Transfer,
-            reference: $"TXN{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
-            category: TransactionCategory.INTRA_BANK_TRANSFER,
-            sessionId: sessionId
-        );
+        var transactionData = NewTransactionData(request);
         _dbContext.Transactions.Add(transactionData);
-        await _dbContext.SaveChangesAsync(ct); // save initial state to db
 
         // synchronous call to account service via grpc
         var response = await CallGrpcTransferService(request, ct);
 
-        if (response is null)
+        if (response is null || response.Success == false)
         {
-            transactionData.UpdateStatus(TransactionStatus.Failed, "Transaction failed");
-            await _dbContext.SaveChangesAsync(ct);
-            return ApiResultResponse<TransferResponseIntra>.Error("Transfer failed");
-        }
-        if (!response.Success)
-        {
-            var error = string.IsNullOrWhiteSpace(response.Error)
+            var error = string.IsNullOrWhiteSpace(response?.Error)
                 ? "Transfer failed"
                 : response.Error;
 
             transactionData.UpdateStatus(TransactionStatus.Failed, error);
             await _dbContext.SaveChangesAsync(ct);
-
             return ApiResultResponse<TransferResponseIntra>.Error(error);
         }
+
         // update transaction status in db
         transactionData.UpdateStatus(TransactionStatus.Completed, "Transaction completed");
         var outbox = OutboxMessage.Create(transactionData);
@@ -134,11 +116,11 @@ public sealed class IntraBankService(
             Amount: request.Amount,
             Status: response.Success ? "Success" : "Failed",
             TransactionDateTime: DateTimeOffset.UtcNow,
-            SessionID: sessionId,
+            SessionID: transactionData.SessionId,
             TransactionReference: transactionData.TransactionReference
         );
 
-        await _channel.Writer.WriteAsync(outbox, ct);
+        // await _channel.Writer.WriteAsync(outbox, ct);
 
         return ApiResultResponse<TransferResponseIntra>.Success(data);
     }
@@ -210,5 +192,21 @@ public sealed class IntraBankService(
             }
             return null;
         }
+    }
+
+    private static TransactionData NewTransactionData(TransferRequestIntra request)
+    {
+        // create transaction in db
+        var sessionId = TransactionIdGenerator.GenerateSessionId(
+            request.SenderAccountNumber,
+            request.DestinationAccountNumber
+        );
+        return TransactionData.Create(
+            request: request,
+            transactionType: TransactionType.Transfer,
+            reference: $"TXN{DateTimeOffset.UtcNow:yyyyMMddHHmmss}",
+            category: TransactionCategory.INTRA_BANK_TRANSFER,
+            sessionId: sessionId
+        );
     }
 };

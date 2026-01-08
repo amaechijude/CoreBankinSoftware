@@ -11,12 +11,12 @@ namespace TransactionService.Services;
 
 public sealed class NipInterBankService(
     TransactionDbContext dbContext,
-    NibssService nibssService,
+    INibssService nibssService,
     IValidator<NameEnquiryRequest> nameEnquiryValidator,
     IValidator<FundCreditTransferRequest> fundCreditTransferValidator
 )
 {
-    private readonly NibssService _nibssService = nibssService;
+    private readonly INibssService _nibssService = nibssService;
     private readonly TransactionDbContext _dbContext = dbContext;
     private readonly IValidator<NameEnquiryRequest> _nameEnquiryValidator = nameEnquiryValidator;
     private readonly IValidator<FundCreditTransferRequest> _fundCreditTransferValidator =
@@ -122,7 +122,6 @@ public sealed class NipInterBankService(
         );
         // Add the initial record to the context before the external call.
         _dbContext.Transactions.Add(transactionData);
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
         var (data, error) = await _nibssService.FundTransferCreditAsync(
             fctRequest,

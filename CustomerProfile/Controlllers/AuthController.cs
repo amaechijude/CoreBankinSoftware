@@ -1,15 +1,15 @@
-﻿using CustomerProfile.DTO;
+﻿using System.Security.Claims;
+using CustomerProfile.DTO;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace CustomerProfile.Controlllers;
 
 [Route("api/[controller]/register")]
 [ApiController]
-public sealed class AuthController(AuthService _onboardingCommandHandler) : ControllerBase
+public sealed class AuthController(OnboardService _onboardingCommandHandler) : ControllerBase
 {
     [HttpPost("send-otp")]
     public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)

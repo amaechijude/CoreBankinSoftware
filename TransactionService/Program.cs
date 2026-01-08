@@ -70,14 +70,14 @@ builder.Services.AddHybridCache(options =>
     };
 });
 
-// Mock Nibss Service Http typed client with xml accept header
+// Nibss Service Http typed client with xml accept header
 builder
     .Services.Configure<NibssOptions>(builder.Configuration.GetSection("NibbsSettings"))
     .AddOptions<NibssOptions>()
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddHttpClient<NibssService>(
+builder.Services.AddHttpClient<INibssService, NibssService>(
     (provider, client) =>
     {
         var nibssOptions = provider.GetRequiredService<IOptions<NibssOptions>>().Value;

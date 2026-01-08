@@ -8,7 +8,7 @@ namespace TransactionService.NIBBS;
 public sealed class NibssService(
     HttpClient client,
     ResiliencePipelineProvider<string> pipelineProvider
-)
+) : INibssService
 {
     private readonly HttpClient _client = client;
     private readonly ResiliencePipeline _pipeline = pipelineProvider.GetPipeline("key");
