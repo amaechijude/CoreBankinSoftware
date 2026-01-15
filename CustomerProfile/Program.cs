@@ -2,6 +2,7 @@ using System.Threading.Channels;
 using CoreBankingSoftware.ServiceDefaults;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
+using CustomerProfile.Entities;
 using CustomerProfile.External;
 using CustomerProfile.Global;
 using CustomerProfile.JwtTokenService;
@@ -9,6 +10,7 @@ using CustomerProfile.Messaging.SMS;
 using CustomerProfile.Services;
 using FaceAiSharp;
 using FluentValidation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
@@ -123,6 +125,8 @@ builder.Services.AddSingleton(
 builder.Services.AddHostedService<SMSBackgroundService>();
 
 // Add Jwt Authentication and Services
+
+builder.Services.AddScoped<IPasswordHasher<UserProfile>, PasswordHasher<UserProfile>>();
 builder.Services.AddScoped<OnboardService>();
 builder.Services.AddJwtAuthDependencyInjection(builder.Configuration);
 builder.Services.AddAuthorization(); // Authorization Service

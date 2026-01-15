@@ -1,5 +1,5 @@
-﻿using FluentValidation;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 namespace CustomerProfile.DTO;
 
@@ -7,7 +7,7 @@ public sealed record OnboardingRequest(string PhoneNumber, string Email);
 
 public sealed record OnboardingResponse(string Token, DateTime? ExpiresIn);
 
-public sealed class OnboardingRequestValidator : AbstractValidator<OnboardingRequest>
+public class OnboardingRequestValidator : AbstractValidator<OnboardingRequest>
 {
     public OnboardingRequestValidator()
     {
@@ -16,17 +16,38 @@ public sealed class OnboardingRequestValidator : AbstractValidator<OnboardingReq
             .WithMessage("Phone number is required.")
             .Length(11)
             .WithMessage("Phone number lenght Must be 11")
-            .Matches(@"^(\+234|0)?[789]\d{9}$")
-            .WithMessage("Invalid phone number format");
-
-        RuleFor(x => x.Email.Trim()).EmailAddress().WithMessage("Invalid Email Address");
+            .Matches("[0-9]")
+            .WithMessage("Phone number must contain only digits.");
     }
+
+    private bool IsAllDigit(string phoneNumber) => phoneNumber.All(char.IsDigit);
 }
 
-public sealed record VerifyOtpResponse(string Message);
+public sealed record VerifyOtpResponse(Guid SessionId, string Message);
 
-public sealed class OtpVerifyRequestBody
+public sealed record OtpVerifyRequestBody([Required, MinLength(6), MaxLength(7)] string OtpCode);
+
+public sealed record SetSixDigitPinRequest(
+    [Required, StringLength(6)] string Pin,
+    [Required] string ConfirmPin
+);
+
+public class SetSixDigitPinRequestValidator : AbstractValidator<SetSixDigitPinRequest>
 {
-    [Required, MinLength(6), MaxLength(7)]
-    public string OtpCode { get; set; } = string.Empty;
+    public SetSixDigitPinRequestValidator()
+    {
+        RuleFor(x => x.Pin)
+            .NotEmpty()
+            .WithMessage("Pin is required")
+            .Length(6)
+            .WithMessage("Pin must be 6 characters long")
+            .Matches("[0-9]")
+            .WithMessage("Pin must contain only digits");
+
+        RuleFor(x => x.ConfirmPin)
+            .NotEmpty()
+            .WithMessage("Confirm pin is required")
+            .Equal(x => x.Pin)
+            .WithMessage("Confirm pin must match pin");
+    }
 }

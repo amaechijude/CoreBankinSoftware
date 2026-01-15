@@ -1,9 +1,9 @@
-using FluentValidation;
 using System.ComponentModel.DataAnnotations;
+using FluentValidation;
 
 namespace CustomerProfile.DTO;
 
-public sealed record Jwt(string Token, DateTime? ExpiresIn);
+public sealed record Jwt(string Token);
 
 public sealed record UserProfileResponse(
     Guid Id,

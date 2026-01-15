@@ -44,8 +44,10 @@ public sealed class UserProfile
     public string Username { get; private set; } = string.Empty;
     public string Email { get; private set; } = string.Empty;
     public string? AlternateEmail { get; private set; }
-    public required string PhoneNumber { get; set; }
+    public string PhoneNumber { get; private set; } = string.Empty;
+    public string InternationalPhoneNumber { get; private set; } = string.Empty;
     public string? AlternatePhoneNumber { get; private set; }
+    public OnboardingStage OnboardingStage { get; private set; } = OnboardingStage.VerifiedPhoneOtp;
 
     // Nigerian Banking Specific Identifiers
     public string BvnHash { get; private set; } = string.Empty; // Bank Verification Number
@@ -64,11 +66,11 @@ public sealed class UserProfile
 
     // Compliance and Risk
     public bool IsPoliticallyExposedPerson { get; private set; } = false;
-    public DateTimeOffset? PoliticallyExposedPersonSince { get; set; }
-    public bool IsWatchlisted { get; set; } = false;
-    public DateTimeOffset? WatchlistScreenedAt { get; set; }
-    public DateTimeOffset? WatchlistScreenedUntil { get; set; }
-    public DateTimeOffset? LastAMLScreening { get; set; }
+    public DateTimeOffset? PoliticallyExposedPersonSince { get; private set; }
+    public bool IsWatchlisted { get; private set; } = false;
+    public DateTimeOffset? WatchlistScreenedAt { get; private set; }
+    public DateTimeOffset? WatchlistScreenedUntil { get; private set; }
+    public DateTimeOffset? LastAMLScreening { get; private set; }
 
     // Helper Properties
     public string FullName => $"{FirstName} {MiddleName} {LastName}";
@@ -82,14 +84,22 @@ public sealed class UserProfile
         && LastTransactionDate.Value < DateTimeOffset.Now.AddDays(-365);
 
     // Factory methods to create user
-    public static UserProfile CreateNewUser(string phoneNumber, string email, string username)
+    public static UserProfile CreateNewUser(string phoneNumber)
     {
+        if (
+            string.IsNullOrWhiteSpace(phoneNumber)
+            || !phoneNumber.All(char.IsDigit)
+            || phoneNumber.Length != 11
+        )
+        {
+            throw new InvalidPhoneNumberException("Invalid phone number");
+        }
         return new UserProfile
         {
             Id = Guid.CreateVersion7(),
             PhoneNumber = phoneNumber,
-            Email = email,
-            Username = username,
+            UserAccountNumber = phoneNumber[1..],
+            InternationalPhoneNumber = "+234" + phoneNumber[1..],
             CreatedAt = DateTimeOffset.UtcNow,
         };
     }
@@ -135,3 +145,7 @@ public sealed class UserProfile
 
     public bool BvnExists => BvnData is not null && !string.IsNullOrWhiteSpace(BvnBase64Image);
 }
+
+internal sealed class InvalidPhoneNumberException(string message) : Exception(message);
+
+internal sealed class InvalidEmailException(string message) : Exception(message);

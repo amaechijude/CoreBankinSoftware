@@ -2,7 +2,33 @@
 
 namespace CustomerProfile.DTO;
 
-public sealed record LoginRequest(string UsernameOrPhone, string Password);
+public sealed record LoginRequest(string PhoneNumber, string Pin);
+
+public class LoginRequestValidator : AbstractValidator<LoginRequest>
+{
+    public LoginRequestValidator()
+    {
+        RuleFor(x => x.PhoneNumber)
+            .NotEmpty()
+            .WithMessage("Phone number is required.")
+            .Length(11)
+            .WithMessage("Phone number lenght Must be 11")
+            .Matches("[0-9]")
+            .WithMessage("Phone number must contain only digits.");
+
+        RuleFor(x => x.Pin)
+            .NotEmpty()
+            .WithMessage("Password is required.")
+            .Length(6)
+            .WithMessage("Pin must be 6 characters long.")
+            .Matches("[0-9]")
+            .WithMessage("Pin number must contain only digits.");
+    }
+}
+
+public record LoginResponse(string Token, string RefreshToken);
+
+public sealed record RefreshTokenRequest(string AccessToken, string RefreshToken);
 
 public sealed record ForgotPasswordRequest(string PhoneNumber);
 

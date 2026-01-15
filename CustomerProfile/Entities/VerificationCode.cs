@@ -17,18 +17,17 @@ public sealed class VerificationCode
     public readonly string ExpiryDuration = $"{_expiryDurationInMinutes} minutes";
 
     // Factory method to create
-    public static VerificationCode CreateNew(string phoneNumber, string? email)
+    public static VerificationCode CreateNew(string phoneNumber)
     {
         return new VerificationCode
         {
             UserPhoneNumber = phoneNumber,
-            UserEmail = email ?? string.Empty,
             Code = GlobalUtils.GenerateVerificationCode(),
             ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_expiryDurationInMinutes),
         };
     }
 
-    public void MarkIsUsedAndCanSetProfile()
+    public void MarkVerifiedAndCanSetProfile()
     {
         IsUsed = true;
         ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(-1);
@@ -40,5 +39,6 @@ public sealed class VerificationCode
         Code = GlobalUtils.GenerateVerificationCode();
         ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(_expiryDurationInMinutes);
         IsUsed = false;
+        CanSetProfile = false;
     }
 }
