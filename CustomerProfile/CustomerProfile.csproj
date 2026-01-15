@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CoreBankingSoftware.ServiceDefaults\CoreBankingSoftware.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\ProtoContracts\ProtoContracts.csproj" />
   </ItemGroup>
 
 </Project>
