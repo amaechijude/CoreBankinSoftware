@@ -24,7 +24,7 @@ public sealed class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
         return GetAccesToken(claims: claims, expiryInMinutes: 15 * 4);
     }
 
-    public string GenerateUserJwtToken(UserProfile user)
+    public (string accessToken, string refreshToken) GenerateUserJwtToken(UserProfile user)
     {
         var claims = new ClaimsIdentity(
             [
@@ -32,7 +32,7 @@ public sealed class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
                 new Claim(ClaimTypes.Role, RolesUtils.UserRole),
             ]
         );
-        return GetAccesToken(claims: claims, expiryInMinutes: 15);
+        return (GetAccesToken(claims: claims, expiryInMinutes: 15), GenerateRefreshToken());
     }
 
     public async Task<ClaimsPrincipal?> ValidateToken(string token)
@@ -80,6 +80,14 @@ public sealed class JwtTokenProviderService(IOptions<JwtOptions> jwtOptions)
         {
             return null;
         }
+    }
+
+    private static string GenerateRefreshToken()
+    {
+        var randomBytes = new byte[32];
+        using var rng = System.Security.Cryptography.RandomNumberGenerator.Create();
+        rng.GetBytes(randomBytes);
+        return Convert.ToBase64String(randomBytes);
     }
 
     private string GetAccesToken(ClaimsIdentity claims, int expiryInMinutes)

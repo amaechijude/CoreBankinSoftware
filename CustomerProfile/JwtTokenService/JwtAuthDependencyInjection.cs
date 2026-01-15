@@ -22,7 +22,7 @@ public sealed class JwtOptions
 
 public static class JwtAuthDependencyInjection
 {
-    private const string TOKEN_HEADER_NAME = "X-Auth-Token";
+    public const string TOKEN_HEADER_NAME = "X-Auth-Token";
 
     private static IServiceCollection AddJwtAuthentication(this IServiceCollection services)
     {
@@ -82,9 +82,13 @@ public static class JwtAuthDependencyInjection
                             }
                             return Task.CompletedTask;
                         },
+                        // falback to cookies auth
                         OnMessageReceived = context =>
                         {
-                            context.Token = context.Request.Headers[TOKEN_HEADER_NAME];
+                            if (context.Request.Cookies.ContainsKey(TOKEN_HEADER_NAME))
+                            {
+                                context.Token = context.Request.Cookies[TOKEN_HEADER_NAME];
+                            }
                             return Task.CompletedTask;
                         },
                     };

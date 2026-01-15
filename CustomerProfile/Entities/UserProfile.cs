@@ -49,6 +49,14 @@ public sealed class UserProfile
     public string? AlternatePhoneNumber { get; private set; }
     public OnboardingStage OnboardingStage { get; private set; } = OnboardingStage.VerifiedPhoneOtp;
 
+    // Refresh Token
+    public string? RefreshToken { get; private set; }
+    public DateTimeOffset? RefreshTokenExpires { get; private set; }
+    public DateTimeOffset? RefreshTokenRevoked { get; private set; }
+    public bool IsRefreshTokenRevoked => RefreshTokenRevoked is not null;
+    public bool IsRefreshTokenExpired =>
+        RefreshTokenExpires is not null && RefreshTokenExpires < DateTimeOffset.UtcNow;
+
     // Nigerian Banking Specific Identifiers
     public string BvnHash { get; private set; } = string.Empty; // Bank Verification Number
     public string NinHash { get; private set; } = string.Empty; // National Identification Number
@@ -102,6 +110,23 @@ public sealed class UserProfile
             InternationalPhoneNumber = "+234" + phoneNumber[1..],
             CreatedAt = DateTimeOffset.UtcNow,
         };
+    }
+
+    public void SetRefreshToken(string token)
+    {
+        RefreshToken = token;
+        RefreshTokenExpires = DateTimeOffset.UtcNow.AddDays(7);
+        RefreshTokenRevoked = null;
+    }
+
+    public void UpdateRefreshToken(string token)
+    {
+        SetRefreshToken(token);
+    }
+
+    public void RevokeRefreshToken()
+    {
+        RefreshTokenRevoked = DateTimeOffset.UtcNow;
     }
 
     public void AddPasswordHash(string passwordHash)

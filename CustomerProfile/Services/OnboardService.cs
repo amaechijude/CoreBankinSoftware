@@ -139,7 +139,7 @@ public sealed class OnboardService(
         return ApiResponse<string>.Success("Success");
     }
 
-    public async Task<ApiResponse<UserProfileResponse>> HandleLoginAsync(
+    public async Task<ApiResponse<LoginResponse>> HandleLoginAsync(
         LoginRequest request,
         CancellationToken ct
     )
@@ -151,7 +151,7 @@ public sealed class OnboardService(
 
         if (user is null)
         {
-            return ApiResponse<UserProfileResponse>.Error("Invalid credentials");
+            return ApiResponse<LoginResponse>.Error("Invalid credentials");
         }
 
         var verificationResult = _passwordHasher.VerifyHashedPassword(
@@ -162,7 +162,7 @@ public sealed class OnboardService(
 
         if (verificationResult == PasswordVerificationResult.Failed)
         {
-            return ApiResponse<UserProfileResponse>.Error("Invalid credentials");
+            return ApiResponse<LoginResponse>.Error("Invalid credentials");
         }
 
         if (verificationResult == PasswordVerificationResult.SuccessRehashNeeded)
@@ -170,12 +170,55 @@ public sealed class OnboardService(
             user.AddPasswordHash(_passwordHasher.HashPassword(user, request.Pin));
         }
 
-        var response = GenerateJWtAndMapToUserProfileResponse(user);
+        var (accessToken, refreshToken) = _jwtTokenProvider.GenerateUserJwtToken(user);
 
-        // user.SetRefreshToken(response.Jwt.RefreshToken);
+        user.SetRefreshToken(refreshToken);
         await _context.SaveChangesAsync(ct);
 
-        return ApiResponse<UserProfileResponse>.Success(response);
+        return ApiResponse<LoginResponse>.Success(new LoginResponse(accessToken, refreshToken));
+    }
+
+    public async Task<ApiResponse<LoginResponse>> HandleRefreshTokenAsync(
+        RefreshTokenRequest request,
+        CancellationToken ct
+    )
+    {
+        var principal = await _jwtTokenProvider.ValidateToken(request.AccessToken);
+        if (principal is null)
+        {
+            return ApiResponse<LoginResponse>.Error("Invalid token");
+        }
+
+        string? userId = principal.FindFirst(ClaimTypes.Sid)?.Value;
+        if (!Guid.TryParse(userId, out var guid))
+        {
+            return ApiResponse<LoginResponse>.Error("Invalid token, please login again");
+        }
+
+        var user = await _context.UserProfiles.FirstOrDefaultAsync(
+            x => x.Id == guid,
+            cancellationToken: ct
+        );
+
+        if (user is null || string.IsNullOrWhiteSpace(user.RefreshToken))
+        {
+            return ApiResponse<LoginResponse>.Error("User not found, please login again");
+        }
+        if (user.RefreshToken != request.RefreshToken)
+        {
+            return ApiResponse<LoginResponse>.Error("Invalid token, please login again");
+        }
+        if (user.IsRefreshTokenRevoked || user.IsRefreshTokenExpired)
+        {
+            return ApiResponse<LoginResponse>.Error("Invalid token, please login again");
+        }
+
+        var (accessToken, refreshToken) = _jwtTokenProvider.GenerateUserJwtToken(user);
+
+        user.SetRefreshToken(refreshToken);
+        await _context.SaveChangesAsync(ct);
+
+        return ApiResponse<LoginResponse>.Success(new LoginResponse(accessToken, refreshToken));
     }
 
     public async Task<ApiResponse<OnboardingResponse>> HandleForgotPasswordAsync(
@@ -275,20 +318,5 @@ public sealed class OnboardService(
         var message = $"Your Otp is {code} ";
         var sendSmsCommand = new SendSMSCommand(phoneNumber, message);
         await _smsChannel.Writer.WriteAsync(sendSmsCommand, ct);
-    }
-
-    private UserProfileResponse GenerateJWtAndMapToUserProfileResponse(UserProfile user)
-    {
-        var token = _jwtTokenProvider.GenerateUserJwtToken(user);
-
-        var jwt = new Jwt(token);
-        return new UserProfileResponse(
-            user.Id,
-            user.Username,
-            user.Email,
-            user.PhoneNumber,
-            user.ImageUrl,
-            jwt
-        );
     }
 }
