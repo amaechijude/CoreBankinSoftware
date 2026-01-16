@@ -139,14 +139,6 @@ public sealed class OnboardService(
         return ApiResponse<string>.Success("Success");
     }
 
-
-
-
-
-
-
-
-
     private async Task<ApiResponse<OnboardingResponse>> HandleOtp(
         string phoneNumber11digit,
         CancellationToken ct

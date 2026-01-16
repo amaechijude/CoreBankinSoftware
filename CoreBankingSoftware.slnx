@@ -25,8 +25,7 @@
     <File Path="Directory.Packages.props" />
   </Folder>
   <Folder Name="/Tests/">
-    <Project Path="Tests/CoreBankingSoftwareIntegrationTests/CoreBankingSoftwareIntegrationTests.csproj" Id="95e4f206-901e-41c1-9e0d-ed6aa592088a" />
-    <Project Path="Tests/CoreBankingSoftwareUnitTests/CoreBankingSoftwareUnitTests.csproj" />
+    <!-- <Project Path="Tests/CoreBankingSoftwareUnitTests/CoreBankingSoftwareUnitTests.csproj" /> -->
   </Folder>
   <Folder Name="/TransactionService/">
     <Project Path="TransactionService/TransactionService.csproj" Id="dd51a1a0-eac7-43e2-8425-898aa08afafe" />

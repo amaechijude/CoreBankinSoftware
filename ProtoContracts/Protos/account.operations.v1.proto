@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option csharp_namespace = 'SharedGrpcContracts.Protos.Account.Operations.V1';
+option csharp_namespace = 'AccountOperationsProtosV1';
 
-package Accounts;
+package Protos;
 
 // AccountOperationsGrpcService defines operations related to account management.
 service AccountOperationsGrpcService {

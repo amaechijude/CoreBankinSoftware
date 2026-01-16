@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using AccountOperationsProtosV1;
 using Confluent.Kafka;
 using FluentValidation;
 using FluentValidation.Results;
@@ -7,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
 using Testcontainers.PostgreSql;
 using TransactionService.Data;
 using TransactionService.DTOs.IntraBank;

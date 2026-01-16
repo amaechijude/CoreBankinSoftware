@@ -1,3 +1,4 @@
+using AccountOperationsProtosV1;
 using AccountServices;
 using AccountServices.Data;
 using AccountServices.Entities;
@@ -9,7 +10,6 @@ using FluentValidation.Results;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
 using NSubstitute;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
 using Testcontainers.PostgreSql;
 
 namespace CoreBankingSoftwareUnitTests.AccountTests;

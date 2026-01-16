@@ -125,8 +125,7 @@ builder.Services.AddSingleton(
 builder.Services.AddHostedService<SMSBackgroundService>();
 
 // Add Jwt Authentication and Services
-
-builder.Services.AddScoped<IPasswordHasher<UserProfile>, PasswordHasher<UserProfile>>();
+builder.Services.AddSingleton<IPasswordHasher<UserProfile>, PasswordHasher<UserProfile>>();
 builder.Services.AddScoped<OnboardService>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<NextOfKinService>();

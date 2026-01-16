@@ -1,4 +1,5 @@
 using System.Threading.Channels;
+using AccountOperationsProtosV1;
 using Confluent.Kafka;
 using CoreBankingSoftware.ServiceDefaults;
 using FluentValidation;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Options;
 using Polly;
 using Scalar.AspNetCore;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
 using SharedGrpcContracts.Protos.Customers.Notification.Prefrences.V1;
 using TransactionService.Data;
 using TransactionService.DTOs.NipInterBank;

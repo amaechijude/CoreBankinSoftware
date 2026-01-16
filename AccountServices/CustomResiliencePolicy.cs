@@ -1,8 +1,8 @@
+using AccountOperationsProtosV1;
 using AccountServices.Services;
 using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Retry;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
 
 namespace AccountServices;
 

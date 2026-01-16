@@ -1,5 +1,5 @@
+using AccountOperationsProtosV1;
 using FluentValidation;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
 
 namespace AccountServices.Validators;
 

@@ -1,16 +1,16 @@
+using AccountOperationsProtosV1;
 using AccountServices.Data;
 using AccountServices.Entities;
 using AccountServices.Entities.Enums;
-using AccountServices.Validators;
+using FluentValidation;
 using Grpc.Core;
 using Microsoft.EntityFrameworkCore;
-using SharedGrpcContracts.Protos.Account.Operations.V1;
 
 namespace AccountServices.Services;
 
 public sealed class AccountProtoService(
     AccountDbContext dbContext,
-    CreateAccountRequestValidator validator,
+    IValidator<CreateAccountRequest> validator,
     CustomResiliencePolicy resiliencePolicy
 ) : AccountOperationsGrpcService.AccountOperationsGrpcServiceBase
 {
