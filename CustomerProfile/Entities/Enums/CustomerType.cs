@@ -72,7 +72,7 @@ public enum KycDocumentType
 
 public enum DocumentMimeType
 {
-    PDF,
+    PdF,
     Image,
 }
 
