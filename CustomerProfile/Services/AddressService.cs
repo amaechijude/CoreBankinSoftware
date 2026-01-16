@@ -12,11 +12,12 @@ public class AddressService(UserProfileDbContext dbContext)
     private readonly UserProfileDbContext _dbContext = dbContext;
 
     public async Task<ApiResponse<AddressResponse>> AddAddressAsync(
+        Guid userId,
         AddAddressRequest request,
         CancellationToken ct
     )
     {
-        var userExists = await _dbContext.UserProfiles.AnyAsync(u => u.Id == request.UserId, ct);
+        var userExists = await _dbContext.UserProfiles.AnyAsync(u => u.Id == userId, ct);
         if (!userExists)
         {
             return ApiResponse<AddressResponse>.Error("User not found");

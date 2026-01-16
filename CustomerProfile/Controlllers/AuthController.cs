@@ -9,7 +9,10 @@ namespace CustomerProfile.Controlllers;
 
 [Route("api/[controller]/register")]
 [ApiController]
-public sealed class AuthController(OnboardService _onboardingCommandHandler) : ControllerBase
+public sealed class AuthController(
+    OnboardService _onboardingCommandHandler,
+    AuthService _authService
+) : ControllerBase
 {
     [HttpPost("send-otp")]
     public async Task<IActionResult> OnboardCustomer(
@@ -68,7 +71,7 @@ public sealed class AuthController(OnboardService _onboardingCommandHandler) : C
             return BadRequest(ModelState);
         }
 
-        var result = await _onboardingCommandHandler.HandleLoginAsync(request, ct);
+        var result = await _authService.HandleLoginAsync(request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 
@@ -83,7 +86,7 @@ public sealed class AuthController(OnboardService _onboardingCommandHandler) : C
             return BadRequest(ModelState);
         }
 
-        var result = await _onboardingCommandHandler.HandleForgotPasswordAsync(request, ct);
+        var result = await _authService.HandleForgotPasswordAsync(request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 
@@ -108,7 +111,7 @@ public sealed class AuthController(OnboardService _onboardingCommandHandler) : C
             return BadRequest();
         }
 
-        var result = await _onboardingCommandHandler.HandleResetPasswordAsync(validId, request, ct);
+        var result = await _authService.HandleResetPasswordAsync(validId, request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 }

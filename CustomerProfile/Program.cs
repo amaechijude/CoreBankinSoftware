@@ -128,6 +128,7 @@ builder.Services.AddHostedService<SMSBackgroundService>();
 
 builder.Services.AddScoped<IPasswordHasher<UserProfile>, PasswordHasher<UserProfile>>();
 builder.Services.AddScoped<OnboardService>();
+builder.Services.AddScoped<AuthService>();
 builder.Services.AddJwtAuthDependencyInjection(builder.Configuration);
 builder.Services.AddAuthorization(); // Authorization Service
 
