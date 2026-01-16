@@ -12,14 +12,17 @@ namespace CustomerProfile.Controlllers;
 public sealed class AuthController(OnboardService _onboardingCommandHandler) : ControllerBase
 {
     [HttpPost("send-otp")]
-    public async Task<IActionResult> OnboardCustomer([FromBody] OnboardingRequest request)
+    public async Task<IActionResult> OnboardCustomer(
+        [FromBody] OnboardingRequest request,
+        CancellationToken ct
+    )
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await _onboardingCommandHandler.InitiateOnboard(request);
+        var result = await _onboardingCommandHandler.InitiateOnboard(request, ct);
 
         if (result.IsSuccess && result.Data is not null)
         {
@@ -32,7 +35,8 @@ public sealed class AuthController(OnboardService _onboardingCommandHandler) : C
     [Authorize]
     [HttpPost("verify-otp")]
     public async Task<IActionResult> VerifyRegistrationOtpAsync(
-        [FromBody] OtpVerifyRequestBody request
+        [FromBody] OtpVerifyRequestBody request,
+        CancellationToken ct
     )
     {
         if (!ModelState.IsValid)
@@ -49,37 +53,46 @@ public sealed class AuthController(OnboardService _onboardingCommandHandler) : C
             return BadRequest();
         }
 
-        var result = await _onboardingCommandHandler.VerifyOtpAsync(validId, request);
+        var result = await _onboardingCommandHandler.VerifyOtpAsync(validId, request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> LoginAsync([FromBody] LoginRequest request)
+    public async Task<IActionResult> LoginAsync(
+        [FromBody] LoginRequest request,
+        CancellationToken ct
+    )
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await _onboardingCommandHandler.HandleLoginAsync(request);
+        var result = await _onboardingCommandHandler.HandleLoginAsync(request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 
     [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPasswordAsync([FromBody] ForgotPasswordRequest request)
+    public async Task<IActionResult> ForgotPasswordAsync(
+        [FromBody] ForgotPasswordRequest request,
+        CancellationToken ct
+    )
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        var result = await _onboardingCommandHandler.HandleForgotPasswordAsync(request);
+        var result = await _onboardingCommandHandler.HandleForgotPasswordAsync(request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 
     [Authorize]
     [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPasswordAsync([FromBody] ResetPasswordRequest request)
+    public async Task<IActionResult> ResetPasswordAsync(
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken ct
+    )
     {
         if (!ModelState.IsValid)
         {
@@ -95,7 +108,7 @@ public sealed class AuthController(OnboardService _onboardingCommandHandler) : C
             return BadRequest();
         }
 
-        var result = await _onboardingCommandHandler.HandleResetPasswordAsync(validId, request);
+        var result = await _onboardingCommandHandler.HandleResetPasswordAsync(validId, request, ct);
         return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
     }
 }

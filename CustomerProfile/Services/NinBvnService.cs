@@ -136,11 +136,7 @@ public sealed class NinBvnService(
             return ApiResponse<UserProfileResponse>.Error("Possible duplicate request, Try Login");
         }
 
-        var user = UserProfile.CreateNewUser(
-            vCode.UserPhoneNumber,
-            email: vCode.UserEmail,
-            request.Username
-        );
+        var user = UserProfile.CreateNewUser(vCode.UserPhoneNumber);
         var passwordHash = _passwordHasher.HashPassword(user, request.Password);
         user.AddPasswordHash(passwordHash);
 
@@ -162,7 +158,7 @@ public sealed class NinBvnService(
     {
         var (token, expiresIn) = jwtTokenProvider.GenerateUserJwtToken(user);
 
-        var jwt = new Jwt(token, expiresIn);
+        var jwt = new Jwt(token);
         return new UserProfileResponse(
             user.Id,
             user.Username,
