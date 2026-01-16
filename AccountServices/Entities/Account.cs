@@ -27,6 +27,11 @@ public sealed class Account
         string accountName
     )
     {
+        if (phoneNumber.Length != 11)
+        {
+            throw new ArgumentException("Invalid phone number");
+        }
+
         return new Account
         {
             Id = Guid.CreateVersion7(),

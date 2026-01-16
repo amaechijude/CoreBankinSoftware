@@ -76,6 +76,15 @@ builder.Services.AddDbContext<UserProfileDbContext>(
 );
 
 // QuickVerify for Nin and Bvn verification
+builder.Services.AddSingleton<CryptographyService>();
+builder
+    .Services.Configure<PiiSecurityOptions>(
+        builder.Configuration.GetSection(nameof(PiiSecurityOptions))
+    )
+    .AddOptions<PiiSecurityOptions>()
+    .ValidateDataAnnotations()
+    .ValidateOnStart();
+
 builder.Services.AddScoped<NinBvnService>();
 builder
     .Services.Configure<QuickVerifySettings>(

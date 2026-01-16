@@ -2,11 +2,12 @@ using System.Security.Claims;
 using System.Threading.Channels;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
+using CustomerProfile.DTO.BvnNinVerification;
 using CustomerProfile.Entities;
+using CustomerProfile.External;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Messaging.SMS;
 using FluentValidation;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,7 +20,10 @@ public sealed class OnboardService(
     Channel<SendSMSCommand> smsChannel,
     IValidator<OnboardingRequest> onboardingValidator,
     IValidator<SetSixDigitPinRequest> setSixDigitPinValidator,
-    IPasswordHasher<UserProfile> passwordHasher
+    IValidator<NinSearchRequest> ninSearchValidator,
+    IPasswordHasher<UserProfile> passwordHasher,
+    QuickVerifyBvnNinService quickVerifyBvnNinService,
+    CryptographyService cryptographyService
 )
 {
     private readonly UserProfileDbContext _context = context;
@@ -29,8 +33,11 @@ public sealed class OnboardService(
     private readonly IValidator<OnboardingRequest> _onboardingValidator = onboardingValidator;
     private readonly IValidator<SetSixDigitPinRequest> _setSixDigitPinValidator =
         setSixDigitPinValidator;
+    private readonly IValidator<NinSearchRequest> _ninSearchValidator = ninSearchValidator;
 
     private readonly IPasswordHasher<UserProfile> _passwordHasher = passwordHasher;
+    private readonly QuickVerifyBvnNinService _quickVerifyBvnNinService = quickVerifyBvnNinService;
+    CryptographyService _cryptographyService = cryptographyService;
 
     public async Task<ApiResponse<OnboardingResponse>> InitiateOnboard(
         OnboardingRequest command,
@@ -137,6 +144,44 @@ public sealed class OnboardService(
         await transaction.CommitAsync(ct);
 
         return ApiResponse<string>.Success("Success");
+    }
+
+    public async Task<ApiResponse<SearchResponse>> SearchNinAsync(
+        Guid validUserId,
+        NinSearchRequest request,
+        CancellationToken ct
+    )
+    {
+        var validator = new NinSearchRequestValidator();
+        var validationResult = await validator.ValidateAsync(request, ct);
+        if (!validationResult.IsValid)
+        {
+            return ApiResponse<SearchResponse>.Error(
+                validationResult.Errors.Select(s => new { s.ErrorMessage, s.AttemptedValue })
+            );
+        }
+        var user = await _context.UserProfiles.FindAsync([validUserId], cancellationToken: ct);
+        if (user is null)
+        {
+            return ApiResponse<SearchResponse>.Error("User not found, try login again");
+        }
+
+        var ninSearchResult = await _quickVerifyBvnNinService.NINSearchRequest(request.Nin);
+        if (ninSearchResult is null)
+        {
+            return ApiResponse<SearchResponse>.Error(
+                "Nin service is currently unavailable, try again later"
+            );
+        }
+
+        if (ninSearchResult.Status == false)
+        {
+            return ApiResponse<SearchResponse>.Error("Nin not found");
+        }
+        var hashedNin = _cryptographyService.HashSensitiveData(request.Nin);
+        user.SetNin(hashedNin);
+        await _context.SaveChangesAsync(ct);
+        return ApiResponse<SearchResponse>.Success(new SearchResponse("Success", true));
     }
 
     private async Task<ApiResponse<OnboardingResponse>> HandleOtp(

@@ -60,15 +60,11 @@ public sealed class UserProfile
     // Nigerian Banking Specific Identifiers
     public string BvnHash { get; private set; } = string.Empty; // Bank Verification Number
     public string NinHash { get; private set; } = string.Empty; // National Identification Number
-    public BvnData? BvnData { get; private set; }
-    public NinData? NinData { get; private set; }
     public DateTimeOffset? BVNAddedAt { get; private set; }
     public DateTimeOffset? NINAddedAt { get; private set; }
 
     // Biometrics
     public string? ImageUrl { get; private set; } // URL to the customer's image
-    public string? NinBase64Image { get; private set; }
-    public string? BvnBase64Image { get; private set; }
     public float[]? FaceEncodings { get; private set; } // Array of floats representing face encoding
     public DateTimeOffset? LastTransactionDate { get; private set; }
 
@@ -134,41 +130,11 @@ public sealed class UserProfile
         PasswordHash = passwordHash;
     }
 
-    // Methods to update sensitive information
-    public void AddBvn(BvnApiResponse response)
+    public void SetNin(string hashedNin)
     {
-        if (BvnData is not null || !string.IsNullOrWhiteSpace(BvnHash))
-        {
-            return; // BVN already added, do nothing
-        }
-
-        var bvnData = BvnData.Create(this, response);
-        if (bvnData is null)
-        {
-            return;
-        }
-
-        BvnData = bvnData;
-        BvnBase64Image = response.Data?.Base64Image;
-        BVNAddedAt = DateTimeOffset.UtcNow;
-        return;
+        NinHash = hashedNin;
+        NINAddedAt = DateTimeOffset.UtcNow;
     }
-
-    public void RemoveBvn()
-    {
-        if (BvnData is null && string.IsNullOrWhiteSpace(BvnHash))
-        {
-            return; // BVN not set, do nothing
-        }
-
-        BvnData = null;
-        BvnHash = string.Empty;
-        BvnBase64Image = null;
-        BVNAddedAt = null;
-        return;
-    }
-
-    public bool BvnExists => BvnData is not null && !string.IsNullOrWhiteSpace(BvnBase64Image);
 }
 
 internal sealed class InvalidPhoneNumberException(string message) : Exception(message);
