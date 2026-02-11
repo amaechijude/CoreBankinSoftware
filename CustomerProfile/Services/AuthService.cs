@@ -127,7 +127,7 @@ public sealed class AuthService(
 
         if (user is null)
         {
-            return ApiResponse<OnboardingResponse>.Error("User not found");
+            return ApiResponse<OnboardingResponse>.Error("Request denied");
         }
 
         return await HandleOtp(user.PhoneNumber, ct);
@@ -186,7 +186,7 @@ public sealed class AuthService(
         {
             var newCode = VerificationCode.CreateNew(phoneNumber11digit);
 
-            await _context.VerificationCodes.AddAsync(newCode, ct);
+            _context.VerificationCodes.Add(newCode);
             var token = _jwtTokenProvider.GenerateVerificationResponseJwtToken(newCode);
             await EnqueueSms(phoneNumber11digit, newCode.Code, ct);
             await _context.SaveChangesAsync(ct);

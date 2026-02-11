@@ -1,64 +1,14 @@
-﻿using System.Security.Claims;
 using CustomerProfile.DTO;
-using CustomerProfile.JwtTokenService;
 using CustomerProfile.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CustomerProfile.Controlllers;
 
-[Route("api/[controller]/register")]
 [ApiController]
-public sealed class AuthController(
-    OnboardService _onboardingCommandHandler,
-    AuthService _authService
-) : ControllerBase
+[Route("api/[controller]")]
+public class AuthController(AuthService authService) : ControllerBase
 {
-    [HttpPost("send-otp")]
-    public async Task<IActionResult> OnboardCustomer(
-        [FromBody] OnboardingRequest request,
-        CancellationToken ct
-    )
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var result = await _onboardingCommandHandler.InitiateOnboard(request, ct);
-
-        if (result.IsSuccess && result.Data is not null)
-        {
-            return Ok(result.Data);
-        }
-
-        return BadRequest(result.ErrorMessage);
-    }
-
-    [Authorize]
-    [HttpPost("verify-otp")]
-    public async Task<IActionResult> VerifyRegistrationOtpAsync(
-        [FromBody] OtpVerifyRequestBody request,
-        CancellationToken ct
-    )
-    {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        // Get claims from the current user
-        var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
-        var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-
-        bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
-        if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
-        {
-            return BadRequest();
-        }
-
-        var result = await _onboardingCommandHandler.VerifyOtpAsync(validId, request, ct);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
-    }
+    private readonly AuthService _authService = authService;
 
     [HttpPost("login")]
     public async Task<IActionResult> LoginAsync(
@@ -66,13 +16,18 @@ public sealed class AuthController(
         CancellationToken ct
     )
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
+        var response = await _authService.HandleLoginAsync(request, ct);
+        return response.IsSuccess ? Ok(response.Data) : BadRequest(response.ErrorMessage);
+    }
 
-        var result = await _authService.HandleLoginAsync(request, ct);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+    [HttpPost("refresh-token")]
+    public async Task<IActionResult> RefreshTokenAsync(
+        [FromBody] RefreshTokenRequest request,
+        CancellationToken ct
+    )
+    {
+        var response = await _authService.HandleRefreshTokenAsync(request, ct);
+        return response.IsSuccess ? Ok(response.Data) : BadRequest(response.ErrorMessage);
     }
 
     [HttpPost("forgot-password")]
@@ -81,37 +36,18 @@ public sealed class AuthController(
         CancellationToken ct
     )
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var result = await _authService.HandleForgotPasswordAsync(request, ct);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        var response = await _authService.HandleForgotPasswordAsync(request, ct);
+        return response.IsSuccess ? Ok(response.Data) : BadRequest(response.ErrorMessage);
     }
 
-    [Authorize]
-    [HttpPost("reset-password")]
+    [HttpPost("reset-password/{id:guid}")]
     public async Task<IActionResult> ResetPasswordAsync(
+        Guid id,
         [FromBody] ResetPasswordRequest request,
         CancellationToken ct
     )
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-        // Get claims from the current user
-        var userId = User.FindFirst(ClaimTypes.Sid)?.Value;
-        var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-
-        bool IsVAlidGuid = Guid.TryParse(userId, out var validId);
-        if (!IsVAlidGuid || userRole != RolesUtils.VerificationRole)
-        {
-            return BadRequest();
-        }
-
-        var result = await _authService.HandleResetPasswordAsync(validId, request, ct);
-        return result.IsSuccess ? Ok(result.Data) : BadRequest(result.ErrorMessage);
+        var response = await _authService.HandleResetPasswordAsync(id, request, ct);
+        return response.IsSuccess ? Ok(response.Data) : BadRequest(response.ErrorMessage);
     }
 }

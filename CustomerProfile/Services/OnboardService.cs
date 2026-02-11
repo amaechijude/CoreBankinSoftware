@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Threading.Channels;
 using CustomerProfile.Data;
 using CustomerProfile.DTO;
@@ -7,6 +6,7 @@ using CustomerProfile.Entities;
 using CustomerProfile.External;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Messaging.SMS;
+using CustomerProfile.Workers;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +23,8 @@ public sealed class OnboardService(
     IValidator<NinSearchRequest> ninSearchValidator,
     IPasswordHasher<UserProfile> passwordHasher,
     QuickVerifyBvnNinService quickVerifyBvnNinService,
-    CryptographyService cryptographyService
+    CryptographyService cryptographyService,
+    Channel<CreateAccountChannelMessage> channel
 )
 {
     private readonly UserProfileDbContext _context = context;
@@ -37,7 +38,8 @@ public sealed class OnboardService(
 
     private readonly IPasswordHasher<UserProfile> _passwordHasher = passwordHasher;
     private readonly QuickVerifyBvnNinService _quickVerifyBvnNinService = quickVerifyBvnNinService;
-    CryptographyService _cryptographyService = cryptographyService;
+    private readonly CryptographyService _cryptographyService = cryptographyService;
+    private readonly Channel<CreateAccountChannelMessage> _channel = channel;
 
     public async Task<ApiResponse<OnboardingResponse>> InitiateOnboard(
         OnboardingRequest command,
@@ -178,9 +180,28 @@ public sealed class OnboardService(
         {
             return ApiResponse<SearchResponse>.Error("Nin not found");
         }
+
+        // Validate that the NIN details match the user's profile
+        if (ninSearchResult.Data?.TelephoneNo != user.PhoneNumber)
+        {
+            return ApiResponse<SearchResponse>.Error("Nin details do not match with user profile");
+        }
+
         var hashedNin = _cryptographyService.HashSensitiveData(request.Nin);
-        user.SetNin(hashedNin);
+        user.SetNin(
+            hashedNin: hashedNin,
+            firstName: ninSearchResult.Data.FirstName,
+            lastName: ninSearchResult.Data.Surname
+        );
         await _context.SaveChangesAsync(ct);
+        await _channel.Writer.WriteAsync(
+            new CreateAccountChannelMessage
+            {
+                AccountName = user.FullName,
+                PhoneNumber = user.PhoneNumber,
+            },
+            ct
+        );
         return ApiResponse<SearchResponse>.Success(new SearchResponse("Success", true));
     }
 

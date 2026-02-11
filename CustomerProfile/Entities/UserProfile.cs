@@ -18,8 +18,8 @@ public sealed class UserProfile
     public ICollection<NotificationChannels> NotificationChannels { get; private set; } = [];
 
     // Enums
-    public CustomerType CustomerType { get; set; } = CustomerType.Individual;
-    public CustomerStatus Status { get; set; } = CustomerStatus.PendingActivation;
+    public CustomerType CustomerType { get; private set; } = CustomerType.Individual;
+    public CustomerStatus Status { get; private set; } = CustomerStatus.PendingActivation;
     public KYCStatus KYCStatus { get; private set; } = KYCStatus.NotStarted;
     public AccountTier AccountTier { get; set; } = AccountTier.Tier1;
     public EmployementType EmploymentType { get; set; } = EmployementType.SelfEmployed;
@@ -60,6 +60,7 @@ public sealed class UserProfile
     // Nigerian Banking Specific Identifiers
     public string BvnHash { get; private set; } = string.Empty; // Bank Verification Number
     public string NinHash { get; private set; } = string.Empty; // National Identification Number
+    public string? NinBase64Image { get; private set; } // Base64 encoded image from NIN
     public DateTimeOffset? BVNAddedAt { get; private set; }
     public DateTimeOffset? NINAddedAt { get; private set; }
 
@@ -130,10 +131,38 @@ public sealed class UserProfile
         PasswordHash = passwordHash;
     }
 
-    public void SetNin(string hashedNin)
+    public void SetNin(
+        string hashedNin,
+        string? firstName = null,
+        string? lastName = null,
+        string? base64Image = null
+    )
     {
         NinHash = hashedNin;
+        if (base64Image is not null)
+        {
+            NinBase64Image = base64Image;
+        }
+        if (firstName is not null)
+        {
+            FirstName = firstName;
+        }
+        if (lastName is not null)
+        {
+            LastName = lastName;
+        }
         NINAddedAt = DateTimeOffset.UtcNow;
+    }
+
+    internal void SetBvnDetails(
+        string bvn,
+        string? firstName,
+        string? lastName,
+        DateOnly? dateOfBirth,
+        string? base64Image
+    )
+    {
+        throw new NotImplementedException();
     }
 }
 

@@ -8,10 +8,12 @@ using CustomerProfile.Global;
 using CustomerProfile.JwtTokenService;
 using CustomerProfile.Messaging.SMS;
 using CustomerProfile.Services;
+using CustomerProfile.Workers;
 using FaceAiSharp;
 using FluentValidation;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
@@ -85,7 +87,6 @@ builder
     .ValidateDataAnnotations()
     .ValidateOnStart();
 
-builder.Services.AddScoped<NinBvnService>();
 builder
     .Services.Configure<QuickVerifySettings>(
         builder.Configuration.GetSection("QuickVerifySettings")
@@ -123,7 +124,7 @@ builder.Services.AddSingleton<TwilioSmsSender>();
 
 builder.Services.AddSingleton(
     Channel.CreateBounded<SendSMSCommand>(
-        new BoundedChannelOptions(100)
+        new BoundedChannelOptions(2_000)
         {
             FullMode = BoundedChannelFullMode.Wait,
             SingleReader = true,
@@ -137,14 +138,32 @@ builder.Services.AddHostedService<SMSBackgroundService>();
 builder.Services.AddSingleton<IPasswordHasher<UserProfile>, PasswordHasher<UserProfile>>();
 builder.Services.AddScoped<OnboardService>();
 builder.Services.AddScoped<AuthService>();
-builder.Services.AddScoped<NextOfKinService>();
-builder.Services.AddScoped<KycService>();
 builder.Services.AddJwtAuthDependencyInjection(builder.Configuration);
 builder.Services.AddAuthorization(); // Authorization Service
 
 builder.Services.AddControllers();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
+
+// Kafka
+builder.AddKafkaProducer<string, string>(
+    "kafka",
+    kp =>
+    {
+        kp.Config.Acks = Confluent.Kafka.Acks.All;
+    }
+);
+
+builder.Services.AddSingleton(
+    Channel.CreateBounded<CreateAccountChannelMessage>(
+        new BoundedChannelOptions(1_000)
+        {
+            FullMode = BoundedChannelFullMode.Wait,
+            SingleReader = true,
+            SingleWriter = false,
+        }
+    )
+);
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

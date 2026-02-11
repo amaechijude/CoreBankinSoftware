@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Twilio.Rest.Video.V1.Room.Participant;
 
 namespace CustomerProfile.Workers;
 
@@ -16,8 +17,10 @@ public sealed class CreateAccountEventProducer(
     {
         throw new NotImplementedException();
     }
-
-    // private async Task ProduceMesageAsync()
+private async Task PublishMessageasync(CreateAccountChannelMessage message, CancellationToken ct)
+    {
+        
+    }
 }
 
 public record CreateAccountChannelMessage

@@ -62,10 +62,10 @@ public sealed class NotificationWithOutboxWorker(
             return 0;
         }
 
-        // OPTIMIZATION 2: Pre-fetch all required preferences in batch
+        // Pre-fetch all required preferences in batch
         var allPreferences = await PreFetchAllPreferences(pendingMessages, userPreference, ct);
 
-        // OPTIMIZATION 3: Group messages for parallel processing
+        // Group messages for parallel processing
         var messageGroups = pendingMessages
             .Select(m => new MessageProcessingContext
             {
@@ -75,9 +75,9 @@ public sealed class NotificationWithOutboxWorker(
             })
             .ToList();
 
-        // OPTIMIZATION 4: Process messages in parallel with controlled concurrency
-        var publishTasks = new List<Task<MessagePublishResult>>(pendingMessages.Count);
-        var successfulTransactionIds = new List<Guid>(pendingMessages.Count);
+        // Process messages in parallel with controlled concurrency
+        List<Task<MessagePublishResult>> publishTasks = new (pendingMessages.Count);
+        List<Guid> successfulTransactionIds = new(pendingMessages.Count);
 
         await Parallel.ForEachAsync(
             messageGroups,
@@ -95,7 +95,7 @@ public sealed class NotificationWithOutboxWorker(
             }
         );
 
-        // OPTIMIZATION 5: Batch update all successful messages
+        // Batch update all successful messages
         if (successfulTransactionIds.Count > 0)
         {
             await userPreference.MarkOutboxPublishedBatch(successfulTransactionIds, ct);
@@ -105,7 +105,7 @@ public sealed class NotificationWithOutboxWorker(
         return successfulTransactionIds.Count;
     }
 
-    // OPTIMIZATION 6: Single batch fetch for all preferences needed
+    // Single batch fetch for all preferences needed
     private static async Task<PreferenceCache> PreFetchAllPreferences(
         List<OutboxMessage> messages,
         UserPreferenceService userPreference,

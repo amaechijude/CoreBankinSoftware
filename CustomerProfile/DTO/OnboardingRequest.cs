@@ -16,11 +16,12 @@ public class OnboardingRequestValidator : AbstractValidator<OnboardingRequest>
             .WithMessage("Phone number is required.")
             .Length(11)
             .WithMessage("Phone number lenght Must be 11")
-            .Matches("[0-9]")
+            .Must(IsAllAsciiDigit)
             .WithMessage("Phone number must contain only digits.");
     }
 
-    private bool IsAllDigit(string phoneNumber) => phoneNumber.All(char.IsDigit);
+    private bool IsAllAsciiDigit(string phoneNumber) =>
+        !string.IsNullOrWhiteSpace(phoneNumber) && phoneNumber.All(char.IsAsciiDigit);
 }
 
 public sealed record VerifyOtpResponse(Guid SessionId, string Message);
@@ -41,7 +42,7 @@ public class SetSixDigitPinRequestValidator : AbstractValidator<SetSixDigitPinRe
             .WithMessage("Pin is required")
             .Length(6)
             .WithMessage("Pin must be 6 characters long")
-            .Matches("[0-9]")
+            .Must(IsAllAsciiDigit)
             .WithMessage("Pin must contain only digits");
 
         RuleFor(x => x.ConfirmPin)
@@ -50,4 +51,7 @@ public class SetSixDigitPinRequestValidator : AbstractValidator<SetSixDigitPinRe
             .Equal(x => x.Pin)
             .WithMessage("Confirm pin must match pin");
     }
+
+    private bool IsAllAsciiDigit(string pin) =>
+        !string.IsNullOrWhiteSpace(pin) && pin.All(char.IsAsciiDigit);
 }
